@@ -147,6 +147,17 @@
   .rep-grid .v{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.25}
   .rep-grid .p{font-size:11.5px;color:var(--text-secondary)}
 
+  .form-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:9px}
+  .form-row label{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;
+                  display:block;margin-bottom:3px}
+  .form-row .f{flex:1;min-width:120px}
+  .form-row input, .form-row select{width:100%;margin-top:0}
+  textarea.f2{width:100%;background:var(--surface-1);color:var(--text-primary);border:1px solid var(--border);
+              border-radius:10px;padding:9px 11px;font:inherit;font-size:13.5px;min-height:78px;line-height:1.5}
+  .mine{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--grid);font-size:13.5px}
+  .mine:last-child{border-bottom:none}
+  .mine .x{background:none;border:0;color:var(--muted);cursor:pointer;font-size:17px;padding:0 4px;line-height:1}
+
   .prep{list-style:none;padding:0;margin:8px 0 0}
   .prep li{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--grid)}
   .prep li:last-child{border-bottom:none}
@@ -1464,6 +1475,8 @@ const state = {
  onb: null,
  pantry: store.get("pantry", []),
  cyklus: store.get("cyklus", null),
+ shopX: store.get("shopX", []),
+ recOpen: false,
  fotoP: store.get("fotoP", []),
  fotoV: store.get("fotoV", [])
 };
@@ -1498,6 +1511,11 @@ function buildSelect(key, day, opts, idx){
  return s+'</select>';
 }
 
+function nactiMoje(){
+  const moje = store.get("myRecipes", []);
+  for (let i = DINNERS.length-1; i >= 0; i--) if (DINNERS[i].own) DINNERS.splice(i,1);
+  moje.forEach(r => DINNERS.push(r));
+}
 const dinnerById = id => DINNERS.find(d=>d.id===id) || DINNERS[0];
 const fmt = n => n.toLocaleString("cs-CZ");
 const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -1654,9 +1672,9 @@ function renderTyden(){
    +'<td class="num dim">'+din.v.kcal+' / '+din.p.kcal+'</td></tr>';
  }).join("");
  document.getElementById("tab-tyden").innerHTML =
-  '<div class="card"><h3>Týden večeří</h3><p class="who">12 večeří v rotaci — vyměň cokoli, nákupní seznam se přepočítá. Číslo = kcal Verune / Pepule.</p>'
+  '<div class="card"><h3>Týden večeří</h3><p class="who">'+DINNERS.filter(o=>!o.out).length+' večeří na výběr — vyměň cokoli, nákupní seznam se přepočítá. Číslo = kcal Verune / Pepule.</p>'
   +'<div style="margin-bottom:10px"><button class="act small" id="shuffleBtn" type="button">🎲 Zamíchat týden</button> '
-  +'<span class="dim" style="font-size:12.5px">— vylosuje 7 různých večeří z dvaceti</span></div>'
+  +'<span class="dim" style="font-size:12.5px">— vylosuje 7 různých ze všech</span></div>'
   +'<table><thead><tr><th>Den</th><th>Večeře</th><th class="num">kcal</th></tr></thead><tbody>'+rows+'</tbody></table>'
   +'<div class="note"><b>Pravidlo porce:</b> Pepule 1,7× víc masa i přílohy + lžíce oleje. Vař o porci navíc — Verunin zítřejší oběd.</div></div>';
 }
@@ -1716,9 +1734,9 @@ const OUT_KATALOG = [
  ], "Když si můžeš vybrat kdekoliv, tohle je nejlepší poměr. <b>Vždycky si přidej maso navíc</b> — v asijských bistrech to bývá za 30–50 Kč a zdvojnásobí to bílkoviny."]
 ];
 
-const TAGS = [["all","Vše"],["fav","⭐ Oblíbené"],["doma","🏠 Mám doma"],["rychlo","⚡ Rychlé"],["trouba","🔥 Trouba a pomalu"],["svet","🌍 Svět"],["klasika","🇨🇿 Klasika"],["out","🌯 Venku"]];
-const TAGLABEL = {rychlo:"⚡ rychlé", trouba:"🔥 trouba", svet:"🌍 svět", klasika:"🇨🇿 klasika", out:"🌯 venku"};
-const tagOf = r => r.out ? "out" : (r.tag || "klasika");
+const TAGS = [["all","Vše"],["fav","⭐ Oblíbené"],["doma","🏠 Mám doma"],["rychlo","⚡ Rychlé"],["trouba","🔥 Trouba a pomalu"],["svet","🌍 Svět"],["klasika","🇨🇿 Klasika"],["moje","👨‍🍳 Naše"],["out","🌯 Venku"]];
+const TAGLABEL = {rychlo:"⚡ rychlé", trouba:"🔥 trouba", svet:"🌍 svět", klasika:"🇨🇿 klasika", moje:"👨‍🍳 náš recept", out:"🌯 venku"};
+const tagOf = r => r.out ? "out" : (r.own ? "moje" : (r.tag || "klasika"));
 const chibiOk = r => chybi(r).length === 0;
 
 /* odhad času vaření podle typu a počtu kroků */
@@ -1728,6 +1746,7 @@ function recTime(r){
  return { rychlo: dlouhy ? "25–35 min" : "do 25 min",
           svet:   dlouhy ? "40–50 min" : "30–40 min",
           klasika:dlouhy ? "45–60 min" : "35–45 min",
+          moje:   dlouhy ? "45–60 min" : "35–45 min",
           trouba: dlouhy ? "90 min +"  : "60–90 min" }[tagOf(r)] || "35–45 min";
 }
 const SCALES = [[1,"1× (my dva)"],[1.5,"1,5× (návštěva)"],[2,"2× (meal prep)"]];
@@ -1868,6 +1887,58 @@ function renderCook(){
  window.scrollTo(0,0);
 }
 
+function parseIng(radek){
+ const t = String(radek).trim().replace(/\s+/g," ");
+ if (!t) return null;
+ const m = t.match(/^(.+?)[\s—–-]+(\d+(?:[.,]\d+)?)\s*(kg|g|l|ml|ks|bal|balení|lžíce|hrst|plátky|stroužky)?\.?$/i);
+ if (m) return [m[1].replace(/[\s—–-]+$/,"").trim(), parseFloat(m[2].replace(",",".")), (m[3]||"ks")];
+ return [t, 0, ""];
+}
+function mojeRecepty(){ return store.get("myRecipes", []); }
+function ulozMoje(arr){
+ store.set("myRecipes", arr);
+ nactiMoje();
+ if (window.sync && sync.on) sync.pushRec();
+}
+
+function novyReceptForm(){
+ const moje = mojeRecepty();
+ const seznam = moje.length
+  ? '<div style="margin:10px 0 4px">'+moje.map(r=>'<div class="mine"><span style="flex:1">'+esc(r.name)
+    +' <span class="dim">· V '+r.v.kcal+' · P '+r.p.kcal+'</span></span>'
+    +'<button class="x" data-delrec="'+esc(r.id)+'" title="Smazat">×</button></div>').join("")+'</div>'
+  : "";
+ return '<details class="card" style="padding:0" id="recForm"'+(state.recOpen?" open":"")+'>'
+  +'<summary style="padding:16px;cursor:pointer;list-style:none;font-size:16.5px;font-weight:600">'
+  +'➕ Přidat vlastní recept'+(moje.length?' <span class="dim" style="font-weight:400;font-size:13px">('+moje.length+' vlastních)</span>':'')+'</summary>'
+  +'<div style="padding:0 16px 16px">'
+  +'<p class="who">Zapiš cokoli, co doma vaříte. Objeví se to mezi recepty, půjde to zařadit do týdne '
+  +'a suroviny se samy propíšou do nákupu. Uvidí to i ten druhý.</p>'
+  +'<div class="form-row"><div class="f" style="min-width:180px"><label>Název jídla</label>'
+  +'<input type="text" id="nrName" placeholder="Babiččiny bramborové placky"></div>'
+  +'<div class="f" style="max-width:150px"><label>Typ</label><select id="nrTag">'
+  +'<option value="klasika">🇨🇿 Klasika</option><option value="rychlo">⚡ Rychlé</option>'
+  +'<option value="svet">🌍 Svět</option><option value="trouba">🔥 Trouba</option></select></div></div>'
+  +'<div class="form-row"><div class="f"><label>Verune — porce</label>'
+  +'<input type="text" id="nrVpor" placeholder="1 porce"></div>'
+  +'<div class="f" style="max-width:100px"><label>kcal</label><input type="number" id="nrVk" placeholder="470" inputmode="numeric"></div>'
+  +'<div class="f" style="max-width:100px"><label>bílkoviny g</label><input type="number" id="nrVp" placeholder="32" inputmode="numeric"></div></div>'
+  +'<div class="form-row"><div class="f"><label>Pepule — porce</label>'
+  +'<input type="text" id="nrPpor" placeholder="velká porce"></div>'
+  +'<div class="f" style="max-width:100px"><label>kcal</label><input type="number" id="nrPk" placeholder="850" inputmode="numeric"></div>'
+  +'<div class="f" style="max-width:100px"><label>bílkoviny g</label><input type="number" id="nrPp" placeholder="55" inputmode="numeric"></div></div>'
+  +'<label style="font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;display:block;margin:6px 0 3px">'
+  +'Suroviny — každou na nový řádek</label>'
+  +'<textarea class="f2" id="nrIng" placeholder="Brambory 1,5 kg&#10;Vejce 4 ks&#10;Mouka 200 g&#10;Česnek 1 ks"></textarea>'
+  +'<label style="font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;display:block;margin:9px 0 3px">'
+  +'Postup — každý krok na nový řádek</label>'
+  +'<textarea class="f2" id="nrSteps" placeholder="Brambory nastrouhej a slij vodu.&#10;Zamíchej vejce, mouku a česnek.&#10;Smaž dozlatova."></textarea>'
+  +'<div class="wrow" style="margin-top:11px"><button class="act small" id="nrSave" type="button">Uložit recept</button>'
+  +'<span class="hint" id="nrMsg" style="margin:0"></span></div>'
+  + seznam
+  +'</div></details>';
+}
+
 function renderRecepty(){
  const f = state.recFilter || "all";
  const favs = store.get("favs", []);
@@ -1930,7 +2001,7 @@ function renderRecepty(){
   +'</ul><ol>'+r.steps.map(s=>'<li>'+esc(s)+'</li>').join("")+'</ol></div></details>').join("");
  document.getElementById("tab-recepty").innerHTML =
   '<h2>Večeře — '+(q ? list.length+" nalezeno z "+DINNERS.length : DINNERS.length+" receptů do rotace")+'</h2>'
-  + hledej + chips + spiz + davka
+  + hledej + chips + spiz + davka + novyReceptForm()
   + (list.length ? din : '<div class="card"><p class="who" style="margin:0">Nic takového tu není. Zkus jiné slovo — třeba jen „kur" nebo „vejc".</p></div>')
   + (f === "out" || f === "all" ? outKatalog() : "")
   +'<h2>Snídaně, shake &amp; meal prep</h2>'+extra
@@ -1965,7 +2036,7 @@ function renderNakup(){
  };
  const dinList = Object.keys(agg).sort((a,b)=>a.localeCompare(b,"cs")).map(k=>{
   const p = k.split("|"); const q = Math.round(agg[k]*100)/100;
-  return item("d|"+k, p[0]+" — "+fmt(q)+" "+p[1]);
+  return item("d|"+k, q > 0 ? p[0]+" — "+fmt(q)+" "+p[1] : p[0]);
  }).join("");
  let staples = "";
  for (const h in STAPLES) staples += '<div class="shop-head">'+esc(h)+'</div>'
@@ -1976,6 +2047,19 @@ function renderNakup(){
   +'<button class="ghost" id="clearShop" type="button">Vyčistit</button></span></div>'
   +'<p class="who">Spočítaný z večeří v Týdnu + týdenní zásoby pro dva. Odškrtávej rovnou v obchodě.</p>'
   +'<ul class="shop"><div class="shop-head">Na večeře (podle vybraného týdne)</div>'+dinList+staples+'</ul>'
+  +'<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--baseline)">'
+  +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Co ještě potřebujeme</div>'
+  + (state.shopX.length
+     ? '<ul class="shop">'+state.shopX.map(x=>{
+         const on = !!state.shop["x|"+x.id];
+         return '<li class="'+(on?"on":"")+'"><input type="checkbox" data-shop="x|'+esc(x.id)+'"'+(on?" checked":"")+'>'
+          +'<span style="flex:1">'+esc(x.t)+'</span>'
+          +'<button class="x" data-delshopx="'+esc(x.id)+'" title="Smazat" style="background:none;border:0;color:var(--muted);cursor:pointer;font-size:17px;padding:0 4px">×</button></li>';
+       }).join("")+'</ul>'
+     : '<p class="who" style="margin:0 0 8px">Zatím nic navíc. Cokoli sem přidáš, uvidí i ten druhý.</p>')
+  +'<div class="wrow" style="margin:8px 0 0"><input type="text" id="shopXInp" placeholder="Např. prací prášek, zubní pasta, mrkev navíc…" '
+  +'style="flex:1;min-width:160px;width:auto" autocomplete="off">'
+  +'<button class="act small" id="shopXAdd" type="button">Přidat</button></div></div>'
   +'<div class="note"><b>Nejdůležitější hodina týdne:</b> nedělní nákup + příprava 10 autobagů + 10 vajec natvrdo. Když vyjde neděle, vyjde týden.</div></div>'
   + prepCard();
 }
@@ -2722,6 +2806,21 @@ const sync = {
         if (state.tab === "nakup") renderNakup();
       }
     });
+    // vlastní recepty
+    onValue(this._ref("recepty"), snap => {
+      const v = snap.val();
+      if (Array.isArray(v)) {
+        store.set("myRecipes", v); nactiMoje();
+        if (state.tab === "recepty") renderRecepty();
+        if (state.tab === "tyden") renderTyden();
+      }
+    });
+    // vlastní položky nákupu
+    onValue(this._ref("shopx"), snap => {
+      const v = snap.val();
+      if (Array.isArray(v)) { state.shopX = v; store.set("shopX", v);
+        if (state.tab === "nakup") renderNakup(); }
+    });
     // nákup
     onValue(this._ref("shop"), snap => {
       const v = snap.val();
@@ -2746,6 +2845,8 @@ const sync = {
   pushFavs(){ this._set("favs", store.get("favs", [])); },
   pushWeek(){ this._set("week", state.week); },
   pushShop(){ this._set("shop", state.shop); },
+  pushRec(){ this._set("recepty", store.get("myRecipes", [])); },
+  pushShopX(){ this._set("shopx", state.shopX); },
 
   pushStatus(){
     if (!this.on) return;
@@ -3254,6 +3355,7 @@ document.addEventListener("input", e=>{
 
 document.addEventListener("toggle", e=>{
  const d = e.target;
+ if (d.id === "recForm") state.recOpen = d.open;
  if (d.tagName === "DETAILS" && d.dataset && d.dataset.exkey) state.exOpen[d.dataset.exkey] = d.open;
 }, true);
 
@@ -3319,6 +3421,58 @@ document.addEventListener("click", e=>{
   else if (a === "prev"){ state.onb--; renderOnb(); }
   else if (a === "next"){ if (state.onb >= 3) closeOnb(); else { state.onb++; renderOnb(); } }
   return;
+ }
+ if (e.target.id === "shopXAdd"){
+  const el = document.getElementById("shopXInp");
+  const t = (el.value || "").trim();
+  if (!t) { el.focus(); return; }
+  state.shopX = state.shopX.concat([{ id: "x"+Date.now(), t: t.slice(0,80) }]);
+  store.set("shopX", state.shopX);
+  if (window.sync && sync.on) sync.pushShopX();
+  renderNakup();
+  const nl = document.getElementById("shopXInp"); if (nl) nl.focus();
+  return;
+ }
+ const dx = e.target.closest("[data-delshopx]");
+ if (dx){
+  state.shopX = state.shopX.filter(x => x.id !== dx.dataset.delshopx);
+  store.set("shopX", state.shopX);
+  delete state.shop["x|"+dx.dataset.delshopx]; store.set("shop", state.shop);
+  if (window.sync && sync.on){ sync.pushShopX(); sync.pushShop(); }
+  renderNakup(); return;
+ }
+ if (e.target.id === "nrSave"){
+  const val = id => (document.getElementById(id).value || "").trim();
+  const num = id => parseInt(document.getElementById(id).value, 10) || 0;
+  const msg = document.getElementById("nrMsg");
+  const name = val("nrName");
+  const vk = num("nrVk"), pk = num("nrPk"), vp = num("nrVp"), pp = num("nrPp");
+  if (!name || !vk || !pk){
+   msg.textContent = "Chybí název nebo kalorie u obou — bez toho se to nedá počítat.";
+   msg.style.color = "var(--s2)"; return;
+  }
+  const rec = {
+   id: "my"+Date.now(), own: true, tag: val("nrTag") || "klasika", name: name,
+   v: { por: val("nrVpor") || "1 porce", kcal: vk, prot: vp },
+   p: { por: val("nrPpor") || "velká porce", kcal: pk, prot: pp },
+   ing: val("nrIng").split("\n").map(parseIng).filter(Boolean),
+   steps: val("nrSteps").split("\n").map(x=>x.trim()).filter(Boolean)
+  };
+  if (!rec.steps.length) rec.steps = ["Postup si zatím nezapsali — doplňte, až to budete vařit."];
+  ulozMoje(mojeRecepty().concat([rec]));
+  state.recOpen = true; state.recFilter = "moje";
+  renderRecepty(); renderTyden(); renderNakup();
+  celebrate("🍽️");
+  return;
+ }
+ const dr = e.target.closest("[data-delrec]");
+ if (dr){
+  const id = dr.dataset.delrec;
+  ulozMoje(mojeRecepty().filter(r => r.id !== id));
+  state.week = state.week.map(w => w === id ? DINNERS.filter(d=>!d.out)[0].id : w);
+  store.set("week", state.week);
+  if (window.sync && sync.on) sync.pushWeek();
+  renderRecepty(); renderTyden(); renderNakup(); return;
  }
  const co = e.target.closest("[data-cookopen]");
  if (co){ openCook(co.dataset.cookopen); return; }
@@ -3538,7 +3692,7 @@ document.addEventListener("click", e=>{
  if (e.target.id === "icsVse"){ stahniIcs("vse"); return; }
  if (e.target.id === "expBtn"){
   const keys = ["week","pick","checks","shop","queue","fb","exsel","wtP","wtV","mrP","mrV","lastCheckin",
-                "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water"];
+                "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX"];
   const dump = {};
   keys.forEach(k=>{ const v = store.get(k, null); if (v !== null) dump[k] = v; });
   const box = document.getElementById("dataBox");
@@ -3668,6 +3822,7 @@ const MOTTA = [
 ];
 document.getElementById("mottoLine").textContent = MOTTA[todayIdx];
 document.getElementById("todayLine").textContent = "Dnes je "+DAYFULL[todayIdx]+" · "+DAYNOTE[todayIdx].replace(/^[^\s]+\s/,"");
+nactiMoje();
 renderAll();
 showTab("dnes");
 renderNastaveni();
