@@ -447,11 +447,24 @@
     align-items:flex-start;
   }
   h1{font-size:25px;letter-spacing:-.6px;line-height:1.15}
-  header.top .sub{margin-left:53px}
-  @media(max-width:430px){ header.top .sub{margin-left:0} }
+  header.top .sub#todayLine{margin-left:53px}
+  @media(max-width:430px){ header.top .sub#todayLine{margin-left:0} }
   header.top .sub{font-size:12.5px;margin-top:4px}
   header.top .sub#todayLine{margin-top:1px}
-  header.top .sub#mottoLine{color:var(--s2);font-weight:600;font-style:italic}
+  .nextup{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font:inherit;
+          background:var(--accent-soft);border:1px solid var(--border);border-radius:12px;
+          padding:9px 12px;margin:11px 0 0;cursor:pointer;
+          transition:background .15s ease,border-color .15s ease}
+  .nextup:hover{border-color:var(--s1)}
+  .nextup .ic{font-size:17px;flex:none;line-height:1}
+  .nextup .tx{flex:1;min-width:0;font-size:13.5px;font-weight:600;color:var(--text-primary);
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .nextup .kdy{font-size:12px;color:var(--text-secondary);white-space:nowrap;
+               font-variant-numeric:tabular-nums;flex:none;background:var(--surface-1);
+               border:1px solid var(--border);border-radius:999px;padding:3px 9px}
+  .nextup.bezi{border-color:var(--s3);background:color-mix(in srgb, var(--s3) 11%, transparent)}
+  .nextup.hotovo{border-color:var(--s3)}
+  @media(max-width:430px){ .nextup .tx{font-size:13px} }
   header.top{display:block;position:relative;overflow:hidden}
   header.top::before, header.top::after{
     content:"";position:absolute;border-radius:50%;pointer-events:none;filter:blur(34px);opacity:.5;
@@ -586,8 +599,8 @@
       <button class="ghost" id="themeBtn" type="button">Tmavý</button>
     </div>
   </div>
-  <p class="sub" id="mottoLine"></p>
   <p class="sub" id="todayLine"></p>
+  <button class="nextup" id="nextUp" type="button"></button>
 </header>
 
 <div class="sess" id="sessOverlay" hidden></div>
@@ -2428,6 +2441,63 @@ function rekordy(who){
    +'</tbody></table></div>';
 }
 
+/* ============ Co je na řadě (hlavička) ============ */
+function minutyZ(hhmm){ const p = String(hhmm).split(":"); return (+p[0])*60 + (+p[1]); }
+function zaText(m){
+ if (m <= 0) return "teď";
+ if (m < 60) return "za "+m+" min";
+ const h = Math.floor(m/60), z = m%60;
+ return "za "+h+" h"+(z ? " "+z+"′" : "");
+}
+function nextUp(){
+ const me = store.get("meId", null);
+ if (!me || !BASE_T[me])
+  return { ic:"🔗", tx:"Řekni appce, kdo jsi, a propoj telefony", kdy:"nastavit", tab:"zpravy" };
+
+ if (state.sess && state.sess.who === me){
+  const t = sessSoucty();
+  return { ic:"▶︎", tx:"Trénink běží — "+t.hot+"/"+t.cel+" sérií", kdy:t.min+" min", tab:"trenink", cls:"bezi" };
+ }
+
+ const ted = new Date(), nyni = ted.getHours()*60 + ted.getMinutes();
+ const dow = todayIdx + 1;
+ const iso = dateOfWeekday(todayIdx);
+ let best = null;
+
+ (TRENINKY[me] || []).forEach(t => {
+  if (t[0] !== dow) return;
+  const m = minutyZ(t[1]);
+  if (m + 120 < nyni) return;
+  const co = me === "p" ? QUEUE[state.queue] : V_QUEUE[state.fb % V_QUEUE.length];
+  if (!best || m < best.m) best = { m:m, ic:"🏋️", tx:"Trénink "+t[1]+" — "+co, tab:"trenink" };
+ });
+
+ planFor(me, todayIdx).forEach(j => {
+  if (state.checks[iso+"|"+me+"|"+j.slot]) return;
+  const m = minutyZ(j.time);
+  if (m + 150 < nyni) return;
+  if (!best || m < best.m) best = { m:m, ic:"🍽️", tx:j.time+" · "+j.name, tab:"dnes" };
+ });
+
+ if (best) return { ic:best.ic, tx:best.tx, kdy:zaText(best.m - nyni), tab:best.tab };
+
+ const t = target(me), tot = dayTotals(me, iso);
+ if (tot.k >= t.kcal && tot.p >= t.prot)
+  return { ic:"✅", tx:"Dnešek splněný — "+fmt(tot.k)+" kcal a "+tot.p+" g bílkovin", kdy:"paráda", tab:"progres", cls:"hotovo" };
+ if (tot.k >= t.kcal)
+  return { ic:"🥚", tx:"Kalorie máš, chybí "+Math.max(0, t.prot-tot.p)+" g bílkovin", kdy:"dojeď to", tab:"dnes" };
+ return { ic:"🌙", tx:"Do cíle zbývá "+fmt(Math.max(0, t.kcal-tot.k))+" kcal", kdy:"ještě je čas", tab:"dnes" };
+}
+function renderNext(){
+ const el = document.getElementById("nextUp");
+ if (!el) return;
+ const n = nextUp();
+ el.className = "nextup" + (n.cls ? " "+n.cls : "");
+ el.dataset.goto = n.tab;
+ el.innerHTML = '<span class="ic">'+n.ic+'</span><span class="tx">'+esc(n.tx)+'</span>'
+   +'<span class="kdy">'+esc(n.kdy)+'</span>';
+}
+
 /* ============ Trénink — živá jednotka ============ */
 function plannedSets(popis){
  const t = repTarget(popis);
@@ -3364,6 +3434,7 @@ function reakceCard(){
 }
 
 function renderNastaveni(){
+  renderNext();
   const pill = document.getElementById("syncPill");
   if (pill){
     const lab = syncLabel();
@@ -3640,7 +3711,7 @@ function renderCile(){
 }
 
 /* ============ wiring ============ */
-function renderAll(){ kontrolaOdznaku(); buildMsgs(); renderDnes(); renderTyden(); renderRecepty(); renderNakup(); renderTrenink(); renderProgres(); renderZpravy(); renderCile(); syncDot(); }
+function renderAll(){ kontrolaOdznaku(); renderNext(); buildMsgs(); renderDnes(); renderTyden(); renderRecepty(); renderNakup(); renderTrenink(); renderProgres(); renderZpravy(); renderCile(); syncDot(); }
 const TABS = ["dnes","tyden","recepty","nakup","trenink","progres","zpravy","cile"];
 const GROUPS = {
  dnes:    { tabs:[["dnes","Dnes"]] },
@@ -3665,6 +3736,7 @@ function showTab(t){
   store.set("msgs", msgs);
  }
  if (RENDER[t]) RENDER[t]();          // vždy čerstvá data
+ renderNext();
  const g = GRP_OF[t] || "dnes";
  lastSub[g] = t;
  document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected", String(b.dataset.grp===g)));
@@ -3760,6 +3832,8 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
+ const gt = e.target.closest("[data-goto]");
+ if (gt){ showTab(gt.dataset.goto); return; }
  const gb = e.target.closest("nav.tabs button");
  if (gb){ const g = gb.dataset.grp; showTab(lastSub[g] || GROUPS[g].tabs[0][0]); return; }
  const sb = e.target.closest("#subnav button");
@@ -4212,16 +4286,7 @@ document.addEventListener("keydown", e=>{
  sync();
 })();
 
-const MOTTA = [
- "Rodinný masokombinát na svaly 🥩",
- "Kdo nejí, ten neroste. Kdo neroste, ten vaří 🍳",
- "Vejce jsou nová měna 🥚",
- "Šlichta zakázána, rotace povinná 🎲",
- "Dvě váhy, jedna kuchyň, nula výmluv 💪",
- "Neděle rozhoduje o celém týdnu 🛒",
- "Nejsilnější domácnost v ulici 🏆"
-];
-document.getElementById("mottoLine").textContent = MOTTA[todayIdx];
+setInterval(()=>{ renderNext(); }, 60000);
 document.getElementById("todayLine").textContent = "Dnes je "+DAYFULL[todayIdx]+" · "+DAYNOTE[todayIdx].replace(/^[^\s]+\s/,"");
 nactiMoje();
 renderAll();
