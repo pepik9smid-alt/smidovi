@@ -1476,6 +1476,7 @@ const state = {
  pantry: store.get("pantry", []),
  cyklus: store.get("cyklus", null),
  shopX: store.get("shopX", []),
+ rem: store.get("rem", null),
  recOpen: false,
  fotoP: store.get("fotoP", []),
  fotoV: store.get("fotoV", [])
@@ -2103,11 +2104,92 @@ function prepCard(){
   }).join("")+'</ul></div>';
 }
 
-/* ============ Export do kalendáře (.ics) ============ */
-function icsDate(d, hhmm){
+/* ============ Připomínky do kalendáře (.ics) ============ */
+/* Každá připomínka je krátká událost s upozorněním v čase začátku.
+   TRANSP:TRANSPARENT = v kalendáři nebliká jako "mám obsazeno".          */
+
+const TRENINKY = {
+ p: [[1,"07:30",60,"🏋️ Trénink — další ve frontě (A/B/C/D)"],
+     [2,"18:00",75,"🏋️ Trénink spolu (s Radkem)"],
+     [4,"18:00",75,"🏋️ Trénink spolu"],
+     [6,"09:00",75,"🏋️ Trénink"]],
+ v: [[1,"18:00",55,"🏋️ Trénink — FB1 / FB2 / FB4"],
+     [2,"18:00",55,"🏋️ Trénink spolu"],
+     [4,"18:00",55,"🏋️ Trénink spolu"]]
+};
+
+const PRIPOMINKY = [
+ { id:"supl", ic:"💊", n:"Kreatin a vitamíny", pop:"Každé ráno v 8:00",
+   det:"Nejčastěji zapomenutá věc z celého plánu — a nejjednodušší.", def:true,
+   ev:(who)=>[{ freq:"DAILY", cas:"08:00", min:5,
+     nazev:"💊 Kreatin 5 g + vitamin D3 + omega-3",
+     popis:"Kreatin funguje jen když ho bereš KAŽDÝ den, i ve dnech volna. Zapij pořádně vodou." }] },
+
+ { id:"trenink", ic:"🏋️", n:"Tréninky", pop:"Podle vašeho rozvrhu, upozornění 45 minut předem",
+   det:"Pepule Po ráno, Út, Čt a So. Verune Po, Út a Čt večer.", def:true,
+   ev:(who)=>TRENINKY[who].map(t=>({ freq:"WEEKLY", dow:t[0], cas:t[1], min:t[2], alarm:45,
+     nazev:t[3], popis:"Appka ti v Tréninku poradí, co dneska — a když nemáš čas, vybere kratší variantu." })) },
+
+ { id:"zapis", ic:"📝", n:"Zapiš trénink do deníku", pop:"V tréninkové dny večer ve 21:00",
+   det:"Bez zápisu appka neví, kdy ti má říct, že máš přidat na váze.", def:true,
+   ev:(who)=>TRENINKY[who].map(t=>({ freq:"WEEKLY", dow:t[0], cas:"21:00", min:5,
+     nazev:"📝 Byl jsi cvičit? Zapiš to",
+     popis:"Otevři Trénink, rozklikni cviky a zapiš kg × opakování. Trvá to minutu a je to celý smysl deníku." })) },
+
+ { id:"vecer", ic:"🌙", n:"Večerní kontrola jídla", pop:"Každý večer ve 21:00",
+   det:"Dojedl jsi dnešní kalorie? Když ne, ještě je čas.", def:true,
+   ev:(who)=>[{ freq:"DAILY", cas:"21:00", min:5,
+     nazev:"🌙 Dojedl(a) jsi dnešek?",
+     popis:"Mrkni do Dnes na kruh. Když chybí, appka pod kartou napoví, čím to nejrychleji dojet." }] },
+
+ { id:"vazeni", ic:"⚖️", n:"Nedělní vážení", pop:"Neděle v 8:00",
+   det:"Nalačno, po WC, oba. Bez toho appka nepozná, jestli to funguje.", def:true,
+   ev:(who)=>[{ freq:"WEEKLY", dow:7, cas:"08:00", min:10,
+     nazev:"⚖️ Nedělní vážení",
+     popis:"Zapiš do Progresu. Doporučení kalorií se přepočítá samo." }] },
+
+ { id:"nakup", ic:"🛒", n:"Nákup a nedělní příprava", pop:"Neděle v 17:00, upozornění hodinu předem",
+   det:"Nejdůležitější dvě hodiny týdne. V Nákupu je seznam v pořadí, jak to dělat.", def:true,
+   ev:(who)=>[{ freq:"WEEKLY", dow:7, cas:"17:00", min:120, alarm:60,
+     nazev:"🛒 Nákup + 10 vajec + autobagy",
+     popis:"Kdo vyhraje neděli, vyhraje týden." }] },
+
+ { id:"jidla", ic:"🍽️", n:"Časy jídel", pop:"Pětkrát denně",
+   det:"Hodně upozornění — zapni si to jen na první měsíc, než si tělo zvykne na režim.", def:false,
+   ev:(who)=>(who === "p"
+     ? [["07:00","Shake — první půlka"],["09:00","Shake — druhá půlka"],["11:00","Autobag"],["13:30","Oběd"],["19:30","Večeře"]]
+     : [["07:00","Snídaně"],["10:30","Svačina"],["13:00","Oběd"],["16:30","Svačina"],["19:30","Večeře"]]
+     ).map(j=>({ freq:"DAILY", cas:j[0], min:20, alarm:10,
+        nazev:"🍽️ "+j[1], popis:"Nečekat na hlad — jí se podle hodin." })) },
+
+ { id:"voda", ic:"💧", n:"Pitný režim", pop:"Třikrát denně",
+   det:"S kreatinem to není detail. Cíl: Pepule 3 l, Verune 2,2 l.", def:false,
+   ev:(who)=>["10:00","14:00","18:00"].map(c=>({ freq:"DAILY", cas:c, min:5,
+     nazev:"💧 Napij se", popis:"Dvě sklenice teď a odškrtni si to v Dnes." })) },
+
+ { id:"foto", ic:"📸", n:"Měsíční kontrola", pop:"Prvního v měsíci v 9:00",
+   det:"Fotky, míry a pohled zpět. Za půl roku to bude ta nejlepší odměna.", def:true,
+   ev:(who)=>[{ freq:"MONTHLY", den:1, cas:"09:00", min:15,
+     nazev:"📸 Měsíční kontrola — fotky a míry",
+     popis:"Stejné světlo, stejné místo. Zapiš do Progresu." }] }
+];
+
+function remSel(){
+ const ulozeno = state.rem;
+ if (ulozeno && typeof ulozeno === "object") return ulozeno;
+ const d = {};
+ PRIPOMINKY.forEach(p => d[p.id] = p.def);
+ return d;
+}
+function dvoj(n){ return String(n).padStart(2,"0"); }
+function icsStamp(d, hhmm){
  const p = hhmm.split(":");
- return d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0")
-  +"T"+String(+p[0]).padStart(2,"0")+String(+p[1]).padStart(2,"0")+"00";
+ return d.getFullYear()+dvoj(d.getMonth()+1)+dvoj(d.getDate())+"T"+dvoj(+p[0])+dvoj(+p[1])+"00";
+}
+function plusMin(hhmm, min){
+ const p = hhmm.split(":");
+ const t = (+p[0])*60 + (+p[1]) + min;
+ return dvoj(Math.floor(t/60) % 24)+":"+dvoj(t % 60);
 }
 function nextDow(dow){            // 1 = pondělí … 7 = neděle
  const d = new Date();
@@ -2115,53 +2197,84 @@ function nextDow(dow){            // 1 = pondělí … 7 = neděle
  d.setDate(d.getDate() + ((dow - cur + 7) % 7));
  return d;
 }
-const ICS_TR = [
- [1,"07:30",60,"🏋️ Pepule — trénink A/B/C/D","MO"],
- [2,"18:00",75,"🏋️ Trénink spolu (Pepule s Radkem)","TU"],
- [4,"18:00",75,"🏋️ Trénink spolu","TH"],
- [6,"09:00",75,"🏋️ Pepule — trénink","SA"],
- [7,"17:00",90,"🛒 Nákup + nedělní příprava","SU"]
-];
-const ICS_JIDLO = {
- p: [["07:00","Shake — první půlka"],["09:00","Shake — druhá půlka"],["11:00","Autobag"],["13:30","Oběd"],["19:30","Večeře"]],
- v: [["07:00","Snídaně"],["10:30","Svačina"],["13:00","Oběd"],["16:30","Svačina"],["19:30","Večeře"]]
-};
-function icsText(kind, who){
- const L = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//PEVE FIT//CS","CALSCALE:GREGORIAN"];
- ICS_TR.forEach((t,i)=>{
-  const d = nextDow(t[0]);
-  const start = { iso: icsDate(d, t[1]) };
-  const konecH = String(Math.floor((parseInt(t[1])*60 + parseInt(t[1].split(":")[1]) + t[2])/60)%24).padStart(2,"0");
-  const konecM = String((parseInt(t[1].split(":")[1]) + t[2]) % 60).padStart(2,"0");
-  L.push("BEGIN:VEVENT","UID:tr"+i+"@pevefit","DTSTART:"+start.iso,
-   "DTEND:"+icsDate(d, konecH+":"+konecM),
-   "RRULE:FREQ=WEEKLY;BYDAY="+t[4],"SUMMARY:"+t[3],"DESCRIPTION:Z appky PEVE FIT 💪",
-   "BEGIN:VALARM","TRIGGER:-PT45M","ACTION:DISPLAY","DESCRIPTION:"+t[3],"END:VALARM","END:VEVENT");
- });
- if (kind === "vse"){
-  const jmeno = BASE_T[who] ? BASE_T[who].name : "";
-  (ICS_JIDLO[who] || ICS_JIDLO.v).forEach((j,i)=>{
-   const d = new Date();
-   const p = j[0].split(":");
-   const konecM = (+p[1] + 20) % 60, konecH = (+p[0] + ((+p[1] + 20) >= 60 ? 1 : 0));
-   L.push("BEGIN:VEVENT","UID:j"+who+i+"@pevefit","DTSTART:"+icsDate(d, j[0]),
-    "DTEND:"+icsDate(d, konecH+":"+konecM),
-    "RRULE:FREQ=DAILY","SUMMARY:🍽️ "+jmeno+" — "+j[1],"DESCRIPTION:Z appky PEVE FIT 💪",
-    "BEGIN:VALARM","TRIGGER:-PT10M","ACTION:DISPLAY","DESCRIPTION:"+j[1],"END:VALARM","END:VEVENT");
-  });
- }
- L.push("END:VCALENDAR");
- return L.join("\r\n");
+function prvniPristiho(){
+ const d = new Date();
+ return new Date(d.getFullYear(), d.getMonth() + (d.getDate() > 1 ? 1 : 0), 1);
 }
-function stahniIcs(kind){
- const who = store.get("meId", null) || "v";
- const txt = icsText(kind, who);
- const blob = new Blob([txt], { type: "text/calendar;charset=utf-8" });
+const DOW_ICS = ["","MO","TU","WE","TH","FR","SA","SU"];
+
+function icsText(who){
+ const sel = remSel();
+ const L = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//PEVE FIT//CS","CALSCALE:GREGORIAN",
+            "METHOD:PUBLISH","X-WR-CALNAME:PEVE FIT — připomínky"];
+ let n = 0;
+ PRIPOMINKY.filter(p => sel[p.id]).forEach(p => {
+  p.ev(who).forEach(e => {
+   const zac = e.freq === "WEEKLY" ? nextDow(e.dow) : (e.freq === "MONTHLY" ? prvniPristiho() : new Date());
+   const rrule = e.freq === "WEEKLY" ? "FREQ=WEEKLY;BYDAY="+DOW_ICS[e.dow]
+               : (e.freq === "MONTHLY" ? "FREQ=MONTHLY;BYMONTHDAY="+e.den : "FREQ=DAILY");
+   const alarm = e.alarm || 0;
+   L.push("BEGIN:VEVENT",
+     "UID:pf"+(n++)+"-"+p.id+"@pevefit",
+     "DTSTART:"+icsStamp(zac, e.cas),
+     "DTEND:"+icsStamp(zac, plusMin(e.cas, e.min || 10)),
+     "RRULE:"+rrule,
+     "SUMMARY:"+e.nazev,
+     "DESCRIPTION:"+e.popis+" — z appky PEVE FIT",
+     "TRANSP:TRANSPARENT",
+     "BEGIN:VALARM","TRIGGER:-PT"+alarm+"M","ACTION:DISPLAY","DESCRIPTION:"+e.nazev,"END:VALARM",
+     "END:VEVENT");
+  });
+ });
+ L.push("END:VCALENDAR");
+ return { text: L.join("\r\n"), pocet: n };
+}
+
+function pocetUdalosti(who){
+ const sel = remSel();
+ let n = 0;
+ PRIPOMINKY.filter(p => sel[p.id]).forEach(p => n += p.ev(who).length);
+ return n;
+}
+
+function stahniIcs(){
+ const who = store.get("meId", null) || "p";
+ const out = icsText(who);
+ if (!out.pocet) return;
+ const blob = new Blob([out.text], { type: "text/calendar;charset=utf-8" });
  const a = document.createElement("a");
  a.href = URL.createObjectURL(blob);
- a.download = kind === "vse" ? "peve-fit-treninky-a-jidla.ics" : "peve-fit-treninky.ics";
+ a.download = "peve-fit-pripominky.ics";
  document.body.appendChild(a); a.click();
  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+
+function remCard(){
+ const who = store.get("meId", null) || "p";
+ const sel = remSel();
+ const kolik = pocetUdalosti(who);
+ return '<div class="card"><h3>🔔 Připomínky do telefonu</h3>'
+  +'<p class="who">Tohle je ta věc, co ti cinkne <b>i na zamčeném telefonu</b> — appku k tomu nemusíš mít otevřenou. '
+  +'Vyber si, na co tě má upozorňovat, stáhni soubor a otevři ho v telefonu. Nasype se to do kalendáře '
+  +'jako opakující se připomínky.</p>'
+  +'<div style="margin:12px 0 4px">'
+  + PRIPOMINKY.map(p=>{
+     const on = !!sel[p.id];
+     return '<label class="mine" style="align-items:flex-start;gap:11px;cursor:pointer;border-bottom:1px solid var(--grid)">'
+      +'<input type="checkbox" data-rem="'+p.id+'"'+(on?" checked":"")+' style="width:21px;height:21px;margin:2px 0 0;accent-color:var(--s3);flex:none">'
+      +'<span style="flex:1"><span style="font-weight:600">'+p.ic+' '+esc(p.n)+'</span>'
+      +'<br><span class="dim" style="font-size:12.5px">'+esc(p.pop)+'</span>'
+      +'<br><span style="font-size:12.5px;color:var(--text-secondary)">'+esc(p.det)+'</span></span></label>';
+   }).join("")
+  +'</div>'
+  +'<div class="wrow" style="margin-top:12px"><button class="act small" id="icsGet" type="button">Stáhnout připomínky</button>'
+  +'<span class="dim" style="font-size:12.5px">'+kolik+' '+(kolik===1?"připomínka":(kolik<5?"připomínky":"připomínek"))+' · '
+  +'nastaveno pro <b>'+esc((BASE_T[who]||{name:"Pepule"}).name)+'</b></span></div>'
+  +'<div class="note"><b>Jak to otevřít:</b> soubor se stáhne do telefonu, ťukneš na něj a telefon se zeptá, '
+  +'do kterého kalendáře to přidat. Doporučuju založit si na to <b>vlastní kalendář „PEVE FIT"</b> — pak jde jedním '
+  +'přepínačem všechno vypnout, kdyby toho bylo moc. Události jsou označené jako „volno", '
+  +'takže ti v kalendáři nebudou dělat obsazeno.</div>'
+  +'<div class="hint">Když si to rozmyslíš, stačí odškrtnout a stáhnout znovu — nové připomínky ty staré přepíšou.</div></div>';
 }
 
 /* ============ Trénink — deník ============ */
@@ -3274,13 +3387,7 @@ function renderCile(){
   +'<div class="card"><h3>👋 Průvodce nastavením</h3>'
   +'<p class="who">Když appku dostane do ruky někdo nový — nebo si chceš znovu projít, co kde je.</p>'
   +'<button class="act small" id="onbBtn" type="button">Spustit průvodce</button></div>'
-  +'<div class="card"><h3>📅 Připomínky do telefonu</h3>'
-  +'<p class="who">Stáhne soubor, který si otevřeš v telefonu a on ti tréninky (a případně i jídla) nasype do kalendáře '
-  +'jako opakující se události s upozorněním. Funguje v iPhonu i v Androidu a appku k tomu nepotřebuješ mít otevřenou.</p>'
-  +'<div class="wrow"><button class="act small" id="icsTr" type="button">Jen tréninky a nedělní nákup</button>'
-  +'<button class="ghost" id="icsVse" type="button">Tréninky + časy jídel</button></div>'
-  +'<div class="hint">Tréninky jsou čtyři týdně plus neděle na nákup. Jídla jsou pětkrát denně — to je hodně upozornění, '
-  +'takže si to zapni jen na první měsíc, než si tělo zvykne na režim.</div></div>'
+  + remCard()
   +'<div class="card"><h3>Přenos dat na jiný telefon</h3>'
   +'<p class="who">Odškrtnutí, váhy, míry, tréninkový deník i fotky jsou uložené jen v tomhle telefonu. Když měníš mobil, vyexportuj je sem a v novém vlož zpátky. Pozor, fotky zálohu hodně nafouknou.</p>'
   +'<div class="wrow"><button class="act small" id="expBtn" type="button">Zkopírovat moje data</button>'
@@ -3381,6 +3488,10 @@ document.addEventListener("change", e=>{
    if (window.sync && sync.on) sync.pushWeek();
    renderDnes(); renderTyden(); renderNakup(); }
  else if (t.dataset.exsel !== undefined){ state.exsel[t.dataset.exsel] = t.value; store.set("exsel", state.exsel); renderTrenink(); }
+ else if (t.dataset.rem !== undefined){
+   const sel = remSel(); sel[t.dataset.rem] = t.checked;
+   state.rem = sel; store.set("rem", sel); renderCile();
+ }
  else if (t.id === "daySel"){ state.day = +t.value; renderDnes(); }
  else if (t.dataset.foto !== undefined && t.files && t.files[0]){
    const who = t.dataset.foto, f = t.files[0];
@@ -3688,11 +3799,10 @@ document.addEventListener("click", e=>{
  }
  if (e.target.id === "checkinBtn"){ state.lastCheckin = new Date().toISOString().slice(0,10); store.set("lastCheckin", state.lastCheckin); renderProgres(); return; }
  if (e.target.id === "onbBtn"){ openOnb(); return; }
- if (e.target.id === "icsTr"){ stahniIcs("tr"); return; }
- if (e.target.id === "icsVse"){ stahniIcs("vse"); return; }
+ if (e.target.id === "icsGet"){ stahniIcs(); return; }
  if (e.target.id === "expBtn"){
   const keys = ["week","pick","checks","shop","queue","fb","exsel","wtP","wtV","mrP","mrV","lastCheckin",
-                "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX"];
+                "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem"];
   const dump = {};
   keys.forEach(k=>{ const v = store.get(k, null); if (v !== null) dump[k] = v; });
   const box = document.getElementById("dataBox");
