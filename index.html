@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="robots" content="noindex, nofollow">
-<title>Šmídovi — Pepule &amp; Verune</title>
+<title>PEVE FIT — Pepule &amp; Verune</title>
 <style>
   :root{
     color-scheme:light;
@@ -148,6 +148,8 @@
   .exname{flex:1;min-width:0}
   .exname .n{font-size:14px;font-weight:600}
   .exname .m{font-size:11.5px;color:var(--muted)}
+  .exname .en{opacity:.75}
+  #mottoLine{font-style:italic;color:var(--s2);font-size:12.5px;margin-top:2px}
   .exsets{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
   .exsets .s{font-size:13.5px;font-weight:600}
   .exsets .r{font-size:11.5px;color:var(--muted)}
@@ -187,7 +189,8 @@
 
 <header class="top">
   <div>
-    <h1>Šmídovi 🏠</h1>
+    <h1>PEVE FIT 💪</h1>
+    <p class="sub" id="mottoLine"></p>
     <p class="sub" id="todayLine"></p>
   </div>
   <button class="ghost" id="themeBtn" type="button">Tmavý</button>
@@ -279,7 +282,39 @@ const DINNERS = [
  { id:"tunapasta", name:"Zapečené těstoviny s tuňákem a vejci",
    v:{por:"1 porce",kcal:450,prot:34}, p:{por:"velká porce",kcal:820,prot:56},
    ing:[["Těstoviny",350,"g"],["Tuňák v kapsičce",3,"ks"],["Vejce",4,"ks"],["Sýr strouhaný",150,"g"],["Smetana",1,"ks"]],
-   steps:["Těstoviny uvař na skus.","Smíchej s tuňákem, zalij smetanou rozšlehanou s vejci.","Sýr navrch, 180 °C 25 min."] }
+   steps:["Těstoviny uvař na skus.","Smíchej s tuňákem, zalij smetanou rozšlehanou s vejci.","Sýr navrch, 180 °C 25 min."] },
+ { id:"spizy", name:"Kuřecí špízy s bulgurem a tzatziki",
+   v:{por:"150 g kuřete, 150 g bulguru",kcal:440,prot:36}, p:{por:"250 g kuřete, 300 g bulguru",kcal:790,prot:60},
+   ing:[["Kuřecí prsa",500,"g"],["Bulgur",250,"g"],["Bílý jogurt",400,"g"],["Okurka",1,"ks"],["Paprika",2,"ks"]],
+   steps:["Kuře na kostky, marinuj v oleji s paprikou a česnekem (klidně přes noc).","Napíchej na špejle střídavě s paprikou, gril nebo trouba 220 °C 18 min.","Tzatziki: jogurt + nastrouhaná okurka + česnek + sůl. Bulgur zalij vroucí vodou 1:2 na 12 min."] },
+ { id:"medailonky", name:"Vepřové medailonky se šťouchanými brambory",
+   v:{por:"150 g masa, 200 g brambor",kcal:430,prot:34}, p:{por:"250 g masa, 350 g brambor + máslo",kcal:800,prot:56},
+   ing:[["Vepřová panenka",500,"g"],["Brambory",1.2,"kg"],["Cibule",2,"ks"],["Máslo",1,"ks"]],
+   steps:["Brambory uvař ve slupce, oloupej a rozšťouchej s máslem a osmaženou cibulkou.","Panenku nakrájej na medailonky 3 cm, osol, opeč 3 min z každé strany.","Nech 3 min odpočinout, aby zůstala šťavnatá."] },
+ { id:"frittata", name:"Frittata s brambory, slaninou a sýrem",
+   v:{por:"třetina pánve",kcal:440,prot:28}, p:{por:"dvě třetiny + pečivo",kcal:800,prot:48},
+   ing:[["Vejce",10,"ks"],["Brambory",800,"g"],["Slanina",150,"g"],["Sýr strouhaný",100,"g"],["Cibule",1,"ks"]],
+   steps:["Brambory na kostky předvař 8 min, na pánvi opeč se slaninou a cibulí.","Zalij rozšlehanými vejci se solí a pepřem, 3 min na plotně.","Posyp sýrem a dopeč v troubě 180 °C 12 min. Studená je skvělá druhý den do práce."] },
+ { id:"carbonara", name:"Carbonara s vejci a slaninou",
+   v:{por:"100 g těstovin",kcal:450,prot:26}, p:{por:"200 g těstovin + slanina navíc",kcal:830,prot:45},
+   ing:[["Špagety",350,"g"],["Vejce",6,"ks"],["Slanina / pancetta",200,"g"],["Parmazán",100,"g"]],
+   steps:["Slaninu vyškvař dokřupava.","Žloutky rozšlehej s nastrouhaným parmazánem a pepřem.","Horké scezené špagety vmíchej ke slanině MIMO plotnu, přilij vaječnou směs a trochou vody z těstovin rozmíchej na krém. Na plotně by se vejce srazila."] },
+ { id:"cocka", name:"Čočka na kyselo s vejcem a klobásou",
+   v:{por:"porce + 1 vejce",kcal:430,prot:28}, p:{por:"velká porce + 2 vejce + klobása",kcal:790,prot:46},
+   ing:[["Čočka",400,"g"],["Vejce",6,"ks"],["Klobása",300,"g"],["Cibule",2,"ks"],["Ocet",1,"ks"]],
+   steps:["Čočku vař 25 min doměkka, zahusti jíškou z cibulky.","Dochuť octem, solí a majoránkou.","Navrch sázené vejce a opečená klobása. Levné, rychlé a nabité bílkovinou."] },
+ { id:"burger", name:"Domácí hovězí burger s batátovými hranolky",
+   v:{por:"1 burger, 150 g hranolek",kcal:450,prot:32}, p:{por:"2 burgery, 300 g hranolek",kcal:850,prot:55},
+   ing:[["Hovězí mleté",500,"g"],["Burger housky",6,"ks"],["Batáty",800,"g"],["Sýr plátkový",6,"ks"],["Salát a rajčata",1,"bal"]],
+   steps:["Batáty na hranolky, olej, sůl — 200 °C 25 min.","Z masa vytvaruj placky, osol až na pánvi, prudce 3 min z každé strany.","Na konci plátek sýra, přiklop, aby se rozpustil. Skládej housku, salát, maso, rajče."] },
+ { id:"treska", name:"Treska na másle s bramborem a fazolkami",
+   v:{por:"150 g ryby, 200 g brambor",kcal:420,prot:32}, p:{por:"250 g ryby, 350 g brambor",kcal:760,prot:52},
+   ing:[["Treska / tilapie",500,"g"],["Brambory",1.2,"kg"],["Fazolky mražené",1,"bal"],["Máslo",1,"ks"],["Citron",1,"ks"]],
+   steps:["Brambory uvař, fazolky spař 5 min.","Rybu osuš, osol, na másle 3 min z každé strany.","Zakápni citronem a přelij máslem z pánve."] },
+ { id:"kruti", name:"Krůtí nudličky s bramborovou kaší a špenátem",
+   v:{por:"150 g krůty, 200 g kaše",kcal:430,prot:38}, p:{por:"250 g krůty, 350 g kaše",kcal:780,prot:62},
+   ing:[["Krůtí prsa",500,"g"],["Brambory",1.2,"kg"],["Mléko",200,"ml"],["Špenát listový",1,"bal"],["Česnek",1,"ks"]],
+   steps:["Brambory uvař, rozšťouchej s mlékem a máslem.","Krůtu na nudličky prudce opeč, osol.","Špenát krátce prohoď s česnekem na oleji."] }
 ];
 
 const V_BREAKFAST = [
@@ -290,7 +325,13 @@ const V_BREAKFAST = [
  { name:"Tvarohové lívance + ovoce", kcal:490, prot:40 },
  { name:"Řecký jogurt + med + vlašské ořechy + jablko", kcal:440, prot:22 },
  { name:"Vejce do skla (2) + 2 krajíce chleba s máslem", kcal:430, prot:22 },
- { name:"Toast s vejcem, šunkou a sýrem (2 ks)", kcal:480, prot:30 }
+ { name:"Toast s vejcem, šunkou a sýrem (2 ks)", kcal:480, prot:30 },
+ { name:"Vaječné muffiny 3 ks (z lednice) + pečivo", kcal:430, prot:30 },
+ { name:"Šakšuka ze 2 vajec + pečivo", kcal:450, prot:24 },
+ { name:"Míchaná vejce s avokádem na toastu", kcal:480, prot:24 },
+ { name:"Palačinky ze 2 vajec a banánu + tvaroh", kcal:460, prot:32 },
+ { name:"Overnight oats s proteinem a ovocem", kcal:450, prot:31 },
+ { name:"Zbytek frittaty + rajče", kcal:440, prot:28 }
 ];
 const V_LUNCH = [
  { name:"Zbytek včerejší večeře", kcal:500, prot:35 },
@@ -300,7 +341,12 @@ const V_LUNCH = [
  { name:"Šakšuka ze 3 vajec + pečivo", kcal:520, prot:28 },
  { name:"Salát s kuřetem, vejcem a dresinkem", kcal:490, prot:44 },
  { name:"Těstovinový salát s tuňákem a vejcem", kcal:560, prot:40 },
- { name:"Bageta se šunkou, vejcem a sýrem", kcal:550, prot:32 }
+ { name:"Bageta se šunkou, vejcem a sýrem", kcal:550, prot:32 },
+ { name:"Vaječný salát s bramborem a jogurtem", kcal:520, prot:28 },
+ { name:"Kuřecí bowl s rýží, vejcem a zeleninou", kcal:590, prot:45 },
+ { name:"Toast s tuňákem, vejcem a sýrem (2 ks)", kcal:560, prot:38 },
+ { name:"Omeleta ze 4 vajec se šunkou + pečivo", kcal:570, prot:40 },
+ { name:"Zbytek carbonary / frittaty", kcal:530, prot:30 }
 ];
 const V_SNACK = [
  { name:"2 vejce natvrdo + jablko + ořechy", kcal:280, prot:16 },
@@ -311,7 +357,11 @@ const V_SNACK = [
  { name:"Hrst ořechů + banán", kcal:260, prot:6 },
  { name:"Proteinový nápoj", kcal:150, prot:25 },
  { name:"Plátek šunky + sýr + okurka", kcal:180, prot:18 },
- { name:"Kefír + banán", kcal:220, prot:10 }
+ { name:"Kefír + banán", kcal:220, prot:10 },
+ { name:"Vaječné muffiny 2 ks", kcal:200, prot:16 },
+ { name:"Skyr + lžíce arašídového másla", kcal:280, prot:22 },
+ { name:"Proteinová palačinka z vejce a tvarohu", kcal:230, prot:22 },
+ { name:"Vejce natvrdo + rajče + sůl", kcal:110, prot:9 }
 ];
 const P_BAG = [
  { name:"Ořechy 50 g + banán + proteinový nápoj", kcal:565, prot:37 },
@@ -322,7 +372,11 @@ const P_BAG = [
  { name:"Sendvič se šunkou, vejcem a sýrem", kcal:600, prot:32 },
  { name:"2 proteinové tyčinky + ořechy", kcal:625, prot:46 },
  { name:"Čoko mléko + sušené meruňky", kcal:590, prot:20 },
- { name:"2× řecký jogurt + granola + med", kcal:650, prot:35 }
+ { name:"2× řecký jogurt + granola + med", kcal:650, prot:35 },
+ { name:"Vaječné muffiny 4 ks + banán", kcal:520, prot:34 },
+ { name:"Bagel se šunkou, vejcem a sýrem + jogurt", kcal:700, prot:40 },
+ { name:"3 vejce natvrdo + skyr + granola", kcal:580, prot:45 },
+ { name:"Kus frittaty + rohlík + čoko mléko", kcal:660, prot:36 }
 ];
 const P_LUNCH = [
  { name:"Maso + rýže/brambory, velká porce", kcal:850, prot:60 },
@@ -332,7 +386,10 @@ const P_LUNCH = [
  { name:"Burrito bowl s kuřetem, rýží a fazolemi", kcal:900, prot:55 },
  { name:"Smažený sýr s hranolky (nouzovka)", kcal:950, prot:35 },
  { name:"Poctivá pizza + kuře/šunka navíc", kcal:950, prot:45 },
- { name:"Vývar + hovězí s rýží", kcal:850, prot:50 }
+ { name:"Vývar + hovězí s rýží", kcal:850, prot:50 },
+ { name:"Šakšuka ze 4 vajec + 2 pečiva", kcal:780, prot:40 },
+ { name:"Tatarák s topinkami", kcal:900, prot:60 },
+ { name:"Vepřo-knedlo-zelo", kcal:880, prot:45 }
 ];
 
 const EXTRA_RECIPES = [
@@ -353,7 +410,25 @@ const EXTRA_RECIPES = [
    steps:["Vločky povař v mléce 3 min.","Mimo plotnu vmíchej protein.","Navrch banán a skořice."] },
  { t:"Meal prep tortilly „na zítra“", k:"tip",
    ing:["Zbytky masa z večeře","Tortilly","Sýr"],
-   steps:["Zbytky zabal do tortilly se sýrem.","Ráno 3 min na pánvi — hotový oběd s sebou."] }
+   steps:["Zbytky zabal do tortilly se sýrem.","Ráno 3 min na pánvi — hotový oběd s sebou."] },
+ { t:"Vaječné muffiny do zásoby (12 ks)", k:"nedělní příprava · 70 kcal / 6 g B za kus",
+   ing:["Vejce 10 ks","Šunka nebo slanina 150 g","Sýr strouhaný 100 g","Paprika, cibule, špenát — co je doma","Sůl, pepř"],
+   steps:["Trouba na 180 °C, formu na muffiny vymaž olejem.","Vejce rozšlehej se solí, vmíchej nakrájenou šunku, sýr a zeleninu.","Rozlij do 12 formiček, peč 20 min.","V lednici vydrží 4 dny. Nejlepší svačina, jakou můžeš mít po ruce — studené i teplé."] },
+ { t:"Šakšuka pro dva", k:"15 minut · jedna pánev",
+   ing:["Vejce 4–6 ks","Rajčata krájená 2 konzervy","Paprika 2 ks","Cibule 2 ks","Feta 100 g","Kmín, mletá paprika, česnek"],
+   steps:["Cibuli a papriku osmahni doměkka, přidej česnek a koření.","Zalij rajčaty, 10 min povař, osol.","Udělej důlky, vklepni vejce, přiklop na 6–8 min — žloutek má zůstat tekutý.","Feta navrch, vytírej pečivem. Verune 2 vejce, Pepule 4."] },
+ { t:"Proteinové palačinky", k:"rychlá snídaně i svačina",
+   ing:["Vejce 2 ks","Tvaroh 150 g","Ovesná mouka 40 g","Prášek do pečiva špetka","Ovoce na ozdobu"],
+   steps:["Vše rozmixuj.","Peč na středním plameni po 2 minutách z každé strany.","Podávej s ovocem, medem nebo lžící skyru."] },
+ { t:"Tzatziki", k:"ke špízům a masu",
+   ing:["Bílý jogurt 400 g","Okurka 1 ks","Česnek 2 stroužky","Olivový olej, sůl"],
+   steps:["Okurku nastrouhej a rukou vymačkej vodu — jinak bude řídké.","Smíchej s jogurtem, prolisovaným česnekem a solí.","Nech 30 min v lednici odležet."] },
+ { t:"Overnight oats (večer 2 minuty)", k:"450 kcal · 31 g B",
+   ing:["Vločky 60 g","Mléko 200 ml","Skyr 100 g","Protein 1/2 odměrky","Ovoce, ořechy"],
+   steps:["Vše smíchej ve sklenici, zavři, do lednice.","Ráno jen vyndáš a jíš — nula práce ve spěchu.","Vydrží 2 dny, takže si připrav rovnou dvě."] },
+ { t:"Šťouchané brambory s cibulkou", k:"příloha, která zachrání každé maso",
+   ing:["Brambory 1,2 kg","Cibule 2 ks","Máslo 40 g","Slanina (volitelně) 100 g"],
+   steps:["Brambory uvař ve slupce, oloupej.","Cibulku (a slaninu) osmahni na másle dozlatova.","Brambory hrubě rozšťouchej vidličkou, vmíchej cibulku, osol, opepři."] }
 ];
 
 /* ============ data: training ============ */
@@ -381,53 +456,53 @@ const ICO = {
 };
 
 const EX = {
- bench:      {n:"Bench Press (Barbell)", m:"Prsa", i:"bench", t:"Lopatky stáhnout dozadu a dolů, nohy pevně do země. Tyč dolů pod kontrolou."},
- dbbench:    {n:"Bench Press (Dumbbell)", m:"Prsa", i:"bench", t:"Větší dráha než s tyčí — dole protáhni, nahoře činky k sobě."},
- chestpressm:{n:"Chest Press (Machine)", m:"Prsa", i:"machine", t:"Madla ve výšce hrudníku, lopatky opřené."},
- pushup:     {n:"Push Up", m:"Prsa", i:"pushup", t:"Tělo v přímce. Moc těžké? Opři ruce o lavici — pořád se počítá."},
- pecdeck:    {n:"Chest Fly (Machine)", m:"Prsa", i:"fly", t:"Mírně pokrčené lokty, vpředu vteřinu stiskni."},
- inclinedb:  {n:"Incline Bench Press (Dumbbell)", m:"Horní prsa", i:"incline", t:"Lavice 30°. Jednoručky k vnějšku hrudníku, lokty ~45° od těla."},
- cablefly:   {n:"Cable Fly Crossovers", m:"Prsa", i:"fly", t:"Ruce se potkají před hrudníkem, lokty pořád mírně pokrčené."},
- dip:        {n:"Chest Dip", m:"Prsa + triceps", i:"dip", t:"Mírný předklon = víc prsa. Dolů po ramena, ne níž."},
- pullup:     {n:"Pull Up", m:"Záda", i:"pull", t:"Hrudník k tyči. Nejde 8 opakování? Guma nebo stroj s dopomocí."},
- assistpull: {n:"Pull Up (Assisted)", m:"Záda", i:"pull", t:"Nastav dopomoc tak, abys dal(a) 8–10 čistých opakování."},
- latpd:      {n:"Lat Pulldown (Cable)", m:"Záda", i:"pull", t:"Hrudník ven, tyč ke klíčním kostem, lokty k žebrům."},
- cablerow:   {n:"Seated Cable Row – Bar Grip", m:"Záda", i:"row", t:"Lokty dozadu k pasu, hrudník ven, trup se nehoupá."},
- bentrow:    {n:"Bent Over Row (Barbell)", m:"Záda", i:"row", t:"Předklon ~45°, tyč k pupku, záda celou dobu rovná."},
- csrow:      {n:"Chest Supported Incline Row (Dumbbell)", m:"Záda", i:"incline", t:"Hrudník o lavici — trup nepomáhá, tahají jen záda."},
- ohp:        {n:"Overhead Press (Barbell)", m:"Ramena", i:"ohp", t:"Zpevni zadek a břicho, tyč do propnutí. Neprohýbat bedra."},
- shpressdb:  {n:"Shoulder Press (Dumbbell)", m:"Ramena", i:"ohp", t:"Vsedě s opěrkou, činky mírně před hlavu."},
- latraise:   {n:"Lateral Raise (Dumbbell)", m:"Ramena", i:"raise", t:"Do výšky ramen, malá váha, čistě."},
- cablelat:   {n:"Lateral Raise (Cable)", m:"Ramena", i:"raise", t:"Kladka drží napětí celou dráhu — skvělá varianta."},
- facepull:   {n:"Face Pull", m:"Zadní ramena", i:"facepull", t:"Lano k obličeji, na konci vytoč pěsti vzhůru."},
- shrugdb:    {n:"Shrug (Dumbbell)", m:"Trapézy", i:"shrug", t:"Ramena přímo nahoru, vteřinu podrž. Nekroužit."},
- curlbb:     {n:"Bicep Curl (Barbell)", m:"Biceps", i:"curl", t:"Lokty u těla, dolů pomalu na 2 s."},
- curldb:     {n:"Bicep Curl (Dumbbell)", m:"Biceps", i:"curl", t:"Bez švihu — když musíš houpat, uber."},
- hammer:     {n:"Hammer Curl (Dumbbell)", m:"Biceps + předloktí", i:"curl", t:"Dlaně k sobě celou dráhu."},
- tripush:    {n:"Triceps Pushdown", m:"Triceps", i:"tri", t:"Lokty přilepené u těla, propni úplně."},
- ohtri:      {n:"Overhead Triceps Extension (Cable)", m:"Triceps", i:"tri", t:"Lokty u hlavy, dole protáhni, nahoře propni."},
- squat:      {n:"Squat (Barbell)", m:"Kvadricepsy", i:"squat", t:"Kolena ve směru špiček, hloubka kam pustí rovná záda."},
- hacksquat:  {n:"Hack Squat (Machine)", m:"Kvadricepsy", i:"machine", t:"Záda celou plochou na opěrce, dolů pomalu."},
- goblet:     {n:"Goblet Squat (Dumbbell)", m:"Kvadricepsy + hýždě", i:"squat", t:"Činka u hrudníku jako pohár, lokty mezi kolena. Nejlepší dřep na učení."},
- sumodb:     {n:"Sumo Squat (Dumbbell)", m:"Hýždě + vnitřní stehna", i:"squat", t:"Široký postoj, špičky ven, činka visí mezi nohama."},
- legpress:   {n:"Leg Press (Machine)", m:"Kvadricepsy", i:"machine", t:"Chodidla na šířku boků, kolena nepropínat nadoraz."},
- legext:     {n:"Leg Extension (Machine)", m:"Kvadricepsy", i:"machine", t:"Nahoře vteřinu podrž, pomalu dolů."},
- rdl:        {n:"Romanian Deadlift (Barbell)", m:"Hamstringy", i:"hinge", t:"Boky dozadu, tyč po stehnech, záda rovná."},
- rdldb:      {n:"Romanian Deadlift (Dumbbell)", m:"Hamstringy + hýždě", i:"hinge", t:"Boky dozadu, činky po stehnech dolů."},
- deadlift:   {n:"Deadlift (Barbell)", m:"Celé tělo", i:"hinge", t:"Tyč u holení, zpevnit, tlač zemi od sebe. Technika > váha."},
- lyingcurl:  {n:"Lying Leg Curl (Machine)", m:"Hamstringy", i:"machine", t:"Boky tlač do lavice, nezvedat zadek."},
- seatcurl:   {n:"Seated Leg Curl (Machine)", m:"Hamstringy", i:"machine", t:"Plný rozsah, dole vteřinu podrž."},
- bulg:       {n:"Bulgarian Split Squat", m:"Hýždě + kvadricepsy", i:"lunge", t:"Zadní noha na lavici, koleno ve směru špičky. Peklo, ale funguje."},
- lungedb:    {n:"Lunge (Dumbbell)", m:"Hýždě + kvadricepsy", i:"lunge", t:"Dlouhý krok, koleno zlehka k zemi, trup vzpřímený."},
- hipthrust:  {n:"Hip Thrust (Barbell)", m:"Hýždě", i:"glute", t:"Lopatky o lavici, nahoře zadek pevně stisknout na 1 s."},
- glbridge:   {n:"Glute Bridge", m:"Hýždě", i:"glute", t:"Vleže na zemi, boky nahoru, nahoře stisknout. Domácí verze hip thrustu."},
- kickback:   {n:"Glute Kickback (Cable)", m:"Hýždě", i:"glute", t:"Zanožuj patou dozadu-nahoru, bez prohnutí v bedrech."},
- backext:    {n:"Back Extension (Hyperextension)", m:"Spodní záda + hýždě", i:"glute", t:"Plynule do roviny, ne do prohnutí."},
- calf:       {n:"Standing Calf Raise (Machine)", m:"Lýtka", i:"calf", t:"Dole 2 s protáhnout, nahoře 1 s podržet."},
- seatedcalf: {n:"Seated Calf Raise", m:"Lýtka", i:"calf", t:"Vsedě jde hlouběji do lýtka — plný rozsah."},
- hangraise:  {n:"Hanging Leg Raise", m:"Břicho", i:"pull", t:"Zvedej pánev, ne jen nohy. Bez houpání."},
- cablecrunch:{n:"Cable Crunch", m:"Břicho", i:"core", t:"Kulať páteř lokty ke kolenům — boky se nehýbou."},
- plank:      {n:"Plank", m:"Střed těla", i:"core", t:"Tělo v přímce, zadek stisknutý, dýchej."}
+ bench:      {n:"Bench press s velkou činkou", en:"Bench Press (Barbell)", m:"Prsa", i:"bench", t:"Lopatky stáhnout dozadu a dolů, nohy pevně do země. Tyč dolů pod kontrolou."},
+ dbbench:    {n:"Tlak s jednoručkami na rovné lavici", en:"Bench Press (Dumbbell)", m:"Prsa", i:"bench", t:"Větší dráha než s tyčí — dole protáhni, nahoře činky k sobě."},
+ chestpressm:{n:"Tlak na prsa na stroji", en:"Chest Press (Machine)", m:"Prsa", i:"machine", t:"Madla ve výšce hrudníku, lopatky opřené."},
+ pushup:     {n:"Kliky", en:"Push Up", m:"Prsa", i:"pushup", t:"Tělo v přímce. Moc těžké? Opři ruce o lavici — pořád se počítá."},
+ pecdeck:    {n:"Rozpažování na stroji (peck deck)", en:"Chest Fly (Machine)", m:"Prsa", i:"fly", t:"Mírně pokrčené lokty, vpředu vteřinu stiskni."},
+ inclinedb:  {n:"Šikmý tlak s jednoručkami", en:"Incline Bench Press (Dumbbell)", m:"Horní prsa", i:"incline", t:"Lavice 30°. Jednoručky k vnějšku hrudníku, lokty ~45° od těla."},
+ cablefly:   {n:"Rozpažování na kladkách", en:"Cable Fly Crossovers", m:"Prsa", i:"fly", t:"Ruce se potkají před hrudníkem, lokty pořád mírně pokrčené."},
+ dip:        {n:"Dipy (klik na bradlech)", en:"Chest Dip", m:"Prsa + triceps", i:"dip", t:"Mírný předklon = víc prsa. Dolů po ramena, ne níž."},
+ pullup:     {n:"Shyby", en:"Pull Up", m:"Záda", i:"pull", t:"Hrudník k tyči. Nejde 8 opakování? Guma nebo stroj s dopomocí."},
+ assistpull: {n:"Shyby s dopomocí", en:"Pull Up (Assisted)", m:"Záda", i:"pull", t:"Nastav dopomoc tak, abys dal(a) 8–10 čistých opakování."},
+ latpd:      {n:"Stahování horní kladky", en:"Lat Pulldown (Cable)", m:"Záda", i:"pull", t:"Hrudník ven, tyč ke klíčním kostem, lokty k žebrům."},
+ cablerow:   {n:"Veslování na kladce vsedě", en:"Seated Cable Row – Bar Grip", m:"Záda", i:"row", t:"Lokty dozadu k pasu, hrudník ven, trup se nehoupá."},
+ bentrow:    {n:"Veslování s velkou činkou v předklonu", en:"Bent Over Row (Barbell)", m:"Záda", i:"row", t:"Předklon ~45°, tyč k pupku, záda celou dobu rovná."},
+ csrow:      {n:"Veslování s oporou hrudníku", en:"Chest Supported Incline Row (Dumbbell)", m:"Záda", i:"incline", t:"Hrudník o lavici — trup nepomáhá, tahají jen záda."},
+ ohp:        {n:"Tlak s velkou činkou nad hlavu", en:"Overhead Press (Barbell)", m:"Ramena", i:"ohp", t:"Zpevni zadek a břicho, tyč do propnutí. Neprohýbat bedra."},
+ shpressdb:  {n:"Tlak s jednoručkami nad hlavu", en:"Shoulder Press (Dumbbell)", m:"Ramena", i:"ohp", t:"Vsedě s opěrkou, činky mírně před hlavu."},
+ latraise:   {n:"Upažování s jednoručkami", en:"Lateral Raise (Dumbbell)", m:"Ramena", i:"raise", t:"Do výšky ramen, malá váha, čistě."},
+ cablelat:   {n:"Upažování na kladce", en:"Lateral Raise (Cable)", m:"Ramena", i:"raise", t:"Kladka drží napětí celou dráhu — skvělá varianta."},
+ facepull:   {n:"Face pull (přitahování k obličeji)", en:"Face Pull", m:"Zadní ramena", i:"facepull", t:"Lano k obličeji, na konci vytoč pěsti vzhůru."},
+ shrugdb:    {n:"Zvedání ramen s jednoručkami (trapézy)", en:"Shrug (Dumbbell)", m:"Trapézy", i:"shrug", t:"Ramena přímo nahoru, vteřinu podrž. Nekroužit."},
+ curlbb:     {n:"Bicepsový zdvih s velkou činkou", en:"Bicep Curl (Barbell)", m:"Biceps", i:"curl", t:"Lokty u těla, dolů pomalu na 2 s."},
+ curldb:     {n:"Bicepsový zdvih s jednoručkami", en:"Bicep Curl (Dumbbell)", m:"Biceps", i:"curl", t:"Bez švihu — když musíš houpat, uber."},
+ hammer:     {n:"Kladivový zdvih", en:"Hammer Curl (Dumbbell)", m:"Biceps + předloktí", i:"curl", t:"Dlaně k sobě celou dráhu."},
+ tripush:    {n:"Stahování kladky na triceps", en:"Triceps Pushdown", m:"Triceps", i:"tri", t:"Lokty přilepené u těla, propni úplně."},
+ ohtri:      {n:"Tricepsová extenze nad hlavou", en:"Overhead Triceps Extension (Cable)", m:"Triceps", i:"tri", t:"Lokty u hlavy, dole protáhni, nahoře propni."},
+ squat:      {n:"Dřep s velkou činkou", en:"Squat (Barbell)", m:"Kvadricepsy", i:"squat", t:"Kolena ve směru špiček, hloubka kam pustí rovná záda."},
+ hacksquat:  {n:"Hack dřep na stroji", en:"Hack Squat (Machine)", m:"Kvadricepsy", i:"machine", t:"Záda celou plochou na opěrce, dolů pomalu."},
+ goblet:     {n:"Goblet dřep s jednoručkou", en:"Goblet Squat (Dumbbell)", m:"Kvadricepsy + hýždě", i:"squat", t:"Činka u hrudníku jako pohár, lokty mezi kolena. Nejlepší dřep na učení."},
+ sumodb:     {n:"Sumo dřep s jednoručkou", en:"Sumo Squat (Dumbbell)", m:"Hýždě + vnitřní stehna", i:"squat", t:"Široký postoj, špičky ven, činka visí mezi nohama."},
+ legpress:   {n:"Leg press (tlak nohama)", en:"Leg Press (Machine)", m:"Kvadricepsy", i:"machine", t:"Chodidla na šířku boků, kolena nepropínat nadoraz."},
+ legext:     {n:"Předkopávání na stroji", en:"Leg Extension (Machine)", m:"Kvadricepsy", i:"machine", t:"Nahoře vteřinu podrž, pomalu dolů."},
+ rdl:        {n:"Rumunský mrtvý tah s velkou činkou", en:"Romanian Deadlift (Barbell)", m:"Hamstringy", i:"hinge", t:"Boky dozadu, tyč po stehnech, záda rovná."},
+ rdldb:      {n:"Rumunský mrtvý tah s jednoručkami", en:"Romanian Deadlift (Dumbbell)", m:"Hamstringy + hýždě", i:"hinge", t:"Boky dozadu, činky po stehnech dolů."},
+ deadlift:   {n:"Mrtvý tah s velkou činkou", en:"Deadlift (Barbell)", m:"Celé tělo", i:"hinge", t:"Tyč u holení, zpevnit, tlač zemi od sebe. Technika > váha."},
+ lyingcurl:  {n:"Zakopávání vleže", en:"Lying Leg Curl (Machine)", m:"Hamstringy", i:"machine", t:"Boky tlač do lavice, nezvedat zadek."},
+ seatcurl:   {n:"Zakopávání vsedě", en:"Seated Leg Curl (Machine)", m:"Hamstringy", i:"machine", t:"Plný rozsah, dole vteřinu podrž."},
+ bulg:       {n:"Bulharský dřep", en:"Bulgarian Split Squat", m:"Hýždě + kvadricepsy", i:"lunge", t:"Zadní noha na lavici, koleno ve směru špičky. Peklo, ale funguje."},
+ lungedb:    {n:"Výpady s jednoručkami", en:"Lunge (Dumbbell)", m:"Hýždě + kvadricepsy", i:"lunge", t:"Dlouhý krok, koleno zlehka k zemi, trup vzpřímený."},
+ hipthrust:  {n:"Hip thrust (zvedání pánve s činkou)", en:"Hip Thrust (Barbell)", m:"Hýždě", i:"glute", t:"Lopatky o lavici, nahoře zadek pevně stisknout na 1 s."},
+ glbridge:   {n:"Most na hýždě (zvedání pánve na zemi)", en:"Glute Bridge", m:"Hýždě", i:"glute", t:"Vleže na zemi, boky nahoru, nahoře stisknout. Domácí verze hip thrustu."},
+ kickback:   {n:"Zanožování na kladce", en:"Glute Kickback (Cable)", m:"Hýždě", i:"glute", t:"Zanožuj patou dozadu-nahoru, bez prohnutí v bedrech."},
+ backext:    {n:"Hyperextenze (záklony)", en:"Back Extension (Hyperextension)", m:"Spodní záda + hýždě", i:"glute", t:"Plynule do roviny, ne do prohnutí."},
+ calf:       {n:"Výpony na lýtka ve stoje", en:"Standing Calf Raise (Machine)", m:"Lýtka", i:"calf", t:"Dole 2 s protáhnout, nahoře 1 s podržet."},
+ seatedcalf: {n:"Výpony na lýtka vsedě", en:"Seated Calf Raise", m:"Lýtka", i:"calf", t:"Vsedě jde hlouběji do lýtka — plný rozsah."},
+ hangraise:  {n:"Přednožování ve visu", en:"Hanging Leg Raise", m:"Břicho", i:"pull", t:"Zvedej pánev, ne jen nohy. Bez houpání."},
+ cablecrunch:{n:"Stahování kladky na břicho", en:"Cable Crunch", m:"Břicho", i:"core", t:"Kulať páteř lokty ke kolenům — boky se nehýbou."},
+ plank:      {n:"Prkno (plank)", en:"Plank", m:"Střed těla", i:"core", t:"Tělo v přímce, zadek stisknutý, dýchej."}
 };
 
 const ALTS = {
@@ -620,6 +695,8 @@ function renderTyden(){
  }).join("");
  document.getElementById("tab-tyden").innerHTML =
   '<div class="card"><h3>Týden večeří</h3><p class="who">12 večeří v rotaci — vyměň cokoli, nákupní seznam se přepočítá. Číslo = kcal Verune / Pepule.</p>'
+  +'<div style="margin-bottom:10px"><button class="act small" id="shuffleBtn" type="button">🎲 Zamíchat týden</button> '
+  +'<span class="dim" style="font-size:12.5px">— vylosuje 7 různých večeří z dvaceti</span></div>'
   +'<table><thead><tr><th>Den</th><th>Večeře</th><th class="num">kcal</th></tr></thead><tbody>'+rows+'</tbody></table>'
   +'<div class="note"><b>Pravidlo porce:</b> Pepule 1,7× víc masa i přílohy + lžíce oleje. Vař o porci navíc — Verunin zítřejší oběd.</div></div>';
 }
@@ -639,9 +716,10 @@ function renderRecepty(){
   +'<div class="inner"><ul class="ing">'+r.ing.map(x=>'<li>'+esc(x)+'</li>').join("")
   +'</ul><ol>'+r.steps.map(s=>'<li>'+esc(s)+'</li>').join("")+'</ol></div></details>').join("");
  document.getElementById("tab-recepty").innerHTML =
-  '<h2>Večeře — 12 receptů do rotace</h2>'+din
+  '<h2>Večeře — 20 receptů do rotace</h2>'+din
   +'<h2>Snídaně, shake &amp; meal prep</h2>'+extra
-  +'<div class="note"><b>Vajíčkový základ týdne:</b> v neděli uvař 10 vajec natvrdo — pokryjí svačiny, autobagy i pomazánku. '
+  +'<div class="note"><b>Anglické názvy u cviků</b> jsou schválně — v Hevy se cviky hledají anglicky, takže podle nich najdeš rutinu. '
+  +'<b>Vajíčkový základ týdne:</b> v neděli uvař 10 vajec natvrdo — pokryjí svačiny, autobagy i pomazánku. '
   +'<b>Trik na nechutenství (Pepule):</b> lžíce oleje = 120 kcal, v žaludku nezabere nic.</div>';
 }
 
@@ -680,11 +758,12 @@ function exRow(rid, e, i){
  const sel = alts.length
   ? '<br><b>Varianta:</b> <select data-exsel="'+key+'">'
     + variants.map(id=>'<option value="'+id+'"'+(id===chosenId?" selected":"")+'>'+esc(EX[id].n)+'</option>').join("")
+    // v Hevy hledej anglický název uvedený u cviku
     + '</select>'
   : "";
  return '<details class="ex"><summary>'
   +'<span class="exic"><svg viewBox="0 0 24 24" aria-hidden="true">'+(ICO[x.i]||ICO.machine)+'</svg></span>'
-  +'<span class="exname"><span class="n">'+esc(x.n)+'</span><br><span class="m">'+esc(x.m)+'</span></span>'
+  +'<span class="exname"><span class="n">'+esc(x.n)+'</span><br><span class="m">'+esc(x.m)+' · <span class="en">'+esc(x.en||"")+'</span></span></span>'
   +'<span class="exsets"><span class="s">'+esc(e[1])+'</span><br><span class="r">RPE '+e[2]+' · pauza '+e[3]+'</span></span>'
   +'</summary><p class="extip">'+esc(x.t)+sel+'</p></details>';
 }
@@ -890,6 +969,13 @@ document.addEventListener("click", e=>{
  if (e.target.id === "doneBtn"){ state.queue = (state.queue+1)%4; store.set("queue", state.queue); renderTrenink(); return; }
  if (e.target.id === "doneBtnV"){ state.fb = (state.fb+1)%2; store.set("fb", state.fb); renderTrenink(); return; }
  if (e.target.id === "clearShop"){ state.shop = {}; store.set("shop", state.shop); renderNakup(); return; }
+ if (e.target.id === "shuffleBtn"){
+  const pool = DINNERS.map(d=>d.id);
+  for (let i=pool.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); const t=pool[i]; pool[i]=pool[j]; pool[j]=t; }
+  state.week = pool.slice(0,7);
+  store.set("week", state.week);
+  renderDnes(); renderTyden(); renderNakup(); return;
+ }
  if (e.target.id === "checkinBtn"){ state.lastCheckin = new Date().toISOString().slice(0,10); store.set("lastCheckin", state.lastCheckin); renderProgres(); return; }
  const ap = e.target.closest("[data-applyk]");
  if (ap){
@@ -964,6 +1050,16 @@ document.addEventListener("click", e=>{
  sync();
 })();
 
+const MOTTA = [
+ "Rodinný masokombinát na svaly 🥩",
+ "Kdo nejí, ten neroste. Kdo neroste, ten vaří 🍳",
+ "Vejce jsou nová měna 🥚",
+ "Šlichta zakázána, rotace povinná 🎲",
+ "Dvě váhy, jedna kuchyň, nula výmluv 💪",
+ "Neděle rozhoduje o celém týdnu 🛒",
+ "Nejsilnější domácnost v ulici 🏆"
+];
+document.getElementById("mottoLine").textContent = MOTTA[todayIdx];
 document.getElementById("todayLine").textContent = "Dnes je "+DAYFULL[todayIdx]+" · "+DAYNOTE[todayIdx].replace(/^[^\s]+\s/,"");
 renderAll();
 showTab("dnes");
