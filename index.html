@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f9f9f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d0d0d" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="robots" content="noindex, nofollow">
+<title>Šmídovi — Pepule &amp; Verune</title>
+<style>
+  :root{
+    color-scheme:light;
+    --surface-1:#fcfcfb; --page:#f9f9f7;
+    --text-primary:#0b0b0b; --text-secondary:#52514e; --muted:#898781;
+    --grid:#e1e0d9; --baseline:#c3c2b7; --border:rgba(11,11,11,.10);
+    --s1:#2a78d6; --s1-track:#cde2fb;
+    --s3:#1baf7a; --s3-track:#c7ede0;
+    --s2:#eb6834;
+    --good:#006300; --accent-soft:rgba(42,120,214,.08);
+  }
+  @media (prefers-color-scheme:dark){
+    :root:where(:not([data-theme="light"])){
+      color-scheme:dark;
+      --surface-1:#1a1a19; --page:#0d0d0d;
+      --text-primary:#fff; --text-secondary:#c3c2b7; --muted:#898781;
+      --grid:#2c2c2a; --baseline:#383835; --border:rgba(255,255,255,.10);
+      --s1:#3987e5; --s1-track:#184f95;
+      --s3:#199e70; --s3-track:#0d4f38;
+      --s2:#d95926;
+      --good:#0ca30c; --accent-soft:rgba(57,135,229,.12);
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --surface-1:#1a1a19; --page:#0d0d0d;
+    --text-primary:#fff; --text-secondary:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --baseline:#383835; --border:rgba(255,255,255,.10);
+    --s1:#3987e5; --s1-track:#184f95;
+    --s3:#199e70; --s3-track:#0d4f38;
+    --s2:#d95926;
+    --good:#0ca30c; --accent-soft:rgba(57,135,229,.12);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--page);color:var(--text-primary);
+       font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1000px;margin:0 auto;padding:20px 14px 40px}
+
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+  h1{font-size:22px;margin:0;letter-spacing:-.3px}
+  .sub{color:var(--text-secondary);font-size:12.5px;margin:1px 0 0}
+  .ghost{background:var(--surface-1);color:var(--text-secondary);border:1px solid var(--border);
+         border-radius:999px;padding:6px 12px;font:inherit;font-size:12.5px;cursor:pointer;white-space:nowrap}
+  .ghost:hover{color:var(--text-primary)}
+
+  nav.tabs{display:flex;gap:2px;background:var(--surface-1);border:1px solid var(--border);
+           border-radius:12px;padding:4px;margin-bottom:18px}
+  nav.tabs button{flex:1;background:none;border:0;border-radius:9px;padding:7px 2px;
+                  font:inherit;font-size:13px;color:var(--text-secondary);cursor:pointer;line-height:1.25}
+  nav.tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--text-primary);font-weight:600}
+  .ticon{display:block;font-size:17px;line-height:1.15}
+  @media(max-width:740px){
+    nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:60;margin:0;border-radius:0;
+             border-left:0;border-right:0;border-bottom:0;
+             padding:6px 3px calc(6px + env(safe-area-inset-bottom))}
+    nav.tabs button{font-size:10px;min-width:0;padding:4px 0}
+    body{padding-bottom:84px}
+  }
+  @media(min-width:741px){ .ticon{display:inline;margin-right:6px;font-size:15px} }
+
+  .card{background:var(--surface-1);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid2>*{min-width:0}
+  @media(max-width:740px){.grid2{grid-template-columns:1fr}}
+  .card{min-width:0}
+
+  h2{font-size:12px;text-transform:uppercase;letter-spacing:.9px;color:var(--muted);font-weight:600;margin:22px 0 10px}
+  h3{font-size:16.5px;margin:0 0 2px}
+  .who{color:var(--text-secondary);font-size:12.5px;margin:0 0 12px}
+
+  .meter-row{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;margin-bottom:3px}
+  .meter-row .lab{color:var(--text-secondary)}
+  .meter-row .val{font-variant-numeric:tabular-nums;font-weight:600}
+  .meter{height:9px;border-radius:5px;overflow:hidden;margin-bottom:10px}
+  .meter i{display:block;height:100%;border-radius:5px;transition:width .18s ease}
+  .m-kcal{background:var(--s1-track)} .m-kcal i{background:var(--s1)}
+  .m-prot{background:var(--s3-track)} .m-prot i{background:var(--s3)}
+  .rest{font-size:12.5px;color:var(--text-secondary);margin:-4px 0 12px}
+  .rest b{color:var(--text-primary)} .done{color:var(--good);font-weight:600}
+
+  .meal{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--grid)}
+  .meal:last-child{border-bottom:none}
+  .meal input[type=checkbox]{width:21px;height:21px;margin:2px 0 0;accent-color:var(--s1);flex:none;cursor:pointer}
+  .meal .body{flex:1;min-width:0}
+  .meal .time{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .meal .name{font-size:14px}
+  .meal.checked .name{color:var(--text-secondary);text-decoration:line-through}
+  .meal .nums{font-size:12px;color:var(--text-secondary);font-variant-numeric:tabular-nums;white-space:nowrap;padding-top:12px}
+  select,input[type=number]{background:var(--surface-1);color:var(--text-primary);border:1px solid var(--border);
+         border-radius:8px;padding:6px 8px;font:inherit;font-size:13px;max-width:100%;margin-top:3px}
+  select{width:100%}
+  #daySel{width:auto;min-width:104px}
+  .extip select{width:auto;max-width:100%}
+  html,body{overflow-x:hidden}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);
+     font-weight:600;padding:0 8px 7px 0;border-bottom:1px solid var(--baseline)}
+  td{padding:8px 8px 8px 0;border-bottom:1px solid var(--grid);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;padding-right:0}
+  .day{font-weight:600;width:30px;white-space:nowrap}
+  .dim{color:var(--text-secondary)}
+  .today-row td{background:var(--accent-soft)}
+
+  ul.shop{list-style:none;margin:0;padding:0;columns:2;column-gap:26px}
+  @media(max-width:600px){ul.shop{columns:1}}
+  ul.shop li{break-inside:avoid;padding:5px 0;font-size:14px;display:flex;gap:9px;align-items:flex-start}
+  ul.shop input{width:19px;height:19px;margin:2px 0 0;accent-color:var(--s1);flex:none;cursor:pointer}
+  ul.shop li.on span{color:var(--text-secondary);text-decoration:line-through}
+  .shop-head{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);
+             font-weight:600;margin:14px 0 4px;column-span:all}
+
+  .note{font-size:13px;color:var(--text-secondary);border-left:3px solid var(--s2);
+        padding:2px 0 2px 13px;margin-top:12px}
+  .note b{color:var(--text-primary)}
+  .reco{border-left-color:var(--s3)}
+
+  .qbox{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .qletter{font-size:30px;font-weight:700;color:var(--s2);line-height:1}
+  button.act{background:var(--s1);color:#fff;border:0;border-radius:9px;padding:9px 15px;
+             font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+  button.act:hover{filter:brightness(.94)}
+  button.act.small{padding:6px 12px;font-size:13px}
+  .seg-toggle{display:inline-flex;background:var(--page);border:1px solid var(--border);border-radius:999px;padding:3px;gap:2px}
+  .seg-toggle button{background:none;border:0;border-radius:999px;padding:6px 16px;font:inherit;font-size:13.5px;
+                     color:var(--text-secondary);cursor:pointer}
+  .seg-toggle button.on{background:var(--surface-1);color:var(--text-primary);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+
+  details.ex{border-bottom:1px solid var(--grid)}
+  details.ex:last-child{border-bottom:none}
+  details.ex summary{display:flex;align-items:center;gap:11px;padding:9px 0;cursor:pointer;list-style:none}
+  details.ex summary::-webkit-details-marker{display:none}
+  .exic{width:34px;height:34px;flex:none;border-radius:9px;background:var(--accent-soft);
+        display:flex;align-items:center;justify-content:center;color:var(--s1)}
+  .exic svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .exname{flex:1;min-width:0}
+  .exname .n{font-size:14px;font-weight:600}
+  .exname .m{font-size:11.5px;color:var(--muted)}
+  .exsets{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .exsets .s{font-size:13.5px;font-weight:600}
+  .exsets .r{font-size:11.5px;color:var(--muted)}
+  .extip{margin:0 0 10px 45px;font-size:12.5px;color:var(--text-secondary)}
+  .extip b{color:var(--text-primary)}
+  .extip select{margin-top:5px}
+
+  .rhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+  .rmeta{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+  .rec .ing{columns:2;column-gap:22px;font-size:13.5px;margin:8px 0;padding-left:18px}
+  @media(max-width:600px){.rec .ing{columns:1}}
+  .rec ol{margin:8px 0 0;padding-left:20px;font-size:13.5px}
+  .rec ol li{margin-bottom:4px}
+  .badges{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 2px}
+  .badge{font-size:11.5px;padding:2px 9px;border-radius:999px;border:1px solid var(--border);color:var(--text-secondary)}
+  .badge.b1{color:var(--s1);border-color:var(--s1)}
+  .badge.b3{color:var(--s3);border-color:var(--s3)}
+  details.rec{border:1px solid var(--border);border-radius:12px;padding:0 14px;margin-bottom:10px;background:var(--surface-1)}
+  details.rec summary{padding:12px 0;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:10px;align-items:center}
+  details.rec summary::-webkit-details-marker{display:none}
+  details.rec summary .t{font-size:14.5px;font-weight:600}
+  details.rec summary .k{font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+  details.rec .inner{padding:0 0 13px}
+
+  .wrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .wrow input{width:92px}
+  .spark{width:100%;height:110px;margin:4px 0 6px}
+  .wlist{font-size:13px}
+  .wlist button,.mlist button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:15px;padding:2px 6px}
+  .hint{font-size:12px;color:var(--muted);margin-top:8px}
+  footer{margin-top:26px;padding-top:12px;border-top:1px solid var(--grid);font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div>
+    <h1>Šmídovi 🏠</h1>
+    <p class="sub" id="todayLine"></p>
+  </div>
+  <button class="ghost" id="themeBtn" type="button">Tmavý</button>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" data-tab="dnes"    aria-selected="true"><span class="ticon">🍽️</span>Dnes</button>
+  <button role="tab" data-tab="tyden"   aria-selected="false"><span class="ticon">📅</span>Týden</button>
+  <button role="tab" data-tab="recepty" aria-selected="false"><span class="ticon">🧾</span>Recepty</button>
+  <button role="tab" data-tab="nakup"   aria-selected="false"><span class="ticon">🛒</span>Nákup</button>
+  <button role="tab" data-tab="trenink" aria-selected="false"><span class="ticon">🏋️</span>Trénink</button>
+  <button role="tab" data-tab="progres" aria-selected="false"><span class="ticon">📈</span>Progres</button>
+  <button role="tab" data-tab="cile"    aria-selected="false"><span class="ticon">🎯</span>Cíle</button>
+</nav>
+
+<section id="tab-dnes"></section>
+<section id="tab-tyden" hidden></section>
+<section id="tab-recepty" hidden></section>
+<section id="tab-nakup" hidden></section>
+<section id="tab-trenink" hidden></section>
+<section id="tab-progres" hidden></section>
+<section id="tab-cile" hidden></section>
+
+<footer>
+  Odškrtnutí, výběry, váhy i míry se ukládají v tomhle prohlížeči — Pepule a Verune mají každý svoje.
+  Doporučení v Progresu upravuje kalorie podle skutečného vývoje váhy.
+</footer>
+</div>
+
+<script>
+"use strict";
+
+/* ============ storage (safe) ============ */
+const mem = {};
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem("pv_"+k); return v!==null ? JSON.parse(v) : (k in mem ? mem[k] : d); }catch(e){ return k in mem ? mem[k] : d; } },
+  set(k, v){ mem[k]=v; try{ localStorage.setItem("pv_"+k, JSON.stringify(v)); }catch(e){} }
+};
+
+/* ============ data: meals ============ */
+const DAYS = ["Po","Út","St","Čt","Pá","So","Ne"];
+const DAYFULL = ["pondělí","úterý","středa","čtvrtek","pátek","sobota","neděle"];
+
+const DINNERS = [
+ { id:"stehna", name:"Pečená kuřecí stehna + brambory",
+   v:{por:"1 stehno, 200 g brambor",kcal:430,prot:33}, p:{por:"2 stehna, 350 g brambor + olej",kcal:780,prot:60},
+   ing:[["Kuřecí stehna",4,"ks"],["Brambory",1.2,"kg"],["Kořenová zelenina / cibule",1,"bal"]],
+   steps:["Stehna osol, opepři, potři paprikou a olejem.","Do pekáče brambory na kostky + zelenina, na to stehna.","Peč 200 °C ~45 min, v půlce podlij výpekem."] },
+ { id:"losos", name:"Losos + rýže + brokolice",
+   v:{por:"130 g lososa, 150 g rýže",kcal:430,prot:30}, p:{por:"200 g lososa, 300 g rýže",kcal:760,prot:46},
+   ing:[["Losos",350,"g"],["Rýže",250,"g"],["Brokolice",1,"ks"],["Citron",1,"ks"]],
+   steps:["Rýži uvař.","Lososa osol, kůží dolů na pánev 4 min, otoč na 2–3 min (nebo trouba 200 °C 12 min).","Brokolici spař 4 min v osolené vodě, zakápni citronem."] },
+ { id:"bolonske", name:"Boloňské s hovězím + těstoviny",
+   v:{por:"100 g masa, 150 g těstovin",kcal:430,prot:30}, p:{por:"180 g masa, 300 g těstovin + sýr",kcal:800,prot:52},
+   ing:[["Hovězí mleté",400,"g"],["Těstoviny",350,"g"],["Passata",1,"bal"],["Sýr strouhaný",100,"g"],["Cibule",2,"ks"]],
+   steps:["Cibuli osmahni, přidej maso a opeč dozlatova.","Zalij passatou, osol, oregano, 15 min táhnout.","Těstoviny uvař, Pepulovi navrch sýr."] },
+ { id:"kari", name:"Kuřecí kari s rýží",
+   v:{por:"150 g kuřete, 150 g rýže",kcal:440,prot:35}, p:{por:"250 g kuřete, 300 g rýže",kcal:780,prot:58},
+   ing:[["Kuřecí prsa",500,"g"],["Rýže",250,"g"],["Kari pasta",1,"bal"],["Kokosové mléko",1,"ks"]],
+   steps:["Kuře na kostky, prudce opeč.","Přidej kari pastu, minutu rozvoň, zalij kokosovým mlékem.","10 min poduš, podávej s rýží."] },
+ { id:"panenka", name:"Vepřová panenka + batáty + salát",
+   v:{por:"150 g masa, 200 g batát",kcal:420,prot:34}, p:{por:"250 g masa, 350 g batát + olej",kcal:780,prot:55},
+   ing:[["Vepřová panenka",500,"g"],["Batáty",800,"g"],["Salát",1,"ks"]],
+   steps:["Batáty na hranolky, olej, sůl — 200 °C 25 min.","Panenku osol, zprudka opeč, dopeč 180 °C 12–15 min.","Nech 5 min odpočinout, nakrájej na medailonky."] },
+ { id:"tortilly", name:"Tortilly s mletým masem a sýrem",
+   v:{por:"2 tortilly, 120 g masa",kcal:450,prot:32}, p:{por:"4 tortilly, 200 g masa",kcal:850,prot:55},
+   ing:[["Tortilly",6,"ks"],["Mleté maso",350,"g"],["Sýr strouhaný",150,"g"],["Zakysaná smetana",1,"ks"],["Paprika / kukuřice",1,"bal"]],
+   steps:["Maso osmahni s kořením (paprika, kmín, česnek).","Plň tortilly masem, sýrem a zeleninou.","Zabal a opeč na suché pánvi do křupava."] },
+ { id:"gulas", name:"Hovězí guláš + knedlík",
+   v:{por:"200 g guláše, 3 knedlíky",kcal:450,prot:30}, p:{por:"350 g guláše, 6 knedlíků",kcal:800,prot:50},
+   ing:[["Hovězí kližka",700,"g"],["Knedlíky",1,"bal"],["Cibule",4,"ks"],["Mletá paprika",1,"ks"]],
+   steps:["Hodně cibule pomalu dozlatova.","Maso na kostky, opeč, paprika, podlij.","Duste doměkka 2,5 h (papiňák 40 min). Druhý den je lepší."] },
+ { id:"stirfry", name:"Kuřecí stir-fry s nudlemi",
+   v:{por:"150 g kuřete, 120 g nudlí",kcal:430,prot:36}, p:{por:"250 g kuřete, 250 g nudlí",kcal:770,prot:58},
+   ing:[["Kuřecí prsa",500,"g"],["Rýžové nudle",300,"g"],["Wok zelenina",2,"bal"],["Sójová omáčka",1,"ks"]],
+   steps:["Nudle spař dle obalu.","Kuře na nudličky prudce opeč na woku, přidej zeleninu.","Vmíchej nudle a sójovku, minutu prohoď."] },
+ { id:"zapekane", name:"Zapečené brambory s masem a sýrem",
+   v:{por:"1 porce",kcal:440,prot:31}, p:{por:"velká porce + sýr navíc",kcal:800,prot:52},
+   ing:[["Brambory",1.2,"kg"],["Mleté maso",400,"g"],["Sýr strouhaný",200,"g"],["Smetana",1,"ks"],["Vejce",2,"ks"]],
+   steps:["Brambory předvař 10 min, na plátky.","Vrstvi brambory a osmažené maso, zalij smetanou s vejci.","Sýr navrch, 180 °C 30 min."] },
+ { id:"rizoto", name:"Rizoto s kuřetem a hráškem",
+   v:{por:"1 porce",kcal:430,prot:33}, p:{por:"velká porce + parmazán",kcal:780,prot:54},
+   ing:[["Kuřecí prsa",500,"g"],["Rýže na rizoto",300,"g"],["Hrášek mražený",1,"bal"],["Parmazán",100,"g"],["Cibule",1,"ks"]],
+   steps:["Cibuli zpěň, přidej rýži, minutu opékej.","Přilévej horký vývar po sběračkách ~18 min.","Vmíchej opečené kuře, hrášek a parmazán."] },
+ { id:"saksuka", name:"Šakšuka s vejci a pečivem",
+   v:{por:"2 vejce, porce omáčky + pečivo",kcal:430,prot:24}, p:{por:"4 vejce, feta + 2 pečiva",kcal:780,prot:42},
+   ing:[["Vejce",6,"ks"],["Rajčata krájená (konzerva)",2,"ks"],["Paprika",2,"ks"],["Cibule",2,"ks"],["Feta",100,"g"],["Pečivo",3,"ks"]],
+   steps:["Cibuli a papriku osmahni, přidej rajčata, kmín, papriku — 10 min.","Do omáčky udělej důlky, vklepni vejce, přiklop na 6–8 min.","Posyp fetou, vytírej pečivem."] },
+ { id:"tunapasta", name:"Zapečené těstoviny s tuňákem a vejci",
+   v:{por:"1 porce",kcal:450,prot:34}, p:{por:"velká porce",kcal:820,prot:56},
+   ing:[["Těstoviny",350,"g"],["Tuňák v kapsičce",3,"ks"],["Vejce",4,"ks"],["Sýr strouhaný",150,"g"],["Smetana",1,"ks"]],
+   steps:["Těstoviny uvař na skus.","Smíchej s tuňákem, zalij smetanou rozšlehanou s vejci.","Sýr navrch, 180 °C 25 min."] }
+];
+
+const V_BREAKFAST = [
+ { name:"Skyr 200 g + granola + borůvky + ořechy", kcal:470, prot:32 },
+ { name:"Míchaná vejce (3) + žitný chleba + rajče", kcal:450, prot:28 },
+ { name:"Šunkovo-sýrová omeleta ze 3 vajec + toast", kcal:490, prot:35 },
+ { name:"Ovesná kaše + odměrka proteinu + banán", kcal:460, prot:33 },
+ { name:"Tvarohové lívance + ovoce", kcal:490, prot:40 },
+ { name:"Řecký jogurt + med + vlašské ořechy + jablko", kcal:440, prot:22 },
+ { name:"Vejce do skla (2) + 2 krajíce chleba s máslem", kcal:430, prot:22 },
+ { name:"Toast s vejcem, šunkou a sýrem (2 ks)", kcal:480, prot:30 }
+];
+const V_LUNCH = [
+ { name:"Zbytek včerejší večeře", kcal:500, prot:35 },
+ { name:"150 g kuřete + 200 g rýže + zelenina", kcal:580, prot:42 },
+ { name:"Wrap s kuřetem + jogurtový dresink", kcal:550, prot:40 },
+ { name:"Cottage 200 g + žitný chleba + 2 vejce", kcal:560, prot:45 },
+ { name:"Šakšuka ze 3 vajec + pečivo", kcal:520, prot:28 },
+ { name:"Salát s kuřetem, vejcem a dresinkem", kcal:490, prot:44 },
+ { name:"Těstovinový salát s tuňákem a vejcem", kcal:560, prot:40 },
+ { name:"Bageta se šunkou, vejcem a sýrem", kcal:550, prot:32 }
+];
+const V_SNACK = [
+ { name:"2 vejce natvrdo + jablko + ořechy", kcal:280, prot:16 },
+ { name:"Skyr 150 g + ovoce", kcal:180, prot:20 },
+ { name:"Cottage 150 g + rýžový chlebíček", kcal:200, prot:20 },
+ { name:"Vajíčková pomazánka (2 vejce) na chlebu", kcal:290, prot:17 },
+ { name:"Tvaroh s medem a skořicí", kcal:220, prot:22 },
+ { name:"Hrst ořechů + banán", kcal:260, prot:6 },
+ { name:"Proteinový nápoj", kcal:150, prot:25 },
+ { name:"Plátek šunky + sýr + okurka", kcal:180, prot:18 },
+ { name:"Kefír + banán", kcal:220, prot:10 }
+];
+const P_BAG = [
+ { name:"Ořechy 50 g + banán + proteinový nápoj", kcal:565, prot:37 },
+ { name:"Skyr 400 g + med + granola", kcal:515, prot:47 },
+ { name:"4 vejce natvrdo + 2 rohlíky s máslem", kcal:640, prot:32 },
+ { name:"Rýž. chlebíčky + arašíd. máslo + čoko mléko", kcal:655, prot:28 },
+ { name:"Tuňák + 2 rohlíky s máslem + sýr", kcal:530, prot:41 },
+ { name:"Sendvič se šunkou, vejcem a sýrem", kcal:600, prot:32 },
+ { name:"2 proteinové tyčinky + ořechy", kcal:625, prot:46 },
+ { name:"Čoko mléko + sušené meruňky", kcal:590, prot:20 },
+ { name:"2× řecký jogurt + granola + med", kcal:650, prot:35 }
+];
+const P_LUNCH = [
+ { name:"Maso + rýže/brambory, velká porce", kcal:850, prot:60 },
+ { name:"Řízek s bramborovým salátem", kcal:900, prot:50 },
+ { name:"Guláš s knedlíkem", kcal:850, prot:48 },
+ { name:"Kebab / gyros, maso navíc", kcal:900, prot:60 },
+ { name:"Burrito bowl s kuřetem, rýží a fazolemi", kcal:900, prot:55 },
+ { name:"Smažený sýr s hranolky (nouzovka)", kcal:950, prot:35 },
+ { name:"Poctivá pizza + kuře/šunka navíc", kcal:950, prot:45 },
+ { name:"Vývar + hovězí s rýží", kcal:850, prot:50 }
+];
+
+const EXTRA_RECIPES = [
+ { t:"Pepulův velký shake", k:"1 110 kcal · 82 g B",
+   ing:["2 odměrky whey (60 g)","Ovesné vločky 80 g","Banán 1 ks","Arašídové máslo 40 g","Mléko polotučné 500 ml"],
+   steps:["Všechno do mixéru, 30 sekund.","Půlku vypij hned, půlku do láhve do auta.","Když se přejí: banán → 100 g malin, nebo +30 g medu / +20 g oleje pro víc kalorií."] },
+ { t:"Vajíčková pomazánka (4 porce)", k:"na svačiny pro oba",
+   ing:["Vejce natvrdo 6 ks","Lučina / tvaroh 100 g","Hořčice lžička","Pažitka, sůl, pepř"],
+   steps:["Vejce nastrouhej nahrubo.","Smíchej s lučinou a hořčicí, dochuť.","V lednici vydrží 3 dny — rychlá svačina na chleba."] },
+ { t:"Tvarohové lívance (Verune)", k:"490 kcal · 40 g B",
+   ing:["Tvaroh polotučný 250 g","Vejce 2 ks","Ovesná mouka 40 g","Špetka prášku do pečiva","Ovoce"],
+   steps:["Vše smíchej v hladké těsto.","Lij malé lívanečky, po 2 min otoč.","Podávej s ovocem a medem."] },
+ { t:"Vejce natvrdo do zásoby", k:"neděle · 10 min",
+   ing:["Vejce 10 ks"],
+   steps:["Do vroucí vody 9 minut, pak ledová lázeň.","Ve skořápce vydrží v lednici týden.","Základ svačin i autobagů — bílkovina vždy po ruce."] },
+ { t:"Ovesná kaše s proteinem", k:"460 kcal · 33 g B",
+   ing:["Vločky 60 g","Mléko 250 ml","Protein 1 odměrka","Banán"],
+   steps:["Vločky povař v mléce 3 min.","Mimo plotnu vmíchej protein.","Navrch banán a skořice."] },
+ { t:"Meal prep tortilly „na zítra“", k:"tip",
+   ing:["Zbytky masa z večeře","Tortilly","Sýr"],
+   steps:["Zbytky zabal do tortilly se sýrem.","Ráno 3 min na pánvi — hotový oběd s sebou."] }
+];
+
+/* ============ data: training ============ */
+const ICO = {
+ bench:'<rect x="4" y="15" width="16" height="2" rx="1"/><circle cx="7.2" cy="13" r="1.5"/><line x1="9" y1="13.8" x2="16" y2="13.8"/><line x1="12.5" y1="13.8" x2="12.5" y2="8"/><line x1="8" y1="8" x2="17" y2="8"/>',
+ incline:'<line x1="4" y1="18" x2="14" y2="11"/><circle cx="15.5" cy="9.6" r="1.5"/><line x1="13" y1="12" x2="13" y2="6.5"/><line x1="9" y1="6.5" x2="17" y2="6.5"/><line x1="4" y1="20" x2="20" y2="20"/>',
+ ohp:'<circle cx="12" cy="8" r="1.7"/><line x1="12" y1="9.7" x2="12" y2="16"/><line x1="9.5" y1="19" x2="12" y2="16"/><line x1="14.5" y1="19" x2="12" y2="16"/><line x1="6.5" y1="4" x2="17.5" y2="4"/><line x1="9.5" y1="9.5" x2="9" y2="4"/><line x1="14.5" y1="9.5" x2="15" y2="4"/>',
+ squat:'<line x1="5" y1="7" x2="19" y2="7"/><circle cx="12" cy="5" r="1.5"/><line x1="12" y1="7" x2="10.5" y2="12"/><line x1="10.5" y1="12" x2="14" y2="15"/><line x1="14" y1="15" x2="13.5" y2="19"/><line x1="8" y1="19.6" x2="17" y2="19.6"/>',
+ hinge:'<circle cx="16.5" cy="7" r="1.5"/><line x1="15" y1="8" x2="9" y2="11.5"/><line x1="9" y1="11.5" x2="9" y2="19"/><line x1="15" y1="9" x2="14.5" y2="15.5"/><circle cx="14.5" cy="17" r="1.6"/><line x1="5" y1="19.6" x2="19" y2="19.6"/>',
+ lunge:'<circle cx="12" cy="5.5" r="1.6"/><line x1="12" y1="7.2" x2="11.5" y2="12"/><line x1="11.5" y1="12" x2="8" y2="15"/><line x1="8" y1="15" x2="8" y2="19"/><line x1="11.5" y1="12" x2="15.5" y2="14"/><line x1="15.5" y1="14" x2="18" y2="19"/><line x1="5" y1="19.6" x2="20" y2="19.6"/>',
+ row:'<circle cx="17" cy="6.5" r="1.5"/><line x1="15.5" y1="7.5" x2="8.5" y2="10.5"/><line x1="8.5" y1="10.5" x2="8.5" y2="18"/><line x1="14" y1="8.5" x2="13" y2="13"/><line x1="10" y1="13.6" x2="16" y2="13.6"/><line x1="5" y1="19.6" x2="19" y2="19.6"/>',
+ pull:'<line x1="5" y1="4.5" x2="19" y2="4.5"/><circle cx="12" cy="9" r="1.7"/><line x1="12" y1="10.7" x2="12" y2="16.5"/><line x1="9.5" y1="4.5" x2="10.8" y2="8"/><line x1="14.5" y1="4.5" x2="13.2" y2="8"/><line x1="10" y1="19.5" x2="14" y2="19.5"/>',
+ dip:'<line x1="6" y1="9" x2="6" y2="19"/><line x1="18" y1="9" x2="18" y2="19"/><line x1="4.5" y1="9" x2="8" y2="9"/><line x1="16" y1="9" x2="19.5" y2="9"/><circle cx="12" cy="6.5" r="1.6"/><line x1="12" y1="8.2" x2="12" y2="14.5"/><line x1="12" y1="9.5" x2="7" y2="9.2"/><line x1="12" y1="9.5" x2="17" y2="9.2"/>',
+ fly:'<circle cx="12" cy="7" r="1.6"/><path d="M4.5 8.5 C7.5 13 10 14.5 12 14.8"/><path d="M19.5 8.5 C16.5 13 14 14.5 12 14.8"/><circle cx="4.5" cy="8" r="1.1"/><circle cx="19.5" cy="8" r="1.1"/>',
+ raise:'<circle cx="12" cy="6" r="1.7"/><line x1="12" y1="7.7" x2="12" y2="16"/><line x1="9.5" y1="19" x2="12" y2="16"/><line x1="14.5" y1="19" x2="12" y2="16"/><line x1="12" y1="10" x2="5.5" y2="9"/><line x1="12" y1="10" x2="18.5" y2="9"/><circle cx="4.5" cy="8.8" r="1.1"/><circle cx="19.5" cy="8.8" r="1.1"/>',
+ curl:'<circle cx="10" cy="5.5" r="1.6"/><line x1="10" y1="7.2" x2="10" y2="15"/><line x1="10" y1="9.5" x2="13.5" y2="12"/><line x1="13.5" y1="12" x2="15" y2="7.5"/><circle cx="15.5" cy="6.2" r="1.4"/><line x1="8" y1="19" x2="10" y2="15"/><line x1="12" y1="19" x2="10" y2="15"/>',
+ tri:'<circle cx="11" cy="5.5" r="1.6"/><line x1="11" y1="7.2" x2="11" y2="15"/><line x1="11" y1="9" x2="14.5" y2="10.5"/><line x1="14.5" y1="10.5" x2="15.5" y2="15.5"/><line x1="13.5" y1="16.2" x2="17.5" y2="16.2"/><line x1="9" y1="19" x2="11" y2="15"/><line x1="13" y1="19" x2="11" y2="15"/>',
+ calf:'<circle cx="12" cy="4.5" r="1.5"/><line x1="12" y1="6" x2="12" y2="13"/><line x1="12" y1="13" x2="11" y2="17"/><line x1="11" y1="17" x2="11" y2="18.2"/><path d="M11 18.2 L14 18.2"/><line x1="6" y1="20" x2="18" y2="20"/><line x1="14" y1="18.2" x2="14" y2="16.8"/>',
+ core:'<circle cx="5.5" cy="12" r="1.5"/><line x1="7" y1="12.6" x2="16" y2="14"/><line x1="16" y1="14" x2="19" y2="14.6"/><line x1="10" y1="13" x2="9" y2="17"/><line x1="4" y1="19.6" x2="20" y2="19.6"/>',
+ glute:'<path d="M4.5 17 L9.5 10.5 L14 10.5 L19.5 17"/><circle cx="7" cy="8.5" r="1.5"/><line x1="9.5" y1="10.5" x2="8" y2="9.5"/><circle cx="12" cy="8.7" r="1.2"/><line x1="4" y1="19.6" x2="20" y2="19.6"/>',
+ shrug:'<circle cx="12" cy="7" r="1.8"/><path d="M7 12 Q12 9.5 17 12"/><line x1="7" y1="12" x2="7" y2="17"/><line x1="17" y1="12" x2="17" y2="17"/><circle cx="7" cy="18.3" r="1.2"/><circle cx="17" cy="18.3" r="1.2"/>',
+ facepull:'<circle cx="8" cy="12" r="2.2"/><line x1="10.5" y1="10.8" x2="19" y2="8.5"/><line x1="10.5" y1="13.2" x2="19" y2="15.5"/><line x1="19" y1="8.5" x2="19" y2="15.5"/>',
+ machine:'<line x1="5" y1="19" x2="19" y2="19"/><rect x="6" y="11" width="5" height="5" rx="1"/><line x1="11" y1="13" x2="17" y2="9"/><line x1="17" y1="9" x2="19" y2="11"/><circle cx="8" cy="8.5" r="1.5"/>',
+ pushup:'<circle cx="6" cy="10" r="1.5"/><line x1="7.5" y1="10.8" x2="17" y2="13.5"/><line x1="17" y1="13.5" x2="19.5" y2="14.2"/><line x1="9" y1="11.3" x2="9" y2="16"/><line x1="4" y1="17.5" x2="20" y2="17.5"/>'
+};
+
+const EX = {
+ bench:      {n:"Bench Press (Barbell)", m:"Prsa", i:"bench", t:"Lopatky stáhnout dozadu a dolů, nohy pevně do země. Tyč dolů pod kontrolou."},
+ dbbench:    {n:"Bench Press (Dumbbell)", m:"Prsa", i:"bench", t:"Větší dráha než s tyčí — dole protáhni, nahoře činky k sobě."},
+ chestpressm:{n:"Chest Press (Machine)", m:"Prsa", i:"machine", t:"Madla ve výšce hrudníku, lopatky opřené."},
+ pushup:     {n:"Push Up", m:"Prsa", i:"pushup", t:"Tělo v přímce. Moc těžké? Opři ruce o lavici — pořád se počítá."},
+ pecdeck:    {n:"Chest Fly (Machine)", m:"Prsa", i:"fly", t:"Mírně pokrčené lokty, vpředu vteřinu stiskni."},
+ inclinedb:  {n:"Incline Bench Press (Dumbbell)", m:"Horní prsa", i:"incline", t:"Lavice 30°. Jednoručky k vnějšku hrudníku, lokty ~45° od těla."},
+ cablefly:   {n:"Cable Fly Crossovers", m:"Prsa", i:"fly", t:"Ruce se potkají před hrudníkem, lokty pořád mírně pokrčené."},
+ dip:        {n:"Chest Dip", m:"Prsa + triceps", i:"dip", t:"Mírný předklon = víc prsa. Dolů po ramena, ne níž."},
+ pullup:     {n:"Pull Up", m:"Záda", i:"pull", t:"Hrudník k tyči. Nejde 8 opakování? Guma nebo stroj s dopomocí."},
+ assistpull: {n:"Pull Up (Assisted)", m:"Záda", i:"pull", t:"Nastav dopomoc tak, abys dal(a) 8–10 čistých opakování."},
+ latpd:      {n:"Lat Pulldown (Cable)", m:"Záda", i:"pull", t:"Hrudník ven, tyč ke klíčním kostem, lokty k žebrům."},
+ cablerow:   {n:"Seated Cable Row – Bar Grip", m:"Záda", i:"row", t:"Lokty dozadu k pasu, hrudník ven, trup se nehoupá."},
+ bentrow:    {n:"Bent Over Row (Barbell)", m:"Záda", i:"row", t:"Předklon ~45°, tyč k pupku, záda celou dobu rovná."},
+ csrow:      {n:"Chest Supported Incline Row (Dumbbell)", m:"Záda", i:"incline", t:"Hrudník o lavici — trup nepomáhá, tahají jen záda."},
+ ohp:        {n:"Overhead Press (Barbell)", m:"Ramena", i:"ohp", t:"Zpevni zadek a břicho, tyč do propnutí. Neprohýbat bedra."},
+ shpressdb:  {n:"Shoulder Press (Dumbbell)", m:"Ramena", i:"ohp", t:"Vsedě s opěrkou, činky mírně před hlavu."},
+ latraise:   {n:"Lateral Raise (Dumbbell)", m:"Ramena", i:"raise", t:"Do výšky ramen, malá váha, čistě."},
+ cablelat:   {n:"Lateral Raise (Cable)", m:"Ramena", i:"raise", t:"Kladka drží napětí celou dráhu — skvělá varianta."},
+ facepull:   {n:"Face Pull", m:"Zadní ramena", i:"facepull", t:"Lano k obličeji, na konci vytoč pěsti vzhůru."},
+ shrugdb:    {n:"Shrug (Dumbbell)", m:"Trapézy", i:"shrug", t:"Ramena přímo nahoru, vteřinu podrž. Nekroužit."},
+ curlbb:     {n:"Bicep Curl (Barbell)", m:"Biceps", i:"curl", t:"Lokty u těla, dolů pomalu na 2 s."},
+ curldb:     {n:"Bicep Curl (Dumbbell)", m:"Biceps", i:"curl", t:"Bez švihu — když musíš houpat, uber."},
+ hammer:     {n:"Hammer Curl (Dumbbell)", m:"Biceps + předloktí", i:"curl", t:"Dlaně k sobě celou dráhu."},
+ tripush:    {n:"Triceps Pushdown", m:"Triceps", i:"tri", t:"Lokty přilepené u těla, propni úplně."},
+ ohtri:      {n:"Overhead Triceps Extension (Cable)", m:"Triceps", i:"tri", t:"Lokty u hlavy, dole protáhni, nahoře propni."},
+ squat:      {n:"Squat (Barbell)", m:"Kvadricepsy", i:"squat", t:"Kolena ve směru špiček, hloubka kam pustí rovná záda."},
+ hacksquat:  {n:"Hack Squat (Machine)", m:"Kvadricepsy", i:"machine", t:"Záda celou plochou na opěrce, dolů pomalu."},
+ goblet:     {n:"Goblet Squat (Dumbbell)", m:"Kvadricepsy + hýždě", i:"squat", t:"Činka u hrudníku jako pohár, lokty mezi kolena. Nejlepší dřep na učení."},
+ sumodb:     {n:"Sumo Squat (Dumbbell)", m:"Hýždě + vnitřní stehna", i:"squat", t:"Široký postoj, špičky ven, činka visí mezi nohama."},
+ legpress:   {n:"Leg Press (Machine)", m:"Kvadricepsy", i:"machine", t:"Chodidla na šířku boků, kolena nepropínat nadoraz."},
+ legext:     {n:"Leg Extension (Machine)", m:"Kvadricepsy", i:"machine", t:"Nahoře vteřinu podrž, pomalu dolů."},
+ rdl:        {n:"Romanian Deadlift (Barbell)", m:"Hamstringy", i:"hinge", t:"Boky dozadu, tyč po stehnech, záda rovná."},
+ rdldb:      {n:"Romanian Deadlift (Dumbbell)", m:"Hamstringy + hýždě", i:"hinge", t:"Boky dozadu, činky po stehnech dolů."},
+ deadlift:   {n:"Deadlift (Barbell)", m:"Celé tělo", i:"hinge", t:"Tyč u holení, zpevnit, tlač zemi od sebe. Technika > váha."},
+ lyingcurl:  {n:"Lying Leg Curl (Machine)", m:"Hamstringy", i:"machine", t:"Boky tlač do lavice, nezvedat zadek."},
+ seatcurl:   {n:"Seated Leg Curl (Machine)", m:"Hamstringy", i:"machine", t:"Plný rozsah, dole vteřinu podrž."},
+ bulg:       {n:"Bulgarian Split Squat", m:"Hýždě + kvadricepsy", i:"lunge", t:"Zadní noha na lavici, koleno ve směru špičky. Peklo, ale funguje."},
+ lungedb:    {n:"Lunge (Dumbbell)", m:"Hýždě + kvadricepsy", i:"lunge", t:"Dlouhý krok, koleno zlehka k zemi, trup vzpřímený."},
+ hipthrust:  {n:"Hip Thrust (Barbell)", m:"Hýždě", i:"glute", t:"Lopatky o lavici, nahoře zadek pevně stisknout na 1 s."},
+ glbridge:   {n:"Glute Bridge", m:"Hýždě", i:"glute", t:"Vleže na zemi, boky nahoru, nahoře stisknout. Domácí verze hip thrustu."},
+ kickback:   {n:"Glute Kickback (Cable)", m:"Hýždě", i:"glute", t:"Zanožuj patou dozadu-nahoru, bez prohnutí v bedrech."},
+ backext:    {n:"Back Extension (Hyperextension)", m:"Spodní záda + hýždě", i:"glute", t:"Plynule do roviny, ne do prohnutí."},
+ calf:       {n:"Standing Calf Raise (Machine)", m:"Lýtka", i:"calf", t:"Dole 2 s protáhnout, nahoře 1 s podržet."},
+ seatedcalf: {n:"Seated Calf Raise", m:"Lýtka", i:"calf", t:"Vsedě jde hlouběji do lýtka — plný rozsah."},
+ hangraise:  {n:"Hanging Leg Raise", m:"Břicho", i:"pull", t:"Zvedej pánev, ne jen nohy. Bez houpání."},
+ cablecrunch:{n:"Cable Crunch", m:"Břicho", i:"core", t:"Kulať páteř lokty ke kolenům — boky se nehýbou."},
+ plank:      {n:"Plank", m:"Střed těla", i:"core", t:"Tělo v přímce, zadek stisknutý, dýchej."}
+};
+
+const ALTS = {
+ bench:["dbbench","chestpressm"], dbbench:["bench","chestpressm"], chestpressm:["dbbench","pushup"],
+ inclinedb:["dip","pecdeck"], cablefly:["pecdeck"], dip:["inclinedb","tripush"],
+ pullup:["latpd","assistpull"], latpd:["pullup","assistpull"], assistpull:["latpd"],
+ cablerow:["csrow","bentrow"], bentrow:["csrow","cablerow"], csrow:["cablerow"],
+ ohp:["shpressdb"], shpressdb:["ohp"], latraise:["cablelat"], cablelat:["latraise"],
+ curlbb:["curldb","hammer"], curldb:["curlbb","hammer"], hammer:["curldb"],
+ tripush:["ohtri"], ohtri:["tripush"],
+ squat:["hacksquat","legpress"], hacksquat:["squat","legpress"], goblet:["sumodb","legpress"], sumodb:["goblet"],
+ legpress:["hacksquat","goblet"], legext:["legpress"],
+ rdl:["rdldb"], rdldb:["rdl","backext"], deadlift:["rdl"],
+ lyingcurl:["seatcurl"], seatcurl:["lyingcurl"],
+ bulg:["lungedb"], lungedb:["bulg"],
+ hipthrust:["kickback","backext","glbridge"], kickback:["hipthrust","glbridge"], glbridge:["hipthrust"], backext:["hipthrust"],
+ calf:["seatedcalf"], seatedcalf:["calf"],
+ hangraise:["cablecrunch"], cablecrunch:["hangraise"], plank:["cablecrunch"]
+};
+
+const ROUTINES = {
+ p: [
+  { id:"A", title:"A — Horní tělo (tlaky)", meta:"9 cviků · 28 sérií · ~75 min",
+    ex:[["bench","4 × 5–8",8,"3:00"],["pullup","4 × 8–10",8,"2:30"],["inclinedb","3 × 10–12",9,"2:00"],["cablerow","3 × 10–12",9,"2:00"],["latraise","3 × 15–20",10,"1:30"],["tripush","3 × 12–15",10,"1:30"],["facepull","2 × 15–20",9,"1:00"],["cablefly","3 × 12–15",10,"1:30"],["shrugdb","3 × 12–15",10,"1:30"]] },
+  { id:"B", title:"B — Dolní tělo (kvadricepsy)", meta:"7 cviků · 23 sérií · ~60 min",
+    ex:[["squat","4 × 5–8",8,"3:00"],["rdl","3 × 8–10",8,"2:30"],["legpress","3 × 12–15",9,"2:00"],["legext","3 × 12–15",10,"1:30"],["lyingcurl","3 × 12–15",9,"1:30"],["calf","4 × 12–15",10,"1:30"],["hangraise","3 × 12–15",9,"1:00"]] },
+  { id:"C", title:"C — Horní tělo (tahy)", meta:"9 cviků · 28 sérií · ~75 min",
+    ex:[["bentrow","4 × 6–10",8,"3:00"],["csrow","3 × 10–12",9,"2:00"],["ohp","4 × 6–10",8,"2:30"],["latpd","3 × 10–12",9,"2:00"],["dip","3 × 10–12",9,"2:00"],["latraise","3 × 15–20",10,"1:30"],["curlbb","3 × 10–12",10,"1:30"],["hammer","3 × 10–12",10,"1:30"],["ohtri","2 × 12–15",10,"1:00"]] },
+  { id:"D", title:"D — Dolní tělo (hamstringy)", meta:"7 cviků · 22 sérií · ~60 min",
+    ex:[["deadlift","3 × 4–6",8,"4:00"],["bulg","3 × 8–10 / noha",9,"2:00"],["seatcurl","3 × 12–15",10,"1:30"],["hipthrust","3 × 12",9,"1:30"],["backext","3 × 12–15",9,"1:30"],["calf","4 × 12–15",10,"1:30"],["cablecrunch","3 × 12–15",10,"1:00"]] },
+  { id:"K", title:"30′ Krize — když není čas", meta:"4 cviky · 11 sérií · ~28 min",
+    ex:[["legpress","3 × 8",8,"1:30"],["bench","3 × 8",8,"1:30"],["cablerow","3 × 10",8,"1:30"],["latraise","2 × 15",9,"1:30"]] }
+ ],
+ v: [
+  { id:"FB1", title:"FB1 — celé tělo", meta:"7 cviků · ~50 min",
+    ex:[["goblet","3 × 8–10",7,"2:00"],["hipthrust","3 × 10–12",8,"2:00"],["latpd","3 × 10–12",8,"2:00"],["chestpressm","3 × 10–12",8,"2:00"],["rdldb","3 × 10–12",8,"1:30"],["latraise","2 × 12–15",9,"1:00"],["plank","3 × 30–45 s","—","1:00"]] },
+  { id:"FB2", title:"FB2 — celé tělo", meta:"7 cviků · ~50 min",
+    ex:[["legpress","3 × 10–12",8,"2:00"],["bulg","3 × 8–10 / noha",8,"2:00"],["cablerow","3 × 10–12",8,"2:00"],["shpressdb","3 × 10–12",8,"2:00"],["seatcurl","3 × 12–15",9,"1:30"],["curldb","2 × 12–15",9,"1:00"],["cablecrunch","3 × 12–15",9,"1:00"]] },
+  { id:"FB3", title:"FB3 — doma s jednoručkou", meta:"6 cviků · ~35 min · když se nestihne posilovna",
+    ex:[["goblet","3 × 12–15",8,"1:30"],["lungedb","3 × 10 / noha",8,"1:30"],["glbridge","3 × 15",9,"1:00"],["pushup","3 × co dáš",9,"1:30"],["rdldb","3 × 12",8,"1:30"],["plank","3 × 30–45 s","—","1:00"]] }
+ ]
+};
+const QUEUE = ["A","B","C","D"];
+const QUEUE_T = {A:"Horní tělo — tlaky",B:"Dolní tělo — kvadricepsy",C:"Horní tělo — tahy",D:"Dolní tělo — hamstringy"};
+const DAYNOTE = {
+ 0:"🏋️ Pepule 7:30 ráno · Verune FB večer",
+ 1:"🏋️ 18:00 spolu (Pepule s Radkem)",
+ 2:"Volno — procházka, spánek",
+ 3:"🏋️ 18:00 spolu",
+ 4:"Volno — regenerace",
+ 5:"🏋️ Pepule 9:00",
+ 6:"⚖️ Ráno vážení · 17:00 nákup + 10 autobagů"
+};
+
+const STAPLES = {
+ "Základ (shake a snídaně)":[["Ovesné vločky",1,"kg"],["Arašídové máslo",2,"ks"],["Mléko polotučné",7,"l"],["Banány",12,"ks"],["Granola",1,"bal"],["Med",1,"ks"],["Borůvky / mražené ovoce",2,"bal"]],
+ "Vejce a bílkoviny do zásoby":[["Vejce",40,"ks"],["Skyr",10,"ks"],["Cottage / tvaroh",8,"ks"],["Řecký jogurt",4,"ks"],["Tuňák v kapsičce",6,"ks"],["Šunka / krůtí prsní",300,"g"],["Kefír",2,"l"]],
+ "Autobagy a svačiny (Pepule)":[["Ořechy",1,"kg"],["Čokoládové mléko",6,"ks"],["Proteinové tyčinky",6,"ks"],["Sušené meruňky",500,"g"],["Rýžové chlebíčky",2,"bal"],["Rohlíky",10,"ks"]],
+ "Ovoce a zelenina":[["Jablka",7,"ks"],["Okurka, rajčata, paprika",1,"nákup"],["Zelenina k večeřím",1,"nákup"],["Citron",2,"ks"]],
+ "Ostatní":[["Olivový olej",1,"l"],["Máslo",1,"ks"],["Žitný chleba",1,"ks"],["Toustový chleba",1,"ks"],["Lučina / žervé",2,"ks"],["Jogurtový dresink / zakysaná",2,"ks"],["Sýr plátkový",200,"g"]],
+ "Doplňky (kontrola zásob)":[["Kreatin monohydrát — 5 g denně oba",1,"ks"],["Vitamin D3 — 2000 IU denně oba",1,"ks"],["Omega-3 (rybí olej) — denně oba",1,"ks"],["Whey protein (Pepule má, vydrží ~6 týdnů)",0,"✓"]]
+};
+
+/* ============ targets (dynamic) ============ */
+const BASE_T = {
+ p:{ name:"Pepule", kcal:3150, prot:200 },
+ v:{ name:"Verune", kcal:1900, prot:125 }
+};
+function target(who){
+ return { name:BASE_T[who].name, prot:BASE_T[who].prot, kcal: store.get("kcal_"+who, BASE_T[who].kcal) };
+}
+
+/* ============ state ============ */
+const jsDay = new Date().getDay();
+const todayIdx = (jsDay + 6) % 7;
+function dateOfWeekday(i){ const d = new Date(); d.setDate(d.getDate() + (i - todayIdx)); return d.toISOString().slice(0,10); }
+function daysBetween(a,b){ return Math.round((new Date(b) - new Date(a)) / 86400000); }
+
+const state = {
+ tab:"dnes",
+ day: todayIdx,
+ week: store.get("week", ["stehna","losos","bolonske","kari","panenka","tortilly","gulas"]),
+ pick: store.get("pick", DAYS.map(()=>({vb:0,vl:0,vs1:0,vs2:2,pb:0,pl:0}))),
+ checks: store.get("checks", {}),
+ shop: store.get("shop", {}),
+ queue: store.get("queue", 0),
+ fb: store.get("fb", 0),
+ exsel: store.get("exsel", {}),
+ trWho: "p",
+ wtP: store.get("wtP", [{d:"2026-08-08",kg:94.5}]),
+ wtV: store.get("wtV", []),
+ mrP: store.get("mrP", []),
+ mrV: store.get("mrV", []),
+ lastCheckin: store.get("lastCheckin", null)
+};
+
+const SUPPS = [["cr","Kreatin 5 g"],["d3","Vitamin D3 2000 IU"],["om","Omega-3"]];
+
+const dinnerById = id => DINNERS.find(d=>d.id===id) || DINNERS[0];
+const fmt = n => n.toLocaleString("cs-CZ");
+const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ============ Dnes ============ */
+function planFor(who, dayIdx){
+ const pk = state.pick[dayIdx];
+ const din = dinnerById(state.week[dayIdx]);
+ if (who==="p") return [
+  {slot:"p0",time:"7:00",name:"Velký shake — půlka",kcal:555,prot:41},
+  {slot:"p1",time:"9:00",name:"Velký shake — druhá půlka",kcal:555,prot:41},
+  {slot:"p2",time:"11:00",...P_BAG[pk.pb],opts:P_BAG,key:"pb",idx:pk.pb},
+  {slot:"p3",time:"13:30",...P_LUNCH[pk.pl],opts:P_LUNCH,key:"pl",idx:pk.pl},
+  {slot:"p4",time:"19:30",name:din.name+" — "+din.p.por,kcal:din.p.kcal,prot:din.p.prot}
+ ];
+ return [
+  {slot:"v0",time:"7:00",...V_BREAKFAST[pk.vb],opts:V_BREAKFAST,key:"vb",idx:pk.vb},
+  {slot:"v1",time:"10:30",...V_SNACK[pk.vs1],opts:V_SNACK,key:"vs1",idx:pk.vs1},
+  {slot:"v2",time:"13:00",...V_LUNCH[pk.vl],opts:V_LUNCH,key:"vl",idx:pk.vl},
+  {slot:"v3",time:"16:30",...V_SNACK[pk.vs2],opts:V_SNACK,key:"vs2",idx:pk.vs2},
+  {slot:"v4",time:"19:30",name:din.name+" — "+din.v.por,kcal:din.v.kcal,prot:din.v.prot}
+ ];
+}
+
+function personCard(who, dayIdx){
+ const meals = planFor(who, dayIdx);
+ const tgt = target(who);
+ const iso = dateOfWeekday(dayIdx);
+ const planK = meals.reduce((a,m)=>a+m.kcal,0), planP = meals.reduce((a,m)=>a+m.prot,0);
+ let doneK=0, doneP=0;
+ meals.forEach(m=>{ if (state.checks[iso+"|"+who+"|"+m.slot]) { doneK+=m.kcal; doneP+=m.prot; } });
+ const restK = Math.max(0, tgt.kcal-doneK), restP = Math.max(0, tgt.prot-doneP);
+ const adj = tgt.kcal !== BASE_T[who].kcal;
+
+ const rows = meals.map(m=>{
+  const id = iso+"|"+who+"|"+m.slot;
+  const on = !!state.checks[id];
+  const sel = m.opts ? '<select data-pick="'+m.key+'" data-day="'+dayIdx+'">'+
+    m.opts.map((o,i)=>'<option value="'+i+'"'+(i===m.idx?" selected":"")+'>'+esc(o.name)+'</option>').join("")+'</select>' : "";
+  return '<div class="meal'+(on?" checked":"")+'">'
+   +'<input type="checkbox" data-check="'+id+'"'+(on?" checked":"")+' aria-label="Snědeno">'
+   +'<div class="body"><div class="time">'+m.time+'</div><div class="name">'+esc(m.name)+'</div>'+sel+'</div>'
+   +'<div class="nums">'+fmt(m.kcal)+' kcal · '+m.prot+' g</div></div>';
+ }).join("");
+
+ const pctK = Math.min(100, Math.round(doneK/tgt.kcal*100));
+ const pctP = Math.min(100, Math.round(doneP/tgt.prot*100));
+ return '<div class="card"><h3>'+tgt.name+'</h3>'
+  +'<p class="who">Cíl '+fmt(tgt.kcal)+' kcal · '+tgt.prot+' g bílkovin'+(adj?' <span style="color:var(--s2)">(upraveno podle progresu)</span>':'')+'</p>'
+  +'<div class="meter-row"><span class="lab">Kalorie</span><span class="val">'+fmt(doneK)+' / '+fmt(tgt.kcal)+'</span></div>'
+  +'<div class="meter m-kcal"><i style="width:'+pctK+'%"></i></div>'
+  +'<div class="meter-row"><span class="lab">Bílkoviny</span><span class="val">'+doneP+' / '+tgt.prot+' g</span></div>'
+  +'<div class="meter m-prot"><i style="width:'+pctP+'%"></i></div>'
+  +'<p class="rest">'+(restK>0
+    ? 'Zbývá do cíle <b>'+fmt(restK)+' kcal</b> a <b>'+restP+' g</b> bílkovin'
+    : '<span class="done">Cíl splněn ✓</span> — snědeno '+fmt(doneK)+' kcal a '+doneP+' g')
+  +'<br><span style="color:var(--muted)">Plán dne dává '+fmt(planK)+' kcal a '+planP+' g</span></p>'
+  + rows
+  +'<div style="margin-top:10px;padding-top:9px;border-top:1px solid var(--baseline)">'
+  +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">Suplementy — každý den</div>'
+  + SUPPS.map(s=>{
+     const sid = iso+"|"+who+"|sup-"+s[0];
+     const son = !!state.checks[sid];
+     return '<label style="display:inline-flex;align-items:center;gap:6px;margin:2px 14px 2px 0;font-size:13px;'+(son?'color:var(--text-secondary);text-decoration:line-through':'')+'">'
+      +'<input type="checkbox" data-check="'+sid+'"'+(son?" checked":"")+' style="width:18px;height:18px;accent-color:var(--s3)">'+s[1]+'</label>';
+   }).join("")
+  +'</div></div>';
+}
+
+function renderDnes(){
+ const d = state.day;
+ const opts = DAYS.map((n,i)=>'<option value="'+i+'"'+(i===d?" selected":"")+'>'+n+(i===todayIdx?" (dnes)":"")+'</option>').join("");
+ const din = dinnerById(state.week[d]);
+ document.getElementById("tab-dnes").innerHTML =
+  '<div class="card" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'
+  +'<div><div class="time" style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px">Den</div><select id="daySel">'+opts+'</select></div>'
+  +'<div style="flex:1;min-width:190px"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px">Večeře — vaří se jednou</div>'
+  +'<div style="font-size:14.5px;font-weight:600">'+esc(din.name)+'</div>'
+  +'<div style="font-size:12.5px;color:var(--text-secondary)">'+esc(DAYNOTE[d])+'</div></div></div>'
+  +'<div class="grid2">'+personCard("p",d)+personCard("v",d)+'</div>'
+  +'<div class="note"><b>Odškrtávej, co sníš.</b> Každé jídlo jde vyměnit v rozbalovacím menu — čísla se přepočítají. Recept na večeři je v záložce Recepty.</div>';
+}
+
+/* ============ Týden ============ */
+function renderTyden(){
+ const rows = DAYS.map((dn,i)=>{
+  const din = dinnerById(state.week[i]);
+  const sel = '<select data-week="'+i+'">'+DINNERS.map(o=>'<option value="'+o.id+'"'+(o.id===din.id?" selected":"")+'>'+esc(o.name)+'</option>').join("")+'</select>';
+  return '<tr'+(i===todayIdx?' class="today-row"':'')+'><td class="day">'+dn+'</td><td>'+sel
+   +'<div class="dim" style="font-size:12px;margin-top:2px">V: '+esc(din.v.por)+' · P: '+esc(din.p.por)+'</div></td>'
+   +'<td class="num dim">'+din.v.kcal+' / '+din.p.kcal+'</td></tr>';
+ }).join("");
+ document.getElementById("tab-tyden").innerHTML =
+  '<div class="card"><h3>Týden večeří</h3><p class="who">12 večeří v rotaci — vyměň cokoli, nákupní seznam se přepočítá. Číslo = kcal Verune / Pepule.</p>'
+  +'<table><thead><tr><th>Den</th><th>Večeře</th><th class="num">kcal</th></tr></thead><tbody>'+rows+'</tbody></table>'
+  +'<div class="note"><b>Pravidlo porce:</b> Pepule 1,7× víc masa i přílohy + lžíce oleje. Vař o porci navíc — Verunin zítřejší oběd.</div></div>';
+}
+
+/* ============ Recepty ============ */
+function renderRecepty(){
+ const din = DINNERS.map(r=>
+  '<details class="rec"><summary><span class="t">'+esc(r.name)+'</span><span class="k">V '+r.v.kcal+' · P '+r.p.kcal+' kcal</span></summary>'
+  +'<div class="inner"><div class="badges"><span class="badge b1">Verune: '+esc(r.v.por)+' · '+r.v.prot+' g B</span>'
+  +'<span class="badge b3">Pepule: '+esc(r.p.por)+' · '+r.p.prot+' g B</span></div>'
+  +'<div class="who" style="margin:6px 0 0">Suroviny (na oba):</div><ul class="ing">'
+  + r.ing.map(x=>'<li>'+esc(x[0])+' — '+fmt(x[1])+' '+x[2]+'</li>').join("")
+  +'</ul><div class="who" style="margin:4px 0 0">Postup:</div><ol>'
+  + r.steps.map(s=>'<li>'+esc(s)+'</li>').join("")+'</ol></div></details>').join("");
+ const extra = EXTRA_RECIPES.map(r=>
+  '<details class="rec"><summary><span class="t">'+esc(r.t)+'</span><span class="k">'+esc(r.k)+'</span></summary>'
+  +'<div class="inner"><ul class="ing">'+r.ing.map(x=>'<li>'+esc(x)+'</li>').join("")
+  +'</ul><ol>'+r.steps.map(s=>'<li>'+esc(s)+'</li>').join("")+'</ol></div></details>').join("");
+ document.getElementById("tab-recepty").innerHTML =
+  '<h2>Večeře — 12 receptů do rotace</h2>'+din
+  +'<h2>Snídaně, shake &amp; meal prep</h2>'+extra
+  +'<div class="note"><b>Vajíčkový základ týdne:</b> v neděli uvař 10 vajec natvrdo — pokryjí svačiny, autobagy i pomazánku. '
+  +'<b>Trik na nechutenství (Pepule):</b> lžíce oleje = 120 kcal, v žaludku nezabere nic.</div>';
+}
+
+/* ============ Nákup ============ */
+function renderNakup(){
+ const agg = {};
+ state.week.forEach(id => dinnerById(id).ing.forEach(x=>{
+  const k = x[0]+"|"+x[2];
+  agg[k] = (agg[k]||0) + x[1];
+ }));
+ const item = (key,label)=>{
+  const on = !!state.shop[key];
+  return '<li class="'+(on?"on":"")+'"><input type="checkbox" data-shop="'+esc(key)+'"'+(on?" checked":"")+'><span>'+esc(label)+'</span></li>';
+ };
+ const dinList = Object.keys(agg).sort((a,b)=>a.localeCompare(b,"cs")).map(k=>{
+  const p = k.split("|"); const q = Math.round(agg[k]*100)/100;
+  return item("d|"+k, p[0]+" — "+fmt(q)+" "+p[1]);
+ }).join("");
+ let staples = "";
+ for (const h in STAPLES) staples += '<div class="shop-head">'+esc(h)+'</div>'
+  + STAPLES[h].map(x=>item("s|"+x[0], x[0]+(x[1]?" — "+fmt(x[1])+" "+x[2]:""))).join("");
+ document.getElementById("tab-nakup").innerHTML =
+  '<div class="card"><div class="rhead"><h3>Nákupní seznam</h3><button class="ghost" id="clearShop" type="button">Vyčistit odškrtnuté</button></div>'
+  +'<p class="who">Spočítaný z večeří v Týdnu + týdenní zásoby pro dva. Odškrtávej rovnou v obchodě.</p>'
+  +'<ul class="shop"><div class="shop-head">Na večeře (podle vybraného týdne)</div>'+dinList+staples+'</ul>'
+  +'<div class="note"><b>Nejdůležitější hodina týdne:</b> nedělní nákup + příprava 10 autobagů + 10 vajec natvrdo. Když vyjde neděle, vyjde týden.</div></div>';
+}
+
+/* ============ Trénink ============ */
+function exRow(rid, e, i){
+ const key = rid+"|"+i;
+ const chosenId = state.exsel[key] || e[0];
+ const x = EX[chosenId] || EX[e[0]];
+ const alts = ALTS[e[0]] || [];
+ const variants = [e[0]].concat(alts);
+ const sel = alts.length
+  ? '<br><b>Varianta:</b> <select data-exsel="'+key+'">'
+    + variants.map(id=>'<option value="'+id+'"'+(id===chosenId?" selected":"")+'>'+esc(EX[id].n)+'</option>').join("")
+    + '</select>'
+  : "";
+ return '<details class="ex"><summary>'
+  +'<span class="exic"><svg viewBox="0 0 24 24" aria-hidden="true">'+(ICO[x.i]||ICO.machine)+'</svg></span>'
+  +'<span class="exname"><span class="n">'+esc(x.n)+'</span><br><span class="m">'+esc(x.m)+'</span></span>'
+  +'<span class="exsets"><span class="s">'+esc(e[1])+'</span><br><span class="r">RPE '+e[2]+' · pauza '+e[3]+'</span></span>'
+  +'</summary><p class="extip">'+esc(x.t)+sel+'</p></details>';
+}
+function routineCard(r){
+ return '<div class="card"><div class="rhead"><h3>'+esc(r.title)+'</h3><span class="rmeta">'+esc(r.meta)+'</span></div>'
+  + r.ex.map((e,i)=>exRow(r.id,e,i)).join("") + '</div>';
+}
+function renderTrenink(){
+ const who = state.trWho;
+ const tgl = '<div class="seg-toggle" style="margin-bottom:14px">'
+  +'<button data-trwho="p" class="'+(who==="p"?"on":"")+'">Pepule</button>'
+  +'<button data-trwho="v" class="'+(who==="v"?"on":"")+'">Verune</button></div>';
+ let head = "";
+ if (who==="p") {
+  const q = QUEUE[state.queue];
+  head = '<div class="card"><h3>Další ve frontě</h3><p class="who">A → B → C → D — jdeš do posilovny, uděláš další v pořadí. Krize frontu posune taky.</p>'
+   +'<div class="qbox"><div class="qletter">'+q+'</div>'
+   +'<div style="flex:1;min-width:150px"><div style="font-size:15px;font-weight:600">'+QUEUE_T[q]+'</div>'
+   +'<div class="dim" style="font-size:12.5px">Po 7:30 · Út 18:00 s Radkem · Čt 18:00 · So 9:00</div></div>'
+   +'<button class="act" id="doneBtn" type="button">Odtrénováno →</button></div></div>';
+ } else {
+  head = '<div class="card"><h3>Další na řadě</h3><p class="who">FB1 a FB2 se střídají, 3× týdně. FB3 je záloha na doma. První 3 týdny lehké váhy — učí se technika.</p>'
+   +'<div class="qbox"><div class="qletter">FB'+(state.fb+1)+'</div>'
+   +'<div style="flex:1;min-width:150px"><div style="font-size:15px;font-weight:600">Celé tělo</div>'
+   +'<div class="dim" style="font-size:12.5px">Chodí s Pepulem: Po / Út / Čt</div></div>'
+   +'<button class="act" id="doneBtnV" type="button">Odtrénováno →</button></div></div>';
+ }
+ const list = ROUTINES[who].map(routineCard).join("");
+ const tip = who==="p"
+  ? '<div class="note"><b>Dvojitá progrese:</b> stejná váha, přidávej opakování. Horní hranice ve všech sériích → +2,5 kg (horní tělo) / +5 kg (dolní) a znovu. U každého cviku jde vybrat varianta — když je nářadí obsazené nebo něco nesedí. Deload každý 7. týden: poloviční série.</div>'
+  : '<div class="note"><b>Neboj se činek:</b> silový trénink u ženy = pevné tvary, ne „chlapské svaly" — na ty nejsou hormony, nestane se to omylem. U každého cviku jde vybrat varianta. Váhy zapisuj do Hevy: síla nahoru = postava se mění, i když váha stojí.</div>';
+ document.getElementById("tab-trenink").innerHTML = tgl + head + list + tip;
+}
+
+/* ============ Progres ============ */
+function spark(entries, color){
+ if (entries.length < 2) return '<div class="dim" style="font-size:12.5px;margin:6px 0">Zapiš aspoň dvě hodnoty a ukáže se graf.</div>';
+ const w=560,h=100,pad=8;
+ const kgs = entries.map(e=>e.kg);
+ const mn = Math.min(...kgs), mx = Math.max(...kgs);
+ const span = (mx-mn)||1;
+ const pts = entries.map((e,i)=>{
+  const x = pad + i*(w-2*pad)/(entries.length-1);
+  const y = h-pad - (e.kg-mn)/span*(h-2*pad);
+  return [x,y];
+ });
+ const line = pts.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
+ return '<svg class="spark" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none" role="img" aria-label="Vývoj váhy">'
+  +'<polyline points="'+line+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>'
+  +pts.map(p=>'<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="4" fill="'+color+'" stroke="var(--surface-1)" stroke-width="2"/>').join("")
+  +'</svg>';
+}
+function weeklyRate(arr){
+ const s = arr.slice().sort((a,b)=>a.d.localeCompare(b.d));
+ if (s.length < 2) return null;
+ const last = s[s.length-1];
+ // nejstarší záznam v okně posledních 28 dní; potřebujeme rozestup aspoň 10 dní
+ let base = null;
+ for (const e of s){ if (daysBetween(e.d, last.d) <= 28) { base = base || e; } }
+ base = base || s[0];
+ const span = daysBetween(base.d, last.d);
+ if (span < 10) return null;
+ return { rate: (last.kg - base.kg) / span * 7, span: span };
+}
+function reco(who){
+ const arr = who==="p" ? state.wtP : state.wtV;
+ const t = target(who);
+ const r = weeklyRate(arr);
+ if (!r) return { txt:"Zapisuj váhu každou neděli — doporučení se objeví, jakmile budou záznamy aspoň 10 dní od sebe.", act:null };
+ const rt = Math.round(r.rate*100)/100;
+ const rtx = (rt>0?"+":"")+rt.toLocaleString("cs-CZ")+" kg/týden za posledních "+r.span+" dní";
+ if (who==="p"){
+  if (rt < 0.15) return { txt:"Tempo "+rtx+" — pomalejší než cíl (+0,25 až 0,4). <b>Nejíš dost.</b> Doporučení: přidat 250 kcal denně (med do shaku + větší večeře).", act: Math.round((t.kcal+250)/50)*50 };
+  if (rt > 0.6) return { txt:"Tempo "+rtx+" — rychlejší než cíl, přibývalo by zbytečně moc tuku. Doporučení: ubrat 200 kcal denně.", act: Math.round((t.kcal-200)/50)*50 };
+  return { txt:"Tempo "+rtx+" — <b>přesně v cíli.</b> Nic neměň, jede to.", act:null };
+ }
+ if (rt <= -0.45) return { txt:"Tempo "+rtx+" — váha padá moc rychle, brala by s sebou sval. Doporučení: přidat 200 kcal denně.", act: Math.round((t.kcal+200)/50)*50 };
+ if (rt >= 0.45) return { txt:"Tempo "+rtx+" — váha roste rychleji, než by u rekompozice měla. Doporučení: ubrat 150 kcal denně (nejdřív ale zkontroluj, jestli to není jen fáze cyklu).", act: Math.round((t.kcal-150)/50)*50 };
+ return { txt:"Tempo "+rtx+" — <b>váha drží, přesně tak to má být.</b> Postava se mění v posilovně, ne na váze.", act:null };
+}
+function wtCard(who){
+ const arr = who==="p" ? state.wtP : state.wtV;
+ const t = target(who);
+ const sorted = arr.slice().sort((a,b)=>a.d.localeCompare(b.d));
+ const first = sorted[0], last = sorted[sorted.length-1];
+ const delta = first && last ? Math.round((last.kg-first.kg)*10)/10 : 0;
+ const goalTxt = who==="p" ? "cíl +0,25–0,4 kg/týden → 105 kg" : "cíl: váha drží, mění se postava";
+ const rec = reco(who);
+ const adj = t.kcal !== BASE_T[who].kcal;
+ const list = sorted.slice(-8).reverse().map(e=>
+  '<tr><td>'+e.d.split("-").reverse().join(". ")+'</td><td class="num">'+e.kg.toLocaleString("cs-CZ")+' kg</td>'
+  +'<td class="num"><button data-delwt="'+who+'|'+e.d+'" title="Smazat">×</button></td></tr>').join("");
+ return '<div class="card"><h3>'+t.name+'</h3>'
+  +'<p class="who">'+(last ? "Aktuálně <b>"+last.kg.toLocaleString("cs-CZ")+" kg</b>"+(sorted.length>1?" · od startu "+(delta>0?"+":"")+delta.toLocaleString("cs-CZ")+" kg":"") : "Zatím bez záznamu")+' · '+goalTxt+'</p>'
+  +'<div class="wrow"><input type="number" step="0.1" min="30" max="250" id="wt-'+who+'" placeholder="kg" inputmode="decimal">'
+  +'<button class="act small" data-addwt="'+who+'" type="button">Uložit dnešní váhu</button></div>'
+  + spark(sorted, who==="p" ? "var(--s1)" : "var(--s3)")
+  +'<div class="note reco">'+rec.txt
+  +(rec.act ? ' <div style="margin-top:8px"><button class="act small" data-applyk="'+who+'|'+rec.act+'" type="button">Nastavit '+fmt(rec.act)+' kcal</button></div>' : '')
+  +(adj ? '<div style="margin-top:8px" class="dim">Aktuální cíl '+fmt(t.kcal)+' kcal (výchozí '+fmt(BASE_T[who].kcal)+') · <button class="ghost" data-applyk="'+who+'|'+BASE_T[who].kcal+'" type="button">vrátit výchozí</button></div>' : '')
+  +'</div>'
+  +'<table class="wlist"><tbody>'+list+'</tbody></table></div>';
+}
+function mrCard(who){
+ const arr = who==="p" ? state.mrP : state.mrV;
+ const fields = who==="p" ? [["pas","Pas"],["hrud","Hrudník"],["paze","Paže"]] : [["pas","Pas"],["boky","Boky"],["stehno","Stehno"]];
+ const sorted = arr.slice().sort((a,b)=>a.d.localeCompare(b.d));
+ const first = sorted[0], last = sorted[sorted.length-1];
+ const inputs = fields.map(f=>'<input type="number" step="0.5" min="20" max="200" id="mr-'+who+'-'+f[0]+'" placeholder="'+f[1]+' cm" inputmode="decimal">').join("");
+ let cmp = "";
+ if (first && last && first !== last){
+  cmp = '<p class="who" style="margin-top:8px">Od první kontroly: '+fields.map(f=>{
+   const d = Math.round((last[f[0]]-first[f[0]])*10)/10;
+   return f[1]+" "+(d>0?"+":"")+d.toLocaleString("cs-CZ")+" cm";
+  }).join(" · ")+'</p>';
+ }
+ const list = sorted.slice(-5).reverse().map(e=>
+  '<tr><td>'+e.d.split("-").reverse().join(". ")+'</td>'
+  +fields.map(f=>'<td class="num">'+(e[f[0]]||"—")+'</td>').join("")
+  +'<td class="num"><button data-delmr="'+who+'|'+e.d+'">×</button></td></tr>').join("");
+ return '<div class="card"><h3>'+BASE_T[who].name+' — míry</h3>'
+  +'<div class="wrow">'+inputs+'<button class="act small" data-addmr="'+who+'" type="button">Uložit</button></div>'
+  + cmp
+  +'<table class="mlist wlist"><thead><tr><th>Datum</th>'+fields.map(f=>'<th class="num">'+f[1]+'</th>').join("")+'<th></th></tr></thead><tbody>'+list+'</tbody></table></div>';
+}
+function renderProgres(){
+ const lc = state.lastCheckin;
+ let due = "";
+ if (lc){
+  const d = daysBetween(lc, new Date().toISOString().slice(0,10));
+  due = d >= 28 ? ' <b style="color:var(--s2)">Už je to '+d+' dní — je čas na další.</b>' : ' Další zhruba za '+(28-d)+' dní.';
+ }
+ document.getElementById("tab-progres").innerHTML =
+  '<div class="grid2">'+wtCard("p")+wtCard("v")+'</div>'
+  +'<div class="card"><h3>Měsíční vizuální kontrola</h3>'
+  +'<p class="who">Jednou za ~4 týdny: fotky (zepředu, z boku, zezadu — stejné světlo a místo), míry níže a pohled zpět: sedí oblečení jinak? Rostou váhy v Hevy?'
+  +(lc ? ' Naposledy: <b>'+lc.split("-").reverse().join(". ")+'</b>.'+due : ' Zatím neproběhla — udělejte první hned na startu, budete si děkovat.')+'</p>'
+  +'<button class="act small" id="checkinBtn" type="button">Označit dnešní kontrolu ✓</button></div>'
+  +'<div class="grid2">'+mrCard("p")+mrCard("v")+'</div>'
+  +'<div class="note"><b>Váží se v neděli ráno</b> — nalačno, po WC. Denní výkyvy jsou voda. '
+  +'Verune: cyklus hýbe váhou o 1–2 kg, proto u ní rozhodují fotky, míry a síla — ne váha. '
+  +'<b>Doporučení výše samo přepočítá kalorie</b>, když se váha 2+ týdny nehýbe správným směrem — stačí kliknout.</div>';
+}
+
+/* ============ Cíle ============ */
+function renderCile(){
+ const tp = target("p"), tv = target("v");
+ document.getElementById("tab-cile").innerHTML =
+  '<div class="grid2">'
+  +'<div class="card"><h3>Pepule</h3><p class="who">190 cm · start 94,5 kg · 34 let — nabrat zpět svaly</p>'
+  +'<table><tbody><tr><td>Kalorie</td><td class="num">'+fmt(tp.kcal)+' kcal'+(tp.kcal!==3150?' (upraveno)':'')+'</td></tr><tr><td>Bílkoviny</td><td class="num">200 g</td></tr>'
+  +'<tr><td>Tuky</td><td class="num">90 g</td></tr><tr><td>Sacharidy</td><td class="num">~385 g</td></tr>'
+  +'<tr><td>Minimum v nejhorším dni</td><td class="num">2 800 kcal</td></tr><tr><td>Cíl</td><td class="num">105 kg</td></tr></tbody></table>'
+  +'<div class="note">Milníky: 96 kg za měsíc · 99 kg za 3 měsíce · 102 kg za půl roku. Nesmlouvavé: ranní shake každý den, jídlo v tašce než vyjede.</div></div>'
+  +'<div class="card"><h3>Verune</h3><p class="who">165 cm · 64 kg · 28 let — zpevnit, ne zhubnout</p>'
+  +'<table><tbody><tr><td>Kalorie</td><td class="num">'+fmt(tv.kcal)+' kcal'+(tv.kcal!==1900?' (upraveno)':'')+'</td></tr><tr><td>Bílkoviny</td><td class="num">125 g</td></tr>'
+  +'<tr><td>Tuky</td><td class="num">60 g</td></tr><tr><td>Sacharidy</td><td class="num">~215 g</td></tr>'
+  +'<tr><td>Nikdy pod</td><td class="num">1 600 kcal</td></tr><tr><td>Váha</td><td class="num">63–65 kg beze změny</td></tr></tbody></table>'
+  +'<div class="note">Rekompozice: sval nahoru, tuk dolů, váha stojí. Milníky: 12 tréninků za měsíc · viditelná změna na fotkách za 3 měsíce · pas −2 až −4 cm.</div></div>'
+  +'</div>'
+  +'<div class="card"><h3>Nastavení v Kalorických tabulkách</h3>'
+  +'<p class="who">Appka si u obou spočítá čísla špatně — přepište je ručně. Zapisujte jen první 2–3 týdny, pak stačí odhad a tahle appka.</p>'
+  +'<table><thead><tr><th>Cíl</th><th class="num">Pepule</th><th class="num">Verune</th></tr></thead><tbody>'
+  +'<tr><td>Kalorie</td><td class="num">'+fmt(tp.kcal)+'</td><td class="num">'+fmt(tv.kcal)+'</td></tr>'
+  +'<tr><td>Bílkoviny</td><td class="num">200 g</td><td class="num">125 g</td></tr>'
+  +'<tr><td>Tuky</td><td class="num">90 g</td><td class="num">60 g</td></tr>'
+  +'<tr><td>Sacharidy</td><td class="num">~385 g</td><td class="num">~215 g</td></tr></tbody></table></div>'
+  +'<div class="card"><h3>Společná pravidla Šmídových</h3><table><tbody>'
+  +'<tr><td>1</td><td>Nečekat na hlad — jí se podle hodin. Chuť se vrátí za 2–3 týdny.</td></tr>'
+  +'<tr><td>2</td><td>Neděle rozhoduje: nákup + 10 autobagů + 10 vajec + vážení.</td></tr>'
+  +'<tr><td>3</td><td>Bílkoviny před vším ostatním, u obou.</td></tr>'
+  +'<tr><td>4</td><td>Trénink se neruší, zkracuje (30′ Krize / FB3 doma se počítají).</td></tr>'
+  +'<tr><td>5</td><td>Špatný den = jeden řádek, ne konec projektu.</td></tr>'
+  +'<tr><td>6</td><td>Kalorie se mění jen podle Progresu — ne podle pocitu.</td></tr>'
+  +'<tr><td>7</td><td>Doplňky pro oba: kreatin 5 g + vitamin D3 denně. Nic dalšího.</td></tr>'
+  +'</tbody></table></div>';
+}
+
+/* ============ wiring ============ */
+function renderAll(){ renderDnes(); renderTyden(); renderRecepty(); renderNakup(); renderTrenink(); renderProgres(); renderCile(); }
+function showTab(t){
+ state.tab = t;
+ document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected", String(b.dataset.tab===t)));
+ ["dnes","tyden","recepty","nakup","trenink","progres","cile"].forEach(n=>document.getElementById("tab-"+n).hidden = (n!==t));
+ window.scrollTo(0,0);
+}
+
+document.addEventListener("change", e=>{
+ const t = e.target;
+ if (t.dataset.check !== undefined){ state.checks[t.dataset.check] = t.checked; store.set("checks", state.checks); renderDnes(); }
+ else if (t.dataset.shop !== undefined){ state.shop[t.dataset.shop] = t.checked; store.set("shop", state.shop); renderNakup(); }
+ else if (t.dataset.pick !== undefined){ state.pick[+t.dataset.day][t.dataset.pick] = +t.value; store.set("pick", state.pick); renderDnes(); }
+ else if (t.dataset.week !== undefined){ state.week[+t.dataset.week] = t.value; store.set("week", state.week); renderDnes(); renderTyden(); renderNakup(); }
+ else if (t.dataset.exsel !== undefined){ state.exsel[t.dataset.exsel] = t.value; store.set("exsel", state.exsel); renderTrenink(); }
+ else if (t.id === "daySel"){ state.day = +t.value; renderDnes(); }
+});
+
+document.addEventListener("click", e=>{
+ const tab = e.target.closest("nav.tabs button");
+ if (tab){ showTab(tab.dataset.tab); return; }
+ const tw = e.target.closest("[data-trwho]");
+ if (tw){ state.trWho = tw.dataset.trwho; renderTrenink(); return; }
+ if (e.target.id === "doneBtn"){ state.queue = (state.queue+1)%4; store.set("queue", state.queue); renderTrenink(); return; }
+ if (e.target.id === "doneBtnV"){ state.fb = (state.fb+1)%2; store.set("fb", state.fb); renderTrenink(); return; }
+ if (e.target.id === "clearShop"){ state.shop = {}; store.set("shop", state.shop); renderNakup(); return; }
+ if (e.target.id === "checkinBtn"){ state.lastCheckin = new Date().toISOString().slice(0,10); store.set("lastCheckin", state.lastCheckin); renderProgres(); return; }
+ const ap = e.target.closest("[data-applyk]");
+ if (ap){
+  const p = ap.dataset.applyk.split("|");
+  store.set("kcal_"+p[0], +p[1]);
+  renderAll(); showTab("progres"); return;
+ }
+ const aw = e.target.closest("[data-addwt]");
+ if (aw){
+  const who = aw.dataset.addwt;
+  const inp = document.getElementById("wt-"+who);
+  const kg = parseFloat(String(inp.value).replace(",", "."));
+  if (!kg || kg<30 || kg>250) return;
+  const iso = new Date().toISOString().slice(0,10);
+  const arr = who==="p" ? state.wtP : state.wtV;
+  const i = arr.findIndex(x=>x.d===iso);
+  if (i>=0) arr[i].kg = kg; else arr.push({d:iso,kg:kg});
+  store.set(who==="p"?"wtP":"wtV", arr);
+  renderProgres(); return;
+ }
+ const dw = e.target.closest("[data-delwt]");
+ if (dw){
+  const p = dw.dataset.delwt.split("|");
+  const arr = p[0]==="p" ? state.wtP : state.wtV;
+  const i = arr.findIndex(x=>x.d===p[1]);
+  if (i>=0){ arr.splice(i,1); store.set(p[0]==="p"?"wtP":"wtV", arr); renderProgres(); }
+  return;
+ }
+ const am = e.target.closest("[data-addmr]");
+ if (am){
+  const who = am.dataset.addmr;
+  const fields = who==="p" ? ["pas","hrud","paze"] : ["pas","boky","stehno"];
+  const entry = { d: new Date().toISOString().slice(0,10) };
+  let any = false;
+  fields.forEach(f=>{
+   const el = document.getElementById("mr-"+who+"-"+f);
+   const v = parseFloat(String(el.value).replace(",", "."));
+   if (v && v>20 && v<250){ entry[f] = v; any = true; }
+  });
+  if (!any) return;
+  const arr = who==="p" ? state.mrP : state.mrV;
+  const i = arr.findIndex(x=>x.d===entry.d);
+  if (i>=0) arr[i] = Object.assign(arr[i], entry); else arr.push(entry);
+  store.set(who==="p"?"mrP":"mrV", arr);
+  renderProgres(); return;
+ }
+ const dm = e.target.closest("[data-delmr]");
+ if (dm){
+  const p = dm.dataset.delmr.split("|");
+  const arr = p[0]==="p" ? state.mrP : state.mrV;
+  const i = arr.findIndex(x=>x.d===p[1]);
+  if (i>=0){ arr.splice(i,1); store.set(p[0]==="p"?"mrP":"mrV", arr); renderProgres(); }
+  return;
+ }
+});
+
+(function theme(){
+ const root = document.documentElement, btn = document.getElementById("themeBtn");
+ const saved = store.get("theme", null);
+ if (saved) root.setAttribute("data-theme", saved);
+ const isDark = ()=>{
+  const t = root.getAttribute("data-theme");
+  if (t==="dark") return true;
+  if (t==="light") return false;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+ };
+ const sync = ()=> btn.textContent = isDark() ? "Světlý" : "Tmavý";
+ btn.addEventListener("click", ()=>{
+  const next = isDark() ? "light" : "dark";
+  root.setAttribute("data-theme", next); store.set("theme", next); sync();
+ });
+ sync();
+})();
+
+document.getElementById("todayLine").textContent = "Dnes je "+DAYFULL[todayIdx]+" · "+DAYNOTE[todayIdx].replace(/^[^\s]+\s/,"");
+renderAll();
+showTab("dnes");
+</script>
+</body>
+</html>
