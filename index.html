@@ -451,14 +451,18 @@
   @media(max-width:430px){ header.top .sub#todayLine{margin-left:0} }
   header.top .sub{font-size:12.5px;margin-top:4px}
   header.top .sub#todayLine{margin-top:1px}
+  .nextwrap{display:grid;gap:7px;margin-top:11px;grid-template-columns:minmax(0,1fr)}
+  @media(min-width:741px){ .nextwrap{grid-template-columns:repeat(3,minmax(0,1fr))} }
   .nextup{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font:inherit;
           background:var(--accent-soft);border:1px solid var(--border);border-radius:12px;
-          padding:9px 12px;margin:11px 0 0;cursor:pointer;
+          padding:9px 12px;margin:0;cursor:pointer;
           transition:background .15s ease,border-color .15s ease}
   .nextup:hover{border-color:var(--s1)}
   .nextup .ic{font-size:17px;flex:none;line-height:1}
   .nextup .tx{flex:1;min-width:0;font-size:13.5px;font-weight:600;color:var(--text-primary);
               white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .nextup.male .tx{font-weight:500;color:var(--text-secondary)}
+  .nextup.male .tx b{color:var(--text-primary);font-weight:600}
   .nextup .kdy{font-size:12px;color:var(--text-secondary);white-space:nowrap;
                font-variant-numeric:tabular-nums;flex:none;background:var(--surface-1);
                border:1px solid var(--border);border-radius:999px;padding:3px 9px}
@@ -600,7 +604,7 @@
     </div>
   </div>
   <p class="sub" id="todayLine"></p>
-  <button class="nextup" id="nextUp" type="button"></button>
+  <div class="nextwrap" id="nextUp"></div>
 </header>
 
 <div class="sess" id="sessOverlay" hidden></div>
@@ -2449,53 +2453,79 @@ function zaText(m){
  const h = Math.floor(m/60), z = m%60;
  return "za "+h+" h"+(z ? " "+z+"′" : "");
 }
-function nextUp(){
+function nextUpList(){
  const me = store.get("meId", null);
  if (!me || !BASE_T[me])
-  return { ic:"🔗", tx:"Řekni appce, kdo jsi, a propoj telefony", kdy:"nastavit", tab:"zpravy" };
+  return [{ ic:"🔗", tx:"Řekni appce, kdo jsi, a propoj telefony", kdy:"nastavit", tab:"zpravy" }];
 
+ const out = [];
  if (state.sess && state.sess.who === me){
   const t = sessSoucty();
-  return { ic:"▶︎", tx:"Trénink běží — "+t.hot+"/"+t.cel+" sérií", kdy:t.min+" min", tab:"trenink", cls:"bezi" };
+  out.push({ ic:"▶︎", tx:"<b>Trénink běží</b> — "+t.hot+"/"+t.cel+" sérií", kdy:t.min+" min", tab:"trenink", cls:"bezi" });
  }
 
  const ted = new Date(), nyni = ted.getHours()*60 + ted.getMinutes();
- const dow = todayIdx + 1;
- const iso = dateOfWeekday(todayIdx);
- let best = null;
+ const dow = todayIdx + 1, iso = dateOfWeekday(todayIdx);
+ const fronta = [];
 
- (TRENINKY[me] || []).forEach(t => {
+ if (!out.length) (TRENINKY[me] || []).forEach(t => {
   if (t[0] !== dow) return;
   const m = minutyZ(t[1]);
   if (m + 120 < nyni) return;
   const co = me === "p" ? QUEUE[state.queue] : V_QUEUE[state.fb % V_QUEUE.length];
-  if (!best || m < best.m) best = { m:m, ic:"🏋️", tx:"Trénink "+t[1]+" — "+co, tab:"trenink" };
+  fronta.push({ m:m, ic:"🏋️", tx:"<b>Trénink "+t[1]+"</b> — "+co, tab:"trenink" });
  });
 
  planFor(me, todayIdx).forEach(j => {
   if (state.checks[iso+"|"+me+"|"+j.slot]) return;
   const m = minutyZ(j.time);
   if (m + 150 < nyni) return;
-  if (!best || m < best.m) best = { m:m, ic:"🍽️", tx:j.time+" · "+j.name, tab:"dnes" };
+  fronta.push({ m:m, ic:"🍽️", tx:"<b>"+j.time+"</b> · "+esc(j.name), tab:"dnes" });
  });
 
- if (best) return { ic:best.ic, tx:best.tx, kdy:zaText(best.m - nyni), tab:best.tab };
+ fronta.sort((a,b)=>a.m-b.m).forEach(x=>{
+  if (out.length < 3) out.push({ ic:x.ic, tx:x.tx, kdy:zaText(x.m - nyni), tab:x.tab });
+ });
 
+ // doplňky, když už toho dneska moc nezbývá
  const t = target(me), tot = dayTotals(me, iso);
- if (tot.k >= t.kcal && tot.p >= t.prot)
-  return { ic:"✅", tx:"Dnešek splněný — "+fmt(tot.k)+" kcal a "+tot.p+" g bílkovin", kdy:"paráda", tab:"progres", cls:"hotovo" };
- if (tot.k >= t.kcal)
-  return { ic:"🥚", tx:"Kalorie máš, chybí "+Math.max(0, t.prot-tot.p)+" g bílkovin", kdy:"dojeď to", tab:"dnes" };
- return { ic:"🌙", tx:"Do cíle zbývá "+fmt(Math.max(0, t.kcal-tot.k))+" kcal", kdy:"ještě je čas", tab:"dnes" };
+ const zaloha = [];
+ if (tot.k < t.kcal) zaloha.push({ ic:"🌙", tx:"Do cíle zbývá <b>"+fmt(t.kcal-tot.k)+" kcal</b>", kdy:fmt(tot.k)+" snědeno", tab:"dnes", cls:"male" });
+ else if (tot.p < t.prot) zaloha.push({ ic:"🥚", tx:"Chybí <b>"+(t.prot-tot.p)+" g bílkovin</b>", kdy:"dojeď to", tab:"dnes", cls:"male" });
+ else zaloha.push({ ic:"✅", tx:"<b>Dnešek splněný</b> — "+fmt(tot.k)+" kcal", kdy:"paráda", tab:"progres", cls:"hotovo male" });
+
+ const sk = waterGet(me, iso), cilSk = Math.round(WATER_T[me]/GLASS);
+ zaloha.push(sk >= cilSk
+  ? { ic:"💧", tx:"<b>Voda splněná</b> — "+(WATER_T[me]/1000).toLocaleString("cs-CZ")+" l", kdy:"✓", tab:"dnes", cls:"male" }
+  : { ic:"💧", tx:"Voda <b>"+(sk*GLASS/1000).toLocaleString("cs-CZ")+" / "+(WATER_T[me]/1000).toLocaleString("cs-CZ")+" l</b>", kdy:"ještě "+(cilSk-sk)+"×", tab:"dnes", cls:"male" });
+
+ const st = streak(me);
+ if (st > 0) zaloha.push({ ic:"🔥", tx:"Série <b>"+st+" "+(st===1?"den":(st<5?"dny":"dní"))+" v řadě</b>", kdy:"neztrať ji", tab:"progres", cls:"male" });
+
+ // příští trénink, když dnes žádný není
+ if (!fronta.some(x=>x.ic==="🏋️") && !state.sess){
+  const dnyCZ = ["","Po","Út","St","Čt","Pá","So","Ne"];
+  let nej = null;
+  (TRENINKY[me] || []).forEach(x=>{
+   const posun = ((x[0] - dow) + 7) % 7;
+   const klic = posun === 0 ? 7 : posun;
+   if (!nej || klic < nej.k) nej = { k:klic, d:x[0], cas:x[1] };
+  });
+  if (nej) zaloha.push({ ic:"🏋️", tx:"Další trénink <b>"+dnyCZ[nej.d]+" "+nej.cas+"</b>",
+    kdy: nej.k === 1 ? "zítra" : "za "+nej.k+" dny", tab:"trenink", cls:"male" });
+ }
+
+ zaloha.forEach(z => { if (out.length < 3) out.push(z); });
+ return out.slice(0,3);
 }
+
 function renderNext(){
  const el = document.getElementById("nextUp");
  if (!el) return;
- const n = nextUp();
- el.className = "nextup" + (n.cls ? " "+n.cls : "");
- el.dataset.goto = n.tab;
- el.innerHTML = '<span class="ic">'+n.ic+'</span><span class="tx">'+esc(n.tx)+'</span>'
-   +'<span class="kdy">'+esc(n.kdy)+'</span>';
+ el.innerHTML = nextUpList().map(n =>
+  '<button class="nextup'+(n.cls ? " "+n.cls : "")+'" type="button" data-goto="'+n.tab+'">'
+  +'<span class="ic">'+n.ic+'</span><span class="tx">'+n.tx+'</span>'
+  +'<span class="kdy">'+esc(n.kdy)+'</span></button>').join("");
 }
 
 /* ============ Trénink — živá jednotka ============ */
