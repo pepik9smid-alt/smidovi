@@ -95,6 +95,44 @@
   .rkey b{color:var(--text-primary);font-variant-numeric:tabular-nums}
   .rkey s{width:9px;height:9px;border-radius:50%;display:block;flex:none}
 
+  .sess{position:fixed;inset:0;z-index:110;background:var(--page);overflow-y:auto;
+        padding:0 12px calc(112px + env(safe-area-inset-bottom))}
+  .sess[hidden]{display:none}
+  .sess-head{position:sticky;top:0;z-index:3;margin:0 -12px 12px;padding:12px 14px;
+             background:color-mix(in srgb, var(--surface-1) 92%, transparent);
+             backdrop-filter:saturate(180%) blur(14px);-webkit-backdrop-filter:saturate(180%) blur(14px);
+             border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .sess-head .t{flex:1;min-width:130px}
+  .sess-head .nm{font-size:15.5px;font-weight:700;letter-spacing:-.2px;line-height:1.2}
+  .sess-head .mt{font-size:12px;color:var(--text-secondary);font-variant-numeric:tabular-nums;margin-top:2px}
+  .sess-head .clock{font-size:23px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+  .sess-bar{height:4px;border-radius:3px;background:var(--grid);margin:-6px -12px 12px;overflow:hidden}
+  .sess-bar i{display:block;height:100%;background:var(--s3);transition:width .25s ease}
+
+  .setrow{display:grid;grid-template-columns:24px 1fr 66px 58px 40px;gap:7px;align-items:center;padding:4px 0}
+  .setrow .n{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;text-align:center}
+  .setrow .prev{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .setrow input{width:100%;text-align:center;padding:9px 2px;margin:0;font-size:14.5px}
+  .setrow .okbtn{width:100%;height:38px;border-radius:9px;border:1px solid var(--border);
+                 background:var(--surface-1);color:var(--muted);cursor:pointer;font-size:16px;line-height:1;padding:0}
+  .setrow.done .okbtn{background:var(--s3);border-color:var(--s3);color:#fff}
+  .setrow.done input{opacity:.55}
+  .sethead{display:grid;grid-template-columns:24px 1fr 66px 58px 40px;gap:7px;
+           font-size:10.5px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);
+           padding-bottom:4px;border-bottom:1px solid var(--grid);margin-bottom:4px}
+  .sethead span:nth-child(3),.sethead span:nth-child(4){text-align:center}
+  .exhead{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .exhead .n{font-size:15px;font-weight:600;flex:1;min-width:0;line-height:1.25}
+  .exhead .tgt{font-size:12px;color:var(--text-secondary);white-space:nowrap}
+  .addset{background:none;border:1px dashed var(--border);border-radius:9px;color:var(--text-secondary);
+          font:inherit;font-size:12.5px;padding:7px;width:100%;cursor:pointer;margin-top:7px}
+  .sess-foot{position:fixed;left:0;right:0;bottom:0;z-index:115;padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+             background:color-mix(in srgb, var(--surface-1) 94%, transparent);
+             backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+             border-top:1px solid var(--border);display:flex;gap:9px}
+  .sess-foot button{flex:1;padding:14px 8px;font-size:15px;border-radius:12px}
+  .prbadge{background:var(--s2);color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:700}
+
   .cook{position:fixed;inset:0;z-index:100;background:var(--surface-1);overflow-y:auto;
         padding:18px 16px calc(24px + env(safe-area-inset-bottom))}
   .cook[hidden]{display:none}
@@ -191,6 +229,8 @@
   .tbar[hidden]{display:none}
   .tbar .tlab{font-size:12.5px;color:var(--text-secondary)}
   .tbar .tnum{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;min-width:52px;text-align:center}
+  .tbar .adj{background:var(--accent-soft);border:1px solid var(--border);border-radius:8px;color:var(--text-primary);
+             font:inherit;font-size:12px;font-weight:600;padding:5px 8px;cursor:pointer;line-height:1}
   .tbar.done{background:var(--s3);border-color:var(--s3)}
   .tbar.done .tlab,.tbar.done .tnum{color:#fff}
   @media(min-width:741px){ .tbar{bottom:22px} }
@@ -550,6 +590,7 @@
   <p class="sub" id="todayLine"></p>
 </header>
 
+<div class="sess" id="sessOverlay" hidden></div>
 <div class="cook" id="cookOverlay" hidden></div>
 <div class="cook" id="onbOverlay" hidden></div>
 <div class="tbar" id="timerBar" hidden></div>
@@ -1477,6 +1518,8 @@ const state = {
  cyklus: store.get("cyklus", null),
  shopX: store.get("shopX", []),
  rem: store.get("rem", null),
+ sess: store.get("session", null),
+ hist: store.get("hist", []),
  recOpen: false,
  fotoP: store.get("fotoP", []),
  fotoV: store.get("fotoV", [])
@@ -2385,6 +2428,184 @@ function rekordy(who){
    +'</tbody></table></div>';
 }
 
+/* ============ Trénink — živá jednotka ============ */
+function plannedSets(popis){
+ const t = repTarget(popis);
+ if (t) return t.sets;
+ const m = String(popis).match(/^(\d+)\s*×/);
+ return m ? +m[1] : 3;
+}
+function minulaLekce(who, exId){
+ const iso = new Date().toISOString().slice(0,10);
+ const ses = logGet(who, exId).filter(x => x.d !== iso);
+ return ses.length ? ses[ses.length-1] : null;
+}
+function nejlepsiPred(who, exId){
+ const ses = logGet(who, exId);
+ let best = 0;
+ ses.forEach(x => x.s.forEach(p => { if (p[0] > best) best = p[0]; }));
+ return best;
+}
+
+function startSession(who, rid){
+ const r = ROUTINES[who].find(x => x.id === rid);
+ if (!r) return;
+ state.sess = {
+  who: who, rid: rid, start: new Date().toISOString(),
+  ex: r.ex.map((e,i) => {
+   const exId = state.exsel[rid+"|"+i] || e[0];
+   const min = minulaLekce(who, exId);
+   const n = plannedSets(e[1]);
+   return {
+    id: exId, popis: e[1], pauza: e[3], klic: rid+"|"+i,
+    sets: Array.from({length:n}, (_,j) => ({
+      kg: min && min.s[j] ? min.s[j][0] : (min && min.s.length ? min.s[min.s.length-1][0] : ""),
+      reps: "", done: false
+    }))
+   };
+  })
+ };
+ store.set("session", state.sess);
+ renderSession();
+}
+function saveSess(){ store.set("session", state.sess); }
+function cancelSession(){
+ state.sess = null; store.set("session", null);
+ const o = document.getElementById("sessOverlay");
+ o.hidden = true; o.innerHTML = "";
+ document.body.style.overflow = "";
+ if (state.timer){ state.timer = null; if (timerId){ clearInterval(timerId); timerId = null; }
+   const b = document.getElementById("timerBar"); if (b){ b.hidden = true; b.classList.remove("done"); } }
+ renderTrenink();
+}
+function sessPauza(){
+ const s0 = state.sess;
+ if (!s0) return "2:00";
+ for (let i = s0.ex.length-1; i >= 0; i--) if (s0.ex[i].sets.some(p=>p.done)) return s0.ex[i].pauza;
+ return s0.ex[0].pauza;
+}
+function sessSoucty(){
+ const s0 = state.sess;
+ let hot = 0, cel = 0, obj = 0;
+ s0.ex.forEach(x => x.sets.forEach(p => { cel++; if (p.done){ hot++; obj += (+p.kg || 0) * (+p.reps || 0); } }));
+ const min = Math.max(1, Math.round((Date.now() - new Date(s0.start).getTime())/60000));
+ return { hot, cel, obj: Math.round(obj), min };
+}
+
+let sessTick = null;
+function renderSession(){
+ const o = document.getElementById("sessOverlay");
+ if (!state.sess){ o.hidden = true; if (sessTick){ clearInterval(sessTick); sessTick = null; } return; }
+ const s0 = state.sess, who = s0.who;
+ const r = ROUTINES[who].find(x => x.id === s0.rid) || { title: s0.rid };
+ const t = sessSoucty();
+ document.body.style.overflow = "hidden";
+ o.hidden = false;
+
+ const telo = s0.ex.map((x,i)=>{
+  const E = EX[x.id] || { n: x.id, m: "", i: "machine", t: "" };
+  const min = minulaLekce(who, x.id);
+  const rady = x.sets.map((p,j)=>{
+   const mp = min && min.s[j] ? (fmt(min.s[j][0])+" kg × "+min.s[j][1]) : "—";
+   return '<div class="setrow'+(p.done?" done":"")+'">'
+    +'<span class="n">'+(j+1)+'</span>'
+    +'<span class="prev">'+mp+'</span>'
+    +'<input type="number" step="0.5" min="0" max="500" inputmode="decimal" placeholder="kg" '
+    +'value="'+(p.kg!==""&&p.kg!==null?p.kg:"")+'" data-sk="'+i+'|'+j+'">'
+    +'<input type="number" step="1" min="0" max="300" inputmode="numeric" placeholder="op." '
+    +'value="'+(p.reps!==""&&p.reps!==null?p.reps:"")+'" data-sr="'+i+'|'+j+'">'
+    +'<button class="okbtn" data-sdone="'+i+'|'+j+'" type="button" aria-label="Hotovo">✓</button>'
+    +'</div>';
+  }).join("");
+  return '<div class="card">'
+   +'<div class="exhead"><span class="exic"><svg viewBox="0 0 24 24" aria-hidden="true">'+(ICO[E.i]||ICO.machine)+'</svg></span>'
+   +'<span class="n">'+esc(E.n)+'</span><span class="tgt">'+esc(x.popis)+'</span></div>'
+   +'<div class="sethead"><span>#</span><span>Minule</span><span>kg</span><span>opak.</span><span></span></div>'
+   + rady
+   +'<button class="addset" data-addsess="'+i+'" type="button">+ Přidat sérii</button>'
+   +'<div class="hint" style="margin-top:6px">'+esc(E.t)+'</div>'
+   +'</div>';
+ }).join("");
+
+ o.innerHTML =
+  '<div class="sess-head">'
+  +'<div class="t"><div class="nm">'+esc(r.title)+'</div>'
+  +'<div class="mt">'+t.hot+'/'+t.cel+' sérií'+(t.obj?' · '+fmt(t.obj)+' kg objem':'')+'</div></div>'
+  +'<div class="clock" id="sessClock">'+dvoj(Math.floor(t.min/60))+":"+dvoj(t.min%60)+'</div>'
+  +'<button class="ghost" data-sess="zrus" type="button">Zrušit</button></div>'
+  +'<div class="sess-bar"><i style="width:'+Math.round(t.hot/Math.max(1,t.cel)*100)+'%"></i></div>'
+  + telo
+  +'<div class="sess-foot">'
+  +'<button class="ghost" data-sess="pauza" type="button">⏱ Pauza '+esc(sessPauza())+'</button>'
+  +'<button class="act" data-sess="konec" type="button">Hotovo — uložit ✓</button></div>';
+
+ if (sessTick) clearInterval(sessTick);
+ sessTick = setInterval(()=>{
+  if (!state.sess){ clearInterval(sessTick); sessTick = null; return; }
+  const el = document.getElementById("sessClock");
+  if (!el) return;
+  const m = Math.max(0, Math.round((Date.now() - new Date(state.sess.start).getTime())/60000));
+  el.textContent = dvoj(Math.floor(m/60))+":"+dvoj(m%60);
+ }, 15000);
+}
+
+function finishSession(){
+ const s0 = state.sess;
+ if (!s0) return;
+ const who = s0.who, t = sessSoucty();
+ if (!t.hot){ cancelSession(); return; }
+ let osobaky = [];
+ s0.ex.forEach(x => {
+  const pred = nejlepsiPred(who, x.id);
+  let nej = 0;
+  x.sets.filter(p => p.done).forEach(p => {
+   logAdd(who, x.id, (+p.kg || 0), (+p.reps || 0));
+   if ((+p.kg || 0) > nej) nej = (+p.kg || 0);
+  });
+  if (nej > 0 && nej > pred && pred > 0) osobaky.push((EX[x.id]||{n:x.id}).n+" "+fmt(nej)+" kg");
+ });
+ // fronta
+ let hotovo = s0.rid;
+ if (who === "p" && QUEUE.indexOf(s0.rid) >= 0){
+  state.queue = (QUEUE.indexOf(s0.rid) + 1) % QUEUE.length; store.set("queue", state.queue);
+ } else if (who === "v" && V_QUEUE.indexOf(s0.rid) >= 0){
+  state.fb = (V_QUEUE.indexOf(s0.rid) + 1) % V_QUEUE.length; store.set("fb", state.fb);
+ }
+ // historie
+ state.hist = (state.hist || []).concat([{ d: new Date().toISOString().slice(0,10), who: who,
+   rid: hotovo, min: t.min, sets: t.hot, obj: t.obj }]).slice(-40);
+ store.set("hist", state.hist);
+
+ pushMsg("tr-"+who+"-"+new Date().toISOString().slice(0,10)+"-"+hotovo, "🏋️",
+   BASE_T[who].name+" odtrénoval(a) "+hotovo,
+   t.hot+" sérií za "+t.min+" minut"+(t.obj?", objem "+fmt(t.obj)+" kg":"")
+   +(osobaky.length ? ". 🏆 Nový osobák: "+osobaky.join(", ")+"!" : "."));
+ osobaky.forEach((o,i)=> pushMsg("pr-"+who+"-"+new Date().toISOString().slice(0,10)+"-"+i, "🏆",
+   "Osobní rekord — "+BASE_T[who].name, o+". Tohle je ten důkaz, že to funguje."));
+
+ state.sess = null; store.set("session", null);
+ const el = document.getElementById("sessOverlay");
+ el.hidden = true; el.innerHTML = "";
+ document.body.style.overflow = "";
+ if (sessTick){ clearInterval(sessTick); sessTick = null; }
+ if (state.timer){ state.timer = null; if (timerId){ clearInterval(timerId); timerId = null; }
+   const b = document.getElementById("timerBar"); if (b) b.hidden = true; }
+ kontrolaOdznaku(); celebrate(osobaky.length ? "🏆" : "💪");
+ renderAll(); showTab("trenink"); syncDot();
+ if (window.sync && sync.on) sync.pushStatus();
+}
+
+function histCard(who){
+ const h = (state.hist || []).filter(x => x.who === who).slice(-6).reverse();
+ if (!h.length) return "";
+ return '<div class="card"><h3>Poslední tréninky</h3>'
+  +'<table><thead><tr><th>Kdy</th><th>Co</th><th class="num">Série</th><th class="num">Čas</th><th class="num">Objem</th></tr></thead><tbody>'
+  + h.map(x=>'<tr><td>'+czDate(x.d)+'</td><td>'+esc(x.rid)+'</td><td class="num">'+x.sets+'</td>'
+    +'<td class="num">'+x.min+'′</td><td class="num">'+fmt(x.obj)+' kg</td></tr>').join("")
+  +'</tbody></table>'
+  +'<div class="hint">Objem = kg × opakování sečteno přes celý trénink. Když roste, rosteš i ty.</div></div>';
+}
+
 /* ---- odpočinkový časovač ---- */
 let timerId = null;
 function parseMin(str){
@@ -2404,8 +2625,10 @@ function tickTimer(){
   const left = Math.max(0, Math.round((state.timer.end - Date.now())/1000));
   bar.hidden = false;
   bar.innerHTML = '<span class="tlab">'+(left ? "Pauza" : "Jdeme!")+'</span>'
+   +(left ? '<button class="adj" data-tadj="-15" type="button">−15</button>' : '')
    +'<span class="tnum">'+Math.floor(left/60)+":"+String(left%60).padStart(2,"0")+'</span>'
-   +'<button class="ghost" id="timerStop" type="button">'+(left ? "Zrušit" : "OK")+'</button>';
+   +(left ? '<button class="adj" data-tadj="15" type="button">+15</button>' : '')
+   +'<button class="ghost" id="timerStop" type="button">'+(left ? "Přeskočit" : "OK")+'</button>';
   if (left <= 0){
     if (timerId){ clearInterval(timerId); timerId = null;
       if (navigator.vibrate) { try { navigator.vibrate([200,120,200]); } catch(e){} } }
@@ -2442,6 +2665,7 @@ function routineCard(r){
  return '<div class="card"><div class="rhead"><h3>'+esc(r.title)+'</h3>'
   +'<span class="rmeta">'+r.ex.length+' cviků · '+serie+' sérií · ~'+r.min+' min</span></div>'
   +'<p class="who" style="margin-bottom:10px"><span class="tpill">'+TYP_LABEL[r.typ]+'</span> '+esc(r.tip)+'</p>'
+  +'<button class="act" data-start="'+r.id+'" type="button" style="width:100%;margin-bottom:10px">▶︎ Spustit trénink</button>'
   + r.ex.map((e,i)=>exRow(r.id,e,i)).join("") + '</div>';
 }
 const TR_TIME = [["all","Vše"],[20,"⏱ do 20 min"],[30,"⏱ do 30 min"],[45,"⏱ do 45 min"],[999,"⏱ mám čas"]];
@@ -2471,6 +2695,7 @@ function trReco(who){
   +'<div class="rhead"><h3>💡 Co dneska</h3><span class="rmeta">~'+pick.min+' min</span></div>'
   +'<div style="font-size:16px;font-weight:600;margin-bottom:3px">'+esc(pick.title)+'</div>'
   +'<p class="who" style="margin-bottom:8px">'+proc+'</p>'
+  +'<button class="act" data-start="'+pick.id+'" type="button" style="width:100%;margin:2px 0 10px">▶︎ Spustit trénink</button>'
   +'<div class="note" style="margin:0">'+esc(pick.tip)+'</div></div>';
 }
 
@@ -2501,6 +2726,13 @@ function renderTrenink(){
   + TR_TYP.map(x=>'<button class="chip'+(state.trTyp===x[0]?" on":"")+'" data-trtyp="'+x[0]+'">'+x[1]
     +' <span>'+ROUTINES[who].filter(r=>x[0]==="all"||r.typ===x[0]).length+'</span></button>').join("")
   + '</div>';
+ const bezi = state.sess && state.sess.who === who
+  ? '<div class="card" style="border-color:var(--s3)"><div class="rhead"><h3>▶︎ Trénink běží</h3>'
+    +'<span class="rmeta">'+sessSoucty().hot+'/'+sessSoucty().cel+' sérií · '+sessSoucty().min+' min</span></div>'
+    +'<p class="who">'+esc((ROUTINES[who].find(x=>x.id===state.sess.rid)||{title:""}).title)+'</p>'
+    +'<div class="wrow" style="margin:0"><button class="act small" data-sess="pokrac" type="button">Pokračovat</button>'
+    +'<button class="ghost" data-sess="zrus" type="button">Zahodit</button></div></div>'
+  : "";
  const eq = (state.exQ || "").trim().toLowerCase();
  const hledejEx = '<input type="search" class="search" id="exQ" placeholder="🔍 Hledej cvik — třeba ramena, dřep, doma, kardio…" '
   +'value="'+esc(state.exQ||"")+'" autocomplete="off">';
@@ -2528,7 +2760,7 @@ function renderTrenink(){
  const tip = who==="p"
   ? '<div class="note"><b>Dvojitá progrese:</b> stejná váha, přidávej opakování. Horní hranice ve všech sériích → +2,5 kg (horní tělo) / +5 kg (dolní) a znovu. U každého cviku jde vybrat varianta — když je nářadí obsazené nebo něco nesedí. Deload každý 7. týden: poloviční série.</div>'
   : '<div class="note"><b>Neboj se činek:</b> silový trénink u ženy = pevné tvary, ne „chlapské svaly" — na ty nejsou hormony, nestane se to omylem. U každého cviku jde vybrat varianta. Váhy zapisuj do Hevy: síla nahoru = postava se mění, i když váha stojí.</div>';
- document.getElementById("tab-trenink").innerHTML = tgl + head + trReco(who) + hledejEx + nalez + filtry + list + rekordy(who) + tip
+ document.getElementById("tab-trenink").innerHTML = tgl + bezi + head + trReco(who) + hledejEx + nalez + filtry + list + histCard(who) + rekordy(who) + tip
   + '<div class="note"><b>Deník máš přímo tady.</b> Rozklikni cvik, zapiš kg a opakování — appka si pamatuje, '
   + 'co jsi zvedal(a) minule, a sama řekne, kdy přidat. Tlačítko s časem spustí odpočinek mezi sériemi.</div>';
 }
@@ -3456,6 +3688,13 @@ function keepFocus(id){
  try { el.setSelectionRange(v.length, v.length); } catch(err){}
 }
 document.addEventListener("input", e=>{
+ if (state.sess && e.target.dataset && (e.target.dataset.sk !== undefined || e.target.dataset.sr !== undefined)){
+  const key = e.target.dataset.sk !== undefined ? e.target.dataset.sk : e.target.dataset.sr;
+  const p = key.split("|"), set = state.sess.ex[+p[0]].sets[+p[1]];
+  if (e.target.dataset.sk !== undefined) set.kg = e.target.value; else set.reps = e.target.value;
+  saveSess();
+  return;
+ }
  if (e.target.id === "recQ"){ state.recQ = e.target.value; renderRecepty(); keepFocus("recQ"); }
  else if (e.target.id === "exQ"){ state.exQ = e.target.value; renderTrenink(); keepFocus("exQ"); }
 });
@@ -3729,6 +3968,57 @@ document.addEventListener("click", e=>{
   store.set("msgs", msgs); renderZpravy(); return;
  }
  if (e.target.id === "clearMsgs"){ store.set("msgs", []); renderZpravy(); return; }
+ const st0 = e.target.closest("[data-start]");
+ if (st0){
+  const rozdelany = state.sess && state.sess.ex.some(x => x.sets.some(p => p.done));
+  if (rozdelany && state.sess.rid !== st0.dataset.start){
+   renderSession();          // rozdělaný trénink nepřepisujeme — otevřeme ho
+   return;
+  }
+  startSession(state.trWho, st0.dataset.start); return;
+ }
+ const sd = e.target.closest("[data-sdone]");
+ if (sd){
+  const p = sd.dataset.sdone.split("|"), i = +p[0], j = +p[1];
+  const set = state.sess.ex[i].sets[j];
+  const kgEl = document.querySelector('[data-sk="'+i+'|'+j+'"]');
+  const rEl  = document.querySelector('[data-sr="'+i+'|'+j+'"]');
+  if (!set.done){
+   const reps = parseInt(rEl.value, 10);
+   if (!reps){ rEl.focus(); return; }
+   set.kg = parseFloat(String(kgEl.value).replace(",", ".")) || 0;
+   set.reps = reps; set.done = true;
+   saveSess(); renderSession();
+   startTimer(parseMin(state.sess.ex[i].pauza), state.sess.ex[i].pauza);
+  } else {
+   set.done = false; saveSess(); renderSession();
+  }
+  return;
+ }
+ const ad = e.target.closest("[data-addsess]");
+ if (ad){
+  const i = +ad.dataset.addsess, sety = state.sess.ex[i].sets;
+  const posl = sety[sety.length-1] || { kg:"", reps:"" };
+  sety.push({ kg: posl.kg, reps: "", done: false });
+  saveSess(); renderSession(); return;
+ }
+ const sx = e.target.closest("[data-sess]");
+ if (sx){
+  const a = sx.dataset.sess;
+  if (a === "konec") finishSession();
+  else if (a === "zrus") cancelSession();
+  else if (a === "pokrac") renderSession();
+  else if (a === "pauza"){ const p0 = sessPauza(); startTimer(parseMin(p0), p0); }
+  return;
+ }
+ const ta = e.target.closest("[data-tadj]");
+ if (ta){
+  if (state.timer){ state.timer.end += (+ta.dataset.tadj)*1000;
+   if (state.timer.end < Date.now()) state.timer.end = Date.now();
+   if (!timerId) timerId = setInterval(tickTimer, 250);
+   tickTimer(); }
+  return;
+ }
  const as = e.target.closest("[data-addset]");
  if (as){
   const p = as.dataset.addset.split("|");
@@ -3802,7 +4092,7 @@ document.addEventListener("click", e=>{
  if (e.target.id === "icsGet"){ stahniIcs(); return; }
  if (e.target.id === "expBtn"){
   const keys = ["week","pick","checks","shop","queue","fb","exsel","wtP","wtV","mrP","mrV","lastCheckin",
-                "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem"];
+                "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist"];
   const dump = {};
   keys.forEach(k=>{ const v = store.get(k, null); if (v !== null) dump[k] = v; });
   const box = document.getElementById("dataBox");
@@ -3900,6 +4190,7 @@ document.addEventListener("click", e=>{
 document.addEventListener("keydown", e=>{
  if (e.key !== "Escape") return;
  if (state.cook) closeCook();
+ else if (state.sess){ const o = document.getElementById("sessOverlay"); o.hidden = true; document.body.style.overflow=""; renderTrenink(); }
  else if (state.onb !== null) closeOnb();
 });
 
@@ -3934,6 +4225,7 @@ document.getElementById("mottoLine").textContent = MOTTA[todayIdx];
 document.getElementById("todayLine").textContent = "Dnes je "+DAYFULL[todayIdx]+" · "+DAYNOTE[todayIdx].replace(/^[^\s]+\s/,"");
 nactiMoje();
 renderAll();
+if (state.sess) renderSession();
 showTab("dnes");
 renderNastaveni();
 if (!store.get("onb", false)) openOnb();
