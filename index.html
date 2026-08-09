@@ -218,6 +218,48 @@
   .mine:last-child{border-bottom:none}
   .mine .x{background:none;border:0;color:var(--muted);cursor:pointer;font-size:17px;padding:0 4px;line-height:1}
 
+  .bell{position:relative;background:var(--surface-1);border:1px solid var(--border);border-radius:11px;
+        width:38px;height:34px;display:grid;place-items:center;font-size:17px;cursor:pointer;flex:none;
+        transition:background .15s ease,border-color .15s ease}
+  .bell:hover{border-color:var(--s1)}
+  .bell .dot{position:absolute;top:5px;right:5px;width:9px;height:9px;border-radius:50%;
+             background:var(--s2);border:2px solid var(--surface-1)}
+  .bell .dot[hidden]{display:none}
+
+  .sheet{position:fixed;inset:0;z-index:130;background:var(--page);overflow-y:auto;
+         padding:0 12px calc(28px + env(safe-area-inset-bottom))}
+  .sheet[hidden]{display:none}
+  .nrow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+   padding:11px 0;border-bottom:1px solid var(--grid)}
+ .nrow:last-child{border-bottom:0}
+ .nlab{min-width:0;flex:1 1 150px;display:flex;flex-direction:column;gap:2px;font-size:14px}
+ .nlab .dim{font-size:12px;line-height:1.35}
+ .nctl{flex:0 0 auto;display:flex;align-items:center;gap:8px}
+ .nctl select{width:auto;min-width:132px;padding:7px 9px;font-size:13.5px}
+ .nnum{display:inline-flex;align-items:center;gap:6px;background:var(--surface-1);border:1px solid var(--border);
+   border-radius:9px;padding:2px 9px 2px 4px}
+ .nnum input{width:78px;border:0;background:transparent;color:var(--text-primary);font:inherit;
+   font-weight:700;font-size:14.5px;text-align:right;padding:6px 2px}
+ .nnum input::-webkit-outer-spin-button,.nnum input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+ .nnum i{font-style:normal;font-size:12px;color:var(--text-secondary)}
+ .dnyp{display:flex;flex-wrap:wrap;gap:6px}
+ .dnyp button{padding:7px 11px;border-radius:9px;border:1px solid var(--border);background:var(--surface-1);
+   color:var(--text-secondary);font:inherit;font-size:13px;font-weight:600;cursor:pointer;min-width:40px}
+ .dnyp button.on{background:var(--s1);border-color:var(--s1);color:#fff}
+ .caslist{margin-top:8px;gap:8px}
+ .caslist span{display:inline-flex;align-items:center;gap:6px;background:var(--surface-1);
+   border:1px solid var(--border);border-radius:9px;padding:4px 8px;font-size:13px}
+ .caslist input{border:0;background:transparent;color:var(--text-primary);font:inherit;font-size:13px;padding:2px}
+ .nblok{margin-top:12px;padding:11px 12px;background:var(--surface-1);border:1px solid var(--border);border-radius:12px}
+ .nblok .nh{font-weight:700;font-size:14px;margin-bottom:8px}
+ .nintro h3{margin-bottom:2px}
+ .sheet-head{position:sticky;top:0;z-index:3;margin:0 -12px 12px;padding:13px 14px;
+              background:color-mix(in srgb, var(--surface-1) 93%, transparent);
+              backdrop-filter:saturate(180%) blur(14px);-webkit-backdrop-filter:saturate(180%) blur(14px);
+              border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+  .sheet-head h2{flex:1;margin:0;font-size:17px;text-transform:none;letter-spacing:-.2px;color:var(--text-primary)}
+  .sheet-head h2::before{display:none}
+
   .navrh{border-left:3px solid var(--s2);background:color-mix(in srgb, var(--s2) 8%, transparent);
          border-radius:0 12px 12px 0;padding:11px 13px;margin-bottom:9px}
   .navrh .t{font-size:13.5px;line-height:1.45}
@@ -713,6 +755,7 @@
   <div class="hrow">
     <h1 class="brand"><span class="logo" aria-hidden="true"><svg viewBox="0 0 32 32"><rect x="1.5" y="12.2" width="3.6" height="7.6" rx="1.3" opacity=".8"/><rect x="26.9" y="12.2" width="3.6" height="7.6" rx="1.3" opacity=".8"/><rect x="6.2" y="8.6" width="5.2" height="14.8" rx="2.1"/><rect x="20.6" y="8.6" width="5.2" height="14.8" rx="2.1"/><rect x="10.8" y="14.5" width="10.4" height="3" rx="1.5"/></svg></span><span class="wm">PEVE<span>FIT</span></span></h1>
     <div class="hbtn">
+      <button class="bell" id="bellBtn" type="button" aria-label="Oznámení">🔔<span class="dot" id="navDot" hidden></span></button>
       <button class="pill" id="syncPill" type="button"><i></i><span>Nepropojeno</span></button>
       <button class="ghost" id="themeBtn" type="button">Tmavý</button>
     </div>
@@ -721,6 +764,11 @@
   <div class="nextwrap" id="nextUp"></div>
 </header>
 
+<div class="sheet" id="notifSheet" hidden>
+  <div class="sheet-head"><h2>🔔 Oznamovací centrum</h2>
+    <button class="ghost" id="notifClose" type="button">Zavřít</button></div>
+  <div id="tab-zpravy"></div>
+</div>
 <div class="sess" id="sessOverlay" hidden></div>
 <div class="cook" id="cookOverlay" hidden></div>
 <div class="cook" id="onbOverlay" hidden></div>
@@ -731,7 +779,7 @@
   <button role="tab" data-grp="jidlo"   aria-selected="false"><span class="ticon">🍳</span>Jídlo</button>
   <button role="tab" data-grp="trenink" aria-selected="false"><span class="ticon">🏋️</span>Trénink</button>
   <button role="tab" data-grp="progres" aria-selected="false"><span class="ticon">📈</span>Progres</button>
-  <button role="tab" data-grp="zpravy"  aria-selected="false"><span class="ticon">🔔<span class="dot" id="navDot" hidden></span></span>Zprávy</button>
+  <button role="tab" data-grp="nastaveni" aria-selected="false"><span class="ticon">⚙️</span>Nastavení</button>
 </nav>
 <div class="subnav" id="subnav" role="tablist" hidden></div>
 
@@ -742,8 +790,8 @@
 <section id="tab-trenink" hidden></section>
 <section id="tab-plan" hidden></section>
 <section id="tab-progres" hidden></section>
-<section id="tab-zpravy" hidden></section>
 <section id="tab-cile" hidden></section>
+<section id="tab-nastaveni" hidden></section>
 
 <footer>
   Odškrtnutí, váhy a míry zůstávají v tomhle telefonu. Zprávy, oblíbené recepty, jídelníček a nákup
@@ -1613,8 +1661,13 @@ const BASE_T = {
  p:{ name:"Pepulus", kcal:3150, prot:200 },
  v:{ name:"Verune", kcal:1900, prot:125 }
 };
+/* nast(klic, vychozi) — jedno misto pro vsechna uzivatelska nastaveni */
+function nast(k, def){ const v = store.get("n_"+k, null); return (v === null || v === undefined) ? def : v; }
+function nastSet(k, v){ store.set("n_"+k, v); }
 function target(who){
- return { name:BASE_T[who].name, prot:BASE_T[who].prot, kcal: store.get("kcal_"+who, BASE_T[who].kcal) };
+ return { name:BASE_T[who].name,
+          prot: nast("prot_"+who, BASE_T[who].prot),
+          kcal: store.get("kcal_"+who, BASE_T[who].kcal) };
 }
 
 /* ============ state ============ */
@@ -1660,30 +1713,33 @@ const state = {
  jidlo: store.get("jidlo", {}),
  navrhy: store.get("navrhy", {}),
  hlaskaI: null,
+ notif: false,
  nakupDni: store.get("nakupDni", 7),
  spizOdecist: store.get("spizOdecist", false),
  obchod: false,
  dayIso: null,
  planDen: null,
  recOpen: false,
+ resetPtl: false,
  fotoP: store.get("fotoP", []),
  fotoV: store.get("fotoV", [])
 };
 
 const WATER_T = { p: 3000, v: 2200 };
 const GLASS = 250;
+function waterCil(who){ return nast("water_"+who, WATER_T[who]); }
 function waterGet(who, iso){ return state.water[iso+"|"+who] || 0; }
 function waterSet(who, iso, n){
  state.water[iso+"|"+who] = Math.max(0, Math.min(20, n));
  store.set("water", state.water);
 }
 function vodaRow(who, iso){
- const n = waterGet(who, iso), cil = Math.round(WATER_T[who]/GLASS);
+ const n = waterGet(who, iso), cil = Math.round(waterCil(who)/GLASS);
  const ml = n*GLASS;
  return '<div class="voda"><button data-water="'+who+'|'+iso+'|-1" type="button" aria-label="Ubrat">−</button>'
   +'<div class="gl">'+Array.from({length:cil},(_,i)=>'<i class="'+(i<n?"on":"")+'"></i>').join("")+'</div>'
   +'<button data-water="'+who+'|'+iso+'|1" type="button" aria-label="Přidat">+</button>'
-  +'<span class="lit">💧 '+(ml/1000).toLocaleString("cs-CZ")+' / '+(WATER_T[who]/1000).toLocaleString("cs-CZ")+' l</span></div>';
+  +'<span class="lit">💧 '+(ml/1000).toLocaleString("cs-CZ")+' / '+(waterCil(who)/1000).toLocaleString("cs-CZ")+' l</span></div>';
 }
 
 const SUPPS = [["cr","Kreatin 5 g"],["d3","Vitamin D3 2000 IU"],["om","Omega-3"]];
@@ -1899,6 +1955,14 @@ function uklidJidlo(){
 }
 
 /* ============ Dnes ============ */
+function posunCas(t){
+ const off = nast("casy", 0);
+ if (!off) return t;
+ const p = String(t).split(":");
+ let m = (+p[0])*60 + (+p[1]) + off;
+ m = ((m % 1440) + 1440) % 1440;
+ return Math.floor(m/60) + ":" + String(m%60).padStart(2,"0");
+}
 function planForIso(who, iso){
  const pk = pickIso(iso);
  const din = dinIso(iso);
@@ -1908,14 +1972,14 @@ function planForIso(who, iso){
   {slot:"p2",time:"11:00",...P_BAG[pk.pb],opts:P_BAG,key:"pb",idx:pk.pb},
   {slot:"p3",time:"13:30",...P_LUNCH[pk.pl],opts:P_LUNCH,key:"pl",idx:pk.pl},
   {slot:"p4",time:"19:30",name:din.name+" — "+din.p.por,kcal:din.p.kcal,prot:din.p.prot}
- ];
+ ].map(j=>Object.assign(j,{time:posunCas(j.time)}));
  return [
   {slot:"v0",time:"7:00",...V_BREAKFAST[pk.vb],opts:V_BREAKFAST,key:"vb",idx:pk.vb},
   {slot:"v1",time:"10:30",...V_SNACK[pk.vs1],opts:V_SNACK,key:"vs1",idx:pk.vs1},
   {slot:"v2",time:"13:00",...V_LUNCH[pk.vl],opts:V_LUNCH,key:"vl",idx:pk.vl},
   {slot:"v3",time:"16:30",...V_SNACK[pk.vs2],opts:V_SNACK,key:"vs2",idx:pk.vs2},
   {slot:"v4",time:"19:30",name:din.name+" — "+din.v.por,kcal:din.v.kcal,prot:din.v.prot}
- ];
+ ].map(j=>Object.assign(j,{time:posunCas(j.time)}));
 }
 function planFor(who, dayIdx){ return planForIso(who, dateOfWeekday(dayIdx)); }
 
@@ -2053,7 +2117,7 @@ function renderDnes(){
   +'Co tam nastavíš (večeři, svačiny, kdo vaří), platí pro ten konkrétní den a vidí to i ten druhý. '
   +'<b>Odškrtávej, co sníš.</b> Každé jídlo jde vyměnit v rozbalovacím menu — a je tam i sekce <b>Venku 🌯</b> pro durum, mekáč, gyros nebo bagetu z pumpy. '
   +'Když sníš něco venku, přepni to tam a čísla sedí dál. <b>Žádné výčitky, jen ať to víme.</b></div>'
-  + hlaskaCard();
+  + (nast("hlasky", true) ? hlaskaCard() : "");
 }
 
 /* ============ Týden ============ */
@@ -2643,6 +2707,7 @@ const TRENINKY = {
      [2,"18:00",55,"🏋️ Trénink spolu"],
      [4,"18:00",55,"🏋️ Trénink spolu"]]
 };
+function treninky(who){ return nast("tren_"+who, TRENINKY[who]) || []; }
 
 const PRIPOMINKY = [
  { id:"supl", ic:"💊", n:"Kreatin a vitamíny", pop:"Každé ráno v 8:00",
@@ -2653,12 +2718,12 @@ const PRIPOMINKY = [
 
  { id:"trenink", ic:"🏋️", n:"Tréninky", pop:"Podle vašeho rozvrhu, upozornění 45 minut předem",
    det:"Pepulus Po ráno, Út, Čt a So. Verune Po, Út a Čt večer.", def:true,
-   ev:(who)=>TRENINKY[who].map(t=>({ freq:"WEEKLY", dow:t[0], cas:t[1], min:t[2], alarm:45,
+   ev:(who)=>treninky(who).map(t=>({ freq:"WEEKLY", dow:t[0], cas:t[1], min:t[2], alarm:45,
      nazev:t[3], popis:"Appka ti v Tréninku poradí, co dneska — a když nemáš čas, vybere kratší variantu." })) },
 
  { id:"zapis", ic:"📝", n:"Zapiš trénink do deníku", pop:"V tréninkové dny večer ve 21:00",
    det:"Bez zápisu appka neví, kdy ti má říct, že máš přidat na váze.", def:true,
-   ev:(who)=>TRENINKY[who].map(t=>({ freq:"WEEKLY", dow:t[0], cas:"21:00", min:5,
+   ev:(who)=>treninky(who).map(t=>({ freq:"WEEKLY", dow:t[0], cas:"21:00", min:5,
      nazev:"📝 Byl jsi cvičit? Zapiš to",
      popis:"Otevři Trénink, rozklikni cviky a zapiš kg × opakování. Trvá to minutu a je to celý smysl deníku." })) },
 
@@ -2914,6 +2979,8 @@ function rekordy(who){
 /* ============ Plán tréninků ============ */
 const MIN_TR = { p: 4, v: 3 };
 const ROZVRH = { p: [[1,"A"],[2,"N"],[4,"C"],[6,"G"]], v: [[1,"FB1"],[2,"FB2"],[4,"FB4"]] };
+function minTr(who){ return nast("mintr_"+who, MIN_TR[who]); }
+function rozvrh(who){ return nast("rozvrh_"+who, ROZVRH[who]) || []; }
 
 function pondeli(posun){
  const d = new Date();
@@ -2946,13 +3013,13 @@ function tydenPocty(posun){
  // u probíhajícího týdne se cíl krátí podle toho, kolik tréninkových dnů ještě zbývá
  const cil = {};
  ["p","v"].forEach(who=>{
-  if (posun > 0){ cil[who] = MIN_TR[who]; return; }
+  if (posun > 0){ cil[who] = minTr(who); return; }
   let zbyva = 0;
-  ROZVRH[who].forEach(r=>{
+  rozvrh(who).forEach(r=>{
    const d = new Date(zac); d.setDate(zac.getDate() + (r[0]-1));
    if (isoZ(d) >= dnes) zbyva++;
   });
-  cil[who] = Math.min(MIN_TR[who], Math.max(zbyva, (who==="p"?p:v)));
+  cil[who] = Math.min(minTr(who), Math.max(zbyva, (who==="p"?p:v)));
  });
  return { p:p, v:v, cp:cil.p, cv:cil.v };
 }
@@ -2982,7 +3049,7 @@ function doplnPlan(){
  for (let w = 0; w < 4; w++){
   const zac = pondeli(w);
   ["p","v"].forEach(who => {
-   ROZVRH[who].forEach(r => {
+   rozvrh(who).forEach(r => {
     const d = new Date(zac); d.setDate(zac.getDate() + (r[0]-1));
     const iso = isoZ(d);
     if (isoZ(d) < isoZ(new Date())) return;            // minulost neplánujeme
@@ -3051,7 +3118,7 @@ function renderPlan(){
  document.getElementById("tab-plan").innerHTML =
   '<div class="card"><div class="rhead"><h3>📅 Plán na čtyři týdny</h3>'
   +'<span class="rmeta">'+celkem+'/'+potreba+' tréninků</span></div>'
-  +'<p class="who">Minimum je <b>'+MIN_TR.p+' tréninky týdně pro Pepula</b> a <b>'+MIN_TR.v+' pro Verunku</b>. '
+  +'<p class="who">Minimum je <b>'+minTr('p')+' tréninky týdně pro Pepula</b> a <b>'+minTr('v')+' pro Verunku</b>. '
   +'Klepni na den a vyber, co se ten den dělá. Plán vidíte oba a mění se oběma.</p>'
   + (chybi > 0
      ? '<div class="note"><b>Do minima chybí '+chybi+' '+(chybi===1?"trénink":(chybi<5?"tréninky":"tréninků"))+'.</b> '
@@ -3127,7 +3194,7 @@ function nextUpList(){
  const fronta = [];
 
  const dnesPlan = planDne(iso)[me];
- if (!out.length) (TRENINKY[me] || []).forEach(t => {
+ if (!out.length) (treninky(me) || []).forEach(t => {
   if (t[0] !== dow) return;
   if (dnesPlan && odtrenovano(iso, me)) return;
   const m = minutyZ(t[1]);
@@ -3154,10 +3221,10 @@ function nextUpList(){
  else if (tot.p < t.prot) zaloha.push({ ic:"🥚", tx:"Chybí <b>"+(t.prot-tot.p)+" g bílkovin</b>", kdy:"dojeď to", tab:"dnes", cls:"male" });
  else zaloha.push({ ic:"✅", tx:"<b>Dnešek splněný</b> — "+fmt(tot.k)+" kcal", kdy:"paráda", tab:"progres", cls:"hotovo male" });
 
- const sk = waterGet(me, iso), cilSk = Math.round(WATER_T[me]/GLASS);
+ const sk = waterGet(me, iso), cilSk = Math.round(waterCil(me)/GLASS);
  zaloha.push(sk >= cilSk
-  ? { ic:"💧", tx:"<b>Voda splněná</b> — "+(WATER_T[me]/1000).toLocaleString("cs-CZ")+" l", kdy:"✓", tab:"dnes", cls:"male" }
-  : { ic:"💧", tx:"Voda <b>"+(sk*GLASS/1000).toLocaleString("cs-CZ")+" / "+(WATER_T[me]/1000).toLocaleString("cs-CZ")+" l</b>", kdy:"ještě "+(cilSk-sk)+"×", tab:"dnes", cls:"male" });
+  ? { ic:"💧", tx:"<b>Voda splněná</b> — "+(waterCil(me)/1000).toLocaleString("cs-CZ")+" l", kdy:"✓", tab:"dnes", cls:"male" }
+  : { ic:"💧", tx:"Voda <b>"+(sk*GLASS/1000).toLocaleString("cs-CZ")+" / "+(waterCil(me)/1000).toLocaleString("cs-CZ")+" l</b>", kdy:"ještě "+(cilSk-sk)+"×", tab:"dnes", cls:"male" });
 
  const st = streak(me);
  if (st > 0) zaloha.push({ ic:"🔥", tx:"Série <b>"+st+" "+(st===1?"den":(st<5?"dny":"dní"))+" v řadě</b>", kdy:"neztrať ji", tab:"progres", cls:"male" });
@@ -3166,7 +3233,7 @@ function nextUpList(){
  if (!fronta.some(x=>x.ic==="🏋️") && !state.sess){
   const dnyCZ = ["","Po","Út","St","Čt","Pá","So","Ne"];
   let nej = null;
-  (TRENINKY[me] || []).forEach(x=>{
+  (treninky(me) || []).forEach(x=>{
    const posun = ((x[0] - dow) + 7) % 7;
    const klic = posun === 0 ? 7 : posun;
    if (!nej || klic < nej.k) nej = { k:klic, d:x[0], cas:x[1] };
@@ -3667,7 +3734,7 @@ function pokroky(w){
 }
 function maPokrok(w){ return pokroky(w) > 0; }
 function vodaDny(w){
- const cil = Math.round(WATER_T[w]/GLASS);
+ const cil = Math.round(waterCil(w)/GLASS);
  return Object.keys(state.water).filter(k => k.slice(-2) === "|"+w && state.water[k] >= cil).length;
 }
 function suplDny(w){
@@ -3913,7 +3980,7 @@ function planVsRealita(w){
  return out;
 }
 function vodaPoDnech(w){
- const cil = Math.round(WATER_T[w]/GLASS);
+ const cil = Math.round(waterCil(w)/GLASS);
  const out = [];
  for (let i = 13; i >= 0; i--){
   const iso = isoPlus(-i);
@@ -3955,7 +4022,7 @@ function statyCard(w){
   +'<div class="who" style="margin:14px 0 0">Objem po týdnech (tuny)</div>'
   + sloupceSvg(objem, { c:"var(--s1)", alt:"Objem tréninku po týdnech", prazdno:"Dokonči trénink v appce a graf naskočí." })
   +'<div class="who" style="margin:12px 0 0">Plán × skutečnost (4 týdny)</div>'
-  + dvojSloupceSvg(pvr.map(x=>({ lab:x.lab, a:x.nap, b:x.hot })), { cil:MIN_TR[w],
+  + dvojSloupceSvg(pvr.map(x=>({ lab:x.lab, a:x.nap, b:x.hot })), { cil:minTr(w),
       prazdno:"Naplánuj si tréninky v Trénink → Plán a bude co porovnávat." })
   +'<div class="who" style="margin:12px 0 0">Voda za 14 dní (sklenice)</div>'
   + sloupceSvg(vd.data, { cil:vd.cil, cilLab:"cíl", h:110, alt:"Pitný režim" })
@@ -4198,7 +4265,7 @@ const sync = {
       const merged = Object.values(byId).sort((a,b)=> String(b.t).localeCompare(String(a.t))).slice(0,60);
       store.set("msgs", merged);
       syncDot();
-      if (state.tab === "zpravy") renderZpravy();
+      if (state.notif) renderZpravy();
     });
     // oblíbené
     onValue(this._ref("favs"), snap => {
@@ -4222,7 +4289,7 @@ const sync = {
       store.set("navrhy", state.navrhy);
       if (state.tab === "dnes") renderDnes();
       if (state.tab === "tyden") renderTyden();
-      if (state.tab === "zpravy") renderZpravy();
+      if (state.notif) renderZpravy();
       syncDot();
     });
     // jídelníček podle dnů
@@ -4429,6 +4496,7 @@ function ringCard(iso){
 }
 
 function celebrate(ic){
+  if (!nast("konfety", true)) return;
   if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const em = ic ? [ic,"🎉","⭐",ic,"✨"] : ["🎉","💪","⭐","🥳","🔥","✨"];
   for (let i = 0; i < 16; i++){
@@ -4461,6 +4529,23 @@ function reakceCard(){
    +'</div></div>';
 }
 
+function otevriNotif(){
+ state.notif = true;
+ buildMsgs();
+ const msgs = store.get("msgs", []);
+ msgs.forEach(m => m.r = true);
+ store.set("msgs", msgs);
+ document.getElementById("notifSheet").hidden = false;
+ document.body.style.overflow = "hidden";
+ renderZpravy(); syncDot();
+ window.scrollTo(0,0);
+}
+function zavriNotif(){
+ state.notif = false;
+ document.getElementById("notifSheet").hidden = true;
+ document.body.style.overflow = "";
+}
+
 function renderNastaveni(){
   renderNext();
   const pill = document.getElementById("syncPill");
@@ -4469,8 +4554,9 @@ function renderNastaveni(){
     pill.className = "pill " + lab[0];
     pill.querySelector("span").textContent = lab[1];
   }
-  if (state.tab === "zpravy") renderZpravy();
+  if (state.notif) renderZpravy();
   if (state.tab === "dnes") renderDnes();
+  if (state.tab === "nastaveni") renderNastaveniTab();
 }
 
 function newFamCode(){
@@ -4484,16 +4570,24 @@ function newFamCode(){
 
 /* ================= ZPRÁVY / notifikační centrum ================= */
 const MOTIV = [
- ["💬","Malé kroky, každý den","Tělo se nemění jedním velkým dnem, ale padesáti obyčejnými. Dnešek je jeden z nich."],
- ["🍳","Bílkovina je základ","Když si nevíš rady, co dojíst, odpověď je skoro vždycky vejce, skyr nebo tvaroh."],
- ["🛒","Neděle rozhoduje","Kdo má v neděli nakoupeno a nachystané autobagy, má vyhraný celý týden."],
- ["🏋️","Trénink se neruší, zkracuje","Třicet minut je vždycky lepší než nic. A počítá se to stejně."],
- ["🥚","Vejce jsou nejlevnější bílkovina","Deset vajec natvrdo v neděli vyřeší svačiny na půl týdne."],
- ["📈","Síla je poctivější než váha","Když v Hevy zvedáš víc než minulý měsíc, funguje to — i kdyby váha stála."],
- ["😴","Spánek je součást plánu","Sedm až osm hodin. Bez toho nezregeneruješ, ať jíš cokoli."],
- ["🤝","Jste v tom dva","Jeden vaří, druhý nakupuje. To je celá výhoda, kterou proti ostatním máte."],
- ["🚫","Špatný den nic nekazí","Jeden řádek v deníku. Projekt jede dál."],
- ["💧","Pij vodu, ne kalorie","Slazené pití přidá kalorie a nezasytí. U Verune to je šestina dne."]
+ ["💬","Malé kroky, každý den","Tělo se nemění jedním hrdinským dnem, ale padesáti úplně obyčejnými. Dneska je jeden z nich a nikdo o něm nenapíše článek."],
+ ["🍳","Když nevíš, dej si vejce","Univerzální odpověď na otázku „co si mám dát\". Funguje v 94 % případů. Zbylých 6 % je skyr."],
+ ["🛒","Neděle rozhoduje","Kdo má v neděli nakoupeno a nachystané autobagy, ten v úterý neřeší, proč zase jedl rohlík od pumpy."],
+ ["🏋️","Trénink se neruší, zkracuje","Třicet minut je pořád nekonečněkrát víc než nula. Matematika je neúprosná."],
+ ["🥚","Vejce jsou nejlevnější bílkovina","Deset vajec natvrdo v neděli = svačiny na půl týdne a jeden překvapený spolubydlící v lednici."],
+ ["📈","Síla je poctivější než váha","Váha lže podle toho, kdy jsi byl na záchodě. Činka nelže nikdy."],
+ ["😴","Spánek je součást tréninku","Sedm až osm hodin. Svaly nerostou v posilovně, ale v posteli. Bohužel to neznamená, že stačí ta postel."],
+ ["🤝","Jste v tom dva","Jeden vaří, druhý nakupuje. Ostatní na to musí být sami. Vy máte nespravedlivou výhodu."],
+ ["🚫","Špatný den nic nekazí","Jeden řádek v deníku. Ne konec projektu, ne selhání charakteru, ne důvod začít v pondělí."],
+ ["💧","Pij vodu, ne kalorie","Slazené pití je kalorie, které nezasytí. Jediný nápoj, co se počítá jako jídlo, je shake — a ten to má v popisu práce."],
+ ["\u23f0","Nečekej na hlad","Hlad je vždycky pozdě. Jí se podle hodin, ne podle pocitu. Chuť se ozve sama za pár týdnů."],
+ ["🧀","Bílkovina první, zbytek potom","Na talíři začni tím, co je drahé. Rýže na tebe počká, kuře ne."],
+ ["📝","Co není zapsané, se nestalo","Zapiš sérii. Za tři měsíce budeš mít důkaz, ne dojem."],
+ ["🧍","Tělo neumí počítat týdny","Umí počítat jenom to, co mu dáš. A ono si to fakt pamatuje."],
+ ["🍽️","Jedno jídlo venku nic nezkazí","Durum není pád impéria. Durum každý den je nový životní styl a to už je jiná."],
+ ["💪","Progres je nuda","Nudné je správně. Vzrušující plány se opouštějí v druhém týdnu."],
+ ["🧠","Rozhodni se ráno","Kdo v šest večer řeší, co bude k večeři, ten si dává pizzu. Appka to má rozhodnuté od neděle."],
+ ["🎯","Cíl není 105 kg","Cíl je být člověk, kterej ta kila unese. To druhé je jenom číslo, které to potvrdí."]
 ];
 
 function pushMsg(id, ic, ti, tx){
@@ -4508,6 +4602,7 @@ function pushMsg(id, ic, ti, tx){
 }
 
 function buildMsgs(){
+ if (!nast("zpravyAuto", true)) return;
  const today = new Date().toISOString().slice(0,10);
  const dow = new Date().getDay();
 
@@ -4521,16 +4616,21 @@ function buildMsgs(){
   const tot = dayTotals(who, today);
 
   if (tot.k >= t.kcal)
-   pushMsg("goal-"+who+"-"+today, "🎉", nm+" splnil"+(who==="v"?"a":"")+" denní cíl!",
-     "Dneska "+fmt(tot.k)+" kcal a "+tot.p+" g bílkovin. Přesně tak se to dělá.");
+   pushMsg("goal-"+who+"-"+today, "🎉", nm+" "+rod(who,"dojedl","dojedla")+" celý den!",
+     fmt(tot.k)+" kcal a "+tot.p+" g bílkovin. Kdyby tohle byla olympiáda, stojíš na bedně. "
+     +"Zatím je to jen lednice, ale ta si to pamatuje. 🥇");
   else if (tot.k >= MIN_KCAL[who])
    pushMsg("min-"+who+"-"+today, "✅", nm+" má splněné minimum",
-     fmt(tot.k)+" kcal — den se počítá, i když do cíle ještě něco chybí.");
+     fmt(tot.k)+" kcal. Není to hvězdný den, ale je to den, co se počítá. "
+     +"A těch je potřeba mnohem víc než těch hvězdných.");
 
   const st = streak(who);
   [3,5,7,14,21,30,60].forEach(n => {
    if (st === n) pushMsg("st-"+who+"-"+n, "🔥", nm+" má "+n+" dní v řadě!",
-     n>=14 ? "Tohle už není náhoda, tohle je návyk." : "Nepřetrhni to, řada je nejsilnější motivace, co existuje.");
+     n >= 30 ? "Třicet dní. V tuhle chvíli už to není projekt, ale povahová vlastnost. 🏛️"
+     : n >= 14 ? "Dva týdny bez zaváhání. Tohle už není náhoda, tohle je návyk — a ten se hůř ruší než předplatné."
+     : n >= 7 ? "Celý týden. Sedmička je magická, protože po ní se vždycky říká „to už bych byl blbec, kdybych to teď pustil\"."
+     : "Nepřetrhni to. Řada je jediná motivace, co funguje i ve čtvrtek večer.");
   });
 
   const arr = who==="p" ? state.wtP : state.wtV;
@@ -4539,23 +4639,35 @@ function buildMsgs(){
    const wk = "w"+Math.floor(daysBetween("2026-08-08", today)/7);
    const rt = Math.round(r.rate*100)/100;
    if (who==="p" && rt < 0.15)
-    pushMsg("adj-p-"+wk, "⚠️", "Pepulus přibývá pomalu",
-      "Tempo "+rt.toLocaleString("cs-CZ")+" kg/týden. V Progresu máš tlačítko, které přidá 250 kcal.");
+    pushMsg("adj-p-"+wk, "⚠️", "Pepulus roste pomaleji, než slibuje",
+      "Tempo "+rt.toLocaleString("cs-CZ")+" kg/týden. Váha se nehádá, jenom počítá. "
+      +"V Průběhu je tlačítko, co přidá 250 kcal — a ta se musí i sníst, ne jen nastavit. 😏");
    if (who==="p" && rt >= 0.15 && rt <= 0.6)
     pushMsg("ok-p-"+wk, "📈", "Pepulus roste přesně podle plánu",
-      "Tempo "+rt.toLocaleString("cs-CZ")+" kg/týden. Nic neměň.");
+      "Tempo "+rt.toLocaleString("cs-CZ")+" kg/týden. Nic neměň, nic nevylepšuj, nic nečti na internetu. "
+      +"Tohle je ta nudná fáze, kde se to celé odehrává.");
    if (who==="v" && Math.abs(rt) < 0.45)
-    pushMsg("ok-v-"+wk, "💪", "Verune drží váhu, jak má",
-      "U rekompozice je stojící váha úspěch — mění se složení, ne číslo.");
+    pushMsg("ok-v-"+wk, "💪", "Verune drží váhu přesně tak, jak má",
+      "U rekompozice je stojící váha vítězství, ne stagnace. Mění se složení, ne číslo — "
+      +"a to poznají dřív kalhoty než osobní váha. ✨");
   }
  });
 
- if (dow === 0) pushMsg("ne-"+today, "🛒", "Neděle: nákup, vážení a autobagy",
-   "Ráno na váhu, odpoledne nákup, 10 balíčků a 10 vajec natvrdo. Nejdůležitější hodina týdne.");
+ if (dow === 0) pushMsg("ne-"+today, "🛒", "Neděle — den, kdy se rozhoduje o celém týdnu",
+   "Ráno na váhu (nalačno, bez výmluv), odpoledne nákup, večer 10 balíčků a 10 vajec natvrdo. "
+   +"Hodina a půl práce výměnou za sedm dní klidu. Nejlepší kurz, co kde seženeš.");
+
+ if (dow === 1) pushMsg("po-"+today, "🌅", "Pondělí. Ten den, co se v něm vždycky začíná",
+   "Jenže vy jste začali už dávno, takže je to jenom další pondělí. To je celý ten trik. 😎");
+
+ if (dow === 5) pushMsg("pa-"+today, "🍺", "Pátek — malá poznámka od appky",
+   "Plán počítá s tím, že jste lidi. Jedno jídlo venku je zaneseno v rozpočtu. "
+   +"Tři jídla venku a dvě piva jsou už kreativní účetnictví. 🌯");
 
  const wkNo = Math.floor(daysBetween("2026-08-08", today)/7) + 1;
- if (wkNo % 7 === 0) pushMsg("dl-"+wkNo, "🔻", "Deload týden ("+wkNo+".)",
-   "Stejné cviky a váhy, poloviční počet sérií. Po deloadu čísla skočí nahoru.");
+ if (wkNo % 7 === 0) pushMsg("dl-"+wkNo, "🔻", "Deload týden ("+wkNo+".) — oficiální povolení ubrat",
+   "Stejné cviky, stejné váhy, poloviční počet sérií. Ano, fakt. Ne, není to lenost, "
+   +"je to naplánovaná lenost a ta se jmenuje regenerace. Po ní čísla skočí nahoru.");
 }
 
 function shareText(txt){
@@ -4594,7 +4706,8 @@ function renderZpravy(){
     +'a budou se sdílet samy. Než to nastavíte, funguje tlačítko „Pochlub se Verune" — pošle zprávu do WhatsAppu.</div>';
 
  document.getElementById("tab-zpravy").innerHTML =
-  navrhyCard() + pairCard() + reakceCard()
+  navrhyCard() + (nast("stouch", true) ? reakceCard() : "")
+  +'<div class="card npoint"><h3>⚙️ Propojení a nastavení</h3>'+'<p class="who">Rodinný kód, cíle, časy jídel i připomínky se schovaly do <b>Nastavení</b> — poslední záložka vpravo dole ⚙️.</p>'+'<button class="act small" data-goto="nastaveni" type="button">Otevřít nastavení</button></div>'
   +'<div class="card"><div class="rhead"><h3>Zprávy</h3>'
   +'<span style="display:flex;gap:6px">'
   +(un?'<button class="ghost" id="readAll" type="button">Označit přečtené</button>':'')
@@ -4696,6 +4809,164 @@ function renderProgres(){
 }
 
 /* ============ Cíle ============ */
+/* ================= NASTAVENÍ ================= */
+const DNY_KR = ["","Po","Út","St","Čt","Pá","So","Ne"];
+
+function nTgl(k, def, zap, vyp){
+ const v = nast(k, def);
+ return '<button class="'+(v?"act":"ghost")+' small" data-ntgl="'+k+'|'+(def?1:0)+'" type="button">'
+  + (v ? (zap||"Zapnuto") : (vyp||"Vypnuto")) + '</button>';
+}
+function nSel(k, def, opts){
+ return '<select data-nsel="'+k+'">'
+  + opts.map(o=>'<option value="'+o[0]+'"'+(String(nast(k,def))===String(o[0])?" selected":"")+'>'+esc(o[1])+'</option>').join("")
+  + '</select>';
+}
+function nRow(lab, ctrl, pop){
+ return '<div class="nrow"><div class="nlab"><b>'+lab+'</b>'
+  + (pop ? '<span class="dim">'+pop+'</span>' : '') + '</div><div class="nctl">'+ctrl+'</div></div>';
+}
+function nCislo(k, def, min, max, krok, jed){
+ return '<span class="nnum"><input type="number" data-nnum="'+k+'|'+min+'|'+max+'|'+def+'" '
+  +'value="'+nast(k,def)+'" min="'+min+'" max="'+max+'" step="'+(krok||1)+'" inputmode="numeric">'
+  +'<i>'+(jed||"")+'</i></span>';
+}
+function dnyPicker(who){
+ const r = rozvrh(who), akt = r.map(x=>x[0]);
+ return '<div class="dnyp">'+[1,2,3,4,5,6,7].map(d=>
+   '<button class="'+(akt.indexOf(d)>=0?"on":"")+'" data-nden="'+who+'|'+d+'" type="button">'+DNY_KR[d]+'</button>'
+  ).join("")+'</div>';
+}
+function casTreninku(who){
+ const t = treninky(who);
+ if (!t.length) return '<span class="dim">Zatím žádný den</span>';
+ return '<div class="dnyp caslist">'+t.map((x,i)=>
+   '<span><b>'+DNY_KR[x[0]]+'</b><input type="time" data-ncas="'+who+'|'+i+'" value="'+x[1]+'"></span>'
+  ).join("")+'</div>';
+}
+function pocetVeci(){
+ const vl = (store.get("myRecipes", []) || []).length;
+ return { rec: DINNERS.length + vl, tr: Object.keys(ROUTINES.p).length + Object.keys(ROUTINES.v).length,
+          cvik: Object.keys(EX).length, odz: ODZNAKY.length };
+}
+
+function renderNastaveniTab(){
+ const el = document.getElementById("tab-nastaveni");
+ if (!el) return;
+ const me = store.get("meId", null);
+ const tema = store.get("theme", "auto") || "auto";
+ const pc = pocetVeci();
+
+ el.innerHTML =
+  '<div class="card nintro"><h3>⚙️ Nastavení</h3>'
+  +'<p class="who">Všechny šroubky appky na jednom místě. Nic tu nejde rozbít napořád — '
+  +'úplně dole je tlačítko, které vrátí vše do výroby.</p></div>'
+
+  + pairCard()
+
+  /* --- cíle a čísla --- */
+  +'<div class="card"><h3>🎯 Cíle a čísla</h3>'
+  +'<p class="who">Denní kalorie a bílkoviny. Kalorie se dají měnit i v Průběhu tlačítkem podle tempa váhy — '
+  +'tohle je ruční ovládání pro případ, že víš líp. 😏</p>'
+  + nRow("Pepulus — kalorie", '<span class="nnum"><input type="number" data-nkcal="p" value="'+target("p").kcal+'" min="1200" max="6000" step="50" inputmode="numeric"><i>kcal</i></span>', "výchozí 3 150")
+  + nRow("Pepulus — bílkoviny", nCislo("prot_p", BASE_T.p.prot, 60, 350, 5, "g"), "výchozí 200 g")
+  + nRow("Verune — kalorie", '<span class="nnum"><input type="number" data-nkcal="v" value="'+target("v").kcal+'" min="1000" max="4000" step="50" inputmode="numeric"><i>kcal</i></span>', "výchozí 1 900")
+  + nRow("Verune — bílkoviny", nCislo("prot_v", BASE_T.v.prot, 50, 250, 5, "g"), "výchozí 125 g")
+  +'<div class="hint">Čísla se propíšou všude — do kruhů v Dnes, do součtů, do grafů i do odznaků.</div></div>'
+
+  /* --- pitný režim --- */
+  +'<div class="card"><h3>💧 Pitný režim</h3>'
+  +'<p class="who">Kolik sklenic se má za den zaškrtnout. Jedna sklenice = 250 ml.</p>'
+  + nRow("Pepulus", nSel("water_p", WATER_T.p, [[2000,"2 l (8 sklenic)"],[2500,"2,5 l (10)"],[3000,"3 l (12)"],[3500,"3,5 l (14)"],[4000,"4 l (16)"]]))
+  + nRow("Verune", nSel("water_v", WATER_T.v, [[1500,"1,5 l (6 sklenic)"],[2000,"2 l (8)"],[2200,"2,2 l (9)"],[2500,"2,5 l (10)"],[3000,"3 l (12)"]]))
+  +'</div>'
+
+  /* --- casy jidel --- */
+  +'<div class="card"><h3>🕐 Časy jídel</h3>'
+  +'<p class="who">Vstáváte jindy? Posuň celý denní rozpis najednou. Ovlivní to i „co je teď na řadě" nahoře.</p>'
+  + nRow("Posun celého dne", nSel("casy", 0, [[-120,"o 2 hodiny dřív"],[-90,"o 1,5 h dřív"],[-60,"o hodinu dřív"],[-30,"o půl hodiny dřív"],[0,"beze změny (7:00 první jídlo)"],[30,"o půl hodiny později"],[60,"o hodinu později"],[90,"o 1,5 h později"],[120,"o 2 hodiny později"]]))
+  +'<div class="hint">Aktuálně první jídlo v <b>'+posunCas("7:00")+'</b>, večeře v <b>'+posunCas("19:30")+'</b>.</div></div>'
+
+  /* --- treninkove dny --- */
+  +'<div class="card"><h3>🏋️ Tréninkové dny a časy</h3>'
+  +'<p class="who">Podle tohohle se plní <b>Plán</b> tlačítkem „Doplnit", počítá se minimum a chodí připomínky do kalendáře.</p>'
+  +'<div class="nblok"><div class="nh">💪 Pepulus</div>'
+  + dnyPicker("p") + casTreninku("p")
+  + nRow("Minimum týdně", nSel("mintr_p", MIN_TR.p, [[2,"2 tréninky"],[3,"3 tréninky"],[4,"4 tréninky"],[5,"5 tréninků"],[6,"6 tréninků"]]))
+  +'</div>'
+  +'<div class="nblok"><div class="nh">✨ Verune</div>'
+  + dnyPicker("v") + casTreninku("v")
+  + nRow("Minimum týdně", nSel("mintr_v", MIN_TR.v, [[2,"2 tréninky"],[3,"3 tréninky"],[4,"4 tréninky"],[5,"5 tréninků"]]))
+  +'</div>'
+  +'<div class="hint">Ťukni na den, ať ho přidáš nebo ubereš. Čas se dá přepsat u každého dne zvlášť.</div></div>'
+
+  /* --- schvalovani --- */
+  +'<div class="card"><h3>⚖️ Schvalování změn</h3>'
+  +'<p class="who">Když jeden z vás změní <b>večeři</b> nebo <b>kdo vaří</b>, druhý to musí odsouhlasit — '
+  +'teprve pak se to propíše oběma. Ten, kdo návrh podal, ho může kdykoli <b>prosadit silou</b> '
+  +'(⚡ Prosadit i tak) — ale druhému o tom přijde zpráva, takže to není zadarmo. 🏛️</p>'
+  +'<div class="wrow"><button class="'+(store.get("schval",true)?"act":"ghost")+' small" id="schvalTgl" type="button">'
+  + (store.get("schval",true) ? "Zapnuto — vypnout" : "Vypnuto — zapnout")+'</button>'
+  +'<span class="dim" style="font-size:12.5px">'
+  + (store.get("schval",true) ? "Férově: každá změna přes souhlas." : "Změny se propisují rovnou, bez ptaní.")+'</span></div>'
+  +'<div class="hint">Funguje to jen když jsou telefony propojené. Snídaně, svačiny a obědy schválení nepotřebují — '
+  +'to je věc každého zvlášť.</div></div>'
+
+  /* --- vzhled --- */
+  +'<div class="card"><h3>🎨 Vzhled</h3>'
+  + nRow("Motiv", '<div class="dnyp">'
+     + [["auto","Podle telefonu"],["light","Světlý"],["dark","Tmavý"]].map(t=>
+        '<button class="'+(tema===t[0]?"on":"")+'" data-ntema="'+t[0]+'" type="button">'+t[1]+'</button>').join("")
+     +'</div>')
+  + nRow("Oslavy a konfety", nTgl("konfety", true, "Zapnuté 🎉", "Vypnuté"), "Když splníš bílkoviny nebo odemkneš odznak")
+  +'</div>'
+
+  /* --- hlasky --- */
+  +'<div class="card"><h3>💬 Hlášky a zprávy</h3>'
+  + nRow("Denní hláška v Dnes", nTgl("hlasky", true, "Chci je 😀", "Radši klid"), "Ta drzá věta dole pod jídlem")
+  + nRow("Automatické zprávy", nTgl("zpravyAuto", true, "Zapnuté 🔔", "Vypnuté"), "Splněný cíl, série, tempo váhy, neděle…")
+  + nRow("Šťouchance", nTgl("stouch", true, "Povolené 💌", "Zakázané"), "Tlačítka, kterými se navzájem otravujete")
+  +'<div class="hint">Když hlášky vypneš, appka bude vážná jako výpis z banky. Nedoporučuju. 🫣</div></div>'
+
+  /* --- nakup --- */
+  +'<div class="card"><h3>🛒 Nákup</h3>'
+  + nRow("Na kolik dní počítat", '<div class="dnyp">'
+     + [3,5,7,10,14].map(d=>'<button class="'+((state.nakupDni||7)===d?"on":"")+'" data-nkdni="'+d+'" type="button">'+d+'</button>').join("")
+     +'</div>', "Kolik dní dopředu se sečtou suroviny")
+  + nRow("Odečítat spíž", '<button class="'+(state.spizOdecist?"act":"ghost")+' small" data-nkspiz="1" type="button">'
+     +(state.spizOdecist?"Zapnuto 🏠":"Vypnuto")+'</button>', "Co máš doma, se z nákupu odečte")
+  +'</div>'
+
+  + remCard()
+
+  /* --- data --- */
+  +'<div class="card"><h3>💾 Data a přenos</h3>'
+  +'<p class="who">Odškrtnutí, váhy, míry, tréninkový deník i fotky jsou uložené jen v tomhle telefonu. '
+  +'Když měníš mobil, vyexportuj je sem a v novém vlož zpátky. Pozor, fotky zálohu hodně nafouknou.</p>'
+  +'<div class="wrow"><button class="act small" id="expBtn" type="button">Zkopírovat moje data</button>'
+  +'<button class="ghost" id="impBtn" type="button">Vložit data</button></div>'
+  +'<textarea id="dataBox" placeholder="Sem se vypíšou data k zkopírování — nebo je sem vlož a dej Vložit data" '
+  +'style="width:100%;min-height:70px;margin-top:8px;background:var(--surface-1);color:var(--text-primary);'
+  +'border:1px solid var(--border);border-radius:8px;padding:8px;font:inherit;font-size:12px"></textarea>'
+  +'<div class="hint" id="dataMsg"></div>'
+  +'<div class="wrow" style="margin-top:14px"><button class="ghost" id="onbBtn" type="button">👋 Spustit průvodce</button>'
+  +'<button class="ghost" id="resetNast" type="button">'+(state.resetPtl?"Fakt to vrátit?":"↩️ Vrátit nastavení do výroby")+'</button></div>'
+  +'<div class="hint">Vrácení do výroby přenastaví jen tuhle stránku — jídlo, deník ani váhy se nesmažou.</div></div>'
+
+  /* --- o appce --- */
+  +'<div class="card"><h3>ℹ️ O appce</h3>'
+  +'<table><tbody>'
+  +'<tr><td>Verze</td><td class="num">17</td></tr>'
+  +'<tr><td>Receptů na večeře</td><td class="num">'+pc.rec+'</td></tr>'
+  +'<tr><td>Tréninkových variant</td><td class="num">'+pc.tr+'</td></tr>'
+  +'<tr><td>Cviků v databázi</td><td class="num">'+pc.cvik+'</td></tr>'
+  +'<tr><td>Odznaků k odemčení</td><td class="num">'+pc.odz+'</td></tr>'
+  +'<tr><td>Tenhle telefon</td><td class="num">'+(me ? esc(BASE_T[me].name) : "nenastaveno")+'</td></tr>'
+  +'</tbody></table>'
+  +'<div class="hint">PEVE FIT — dělal Pepulus s Claudem pro Verunku. Žádné reklamy, žádné účty, '
+  +'data nikam neodcházejí kromě vašeho vlastního rodinného kódu.</div></div>';
+}
+
 function renderCile(){
  const tp = target("p"), tv = target("v");
  document.getElementById("tab-cile").innerHTML =
@@ -4718,28 +4989,6 @@ function renderCile(){
   +'<tr><td>Bílkoviny</td><td class="num">200 g</td><td class="num">125 g</td></tr>'
   +'<tr><td>Tuky</td><td class="num">90 g</td><td class="num">60 g</td></tr>'
   +'<tr><td>Sacharidy</td><td class="num">~385 g</td><td class="num">~215 g</td></tr></tbody></table></div>'
-  +'<div class="card"><h3>⚖️ Schvalování změn</h3>'
-  +'<p class="who">Když jeden z vás změní <b>večeři</b> nebo <b>kdo vaří</b>, druhý to musí odsouhlasit — '
-  +'teprve pak se to propíše oběma. Ten, kdo návrh podal, ho může kdykoli <b>prosadit silou</b> '
-  +'(⚡ Prosadit i tak) — ale druhému o tom přijde zpráva, takže to není zadarmo. 🏛️</p>'
-  +'<div class="wrow"><button class="'+(store.get("schval",true)?"act":"ghost")+' small" id="schvalTgl" type="button">'
-  + (store.get("schval",true) ? "Zapnuto — vypnout" : "Vypnuto — zapnout")+'</button>'
-  +'<span class="dim" style="font-size:12.5px">'
-  + (store.get("schval",true) ? "Férově: každá změna přes souhlas." : "Změny se propisují rovnou, bez ptaní.")+'</span></div>'
-  +'<div class="hint">Funguje to jen když jsou telefony propojené. Snídaně, svačiny a obědy schválení nepotřebují — '
-  +'to je věc každého zvlášť.</div></div>'
-  +'<div class="card"><h3>👋 Průvodce nastavením</h3>'
-  +'<p class="who">Když appku dostane do ruky někdo nový — nebo si chceš znovu projít, co kde je.</p>'
-  +'<button class="act small" id="onbBtn" type="button">Spustit průvodce</button></div>'
-  + remCard()
-  +'<div class="card"><h3>Přenos dat na jiný telefon</h3>'
-  +'<p class="who">Odškrtnutí, váhy, míry, tréninkový deník i fotky jsou uložené jen v tomhle telefonu. Když měníš mobil, vyexportuj je sem a v novém vlož zpátky. Pozor, fotky zálohu hodně nafouknou.</p>'
-  +'<div class="wrow"><button class="act small" id="expBtn" type="button">Zkopírovat moje data</button>'
-  +'<button class="ghost" id="impBtn" type="button">Vložit data</button></div>'
-  +'<textarea id="dataBox" placeholder="Sem se vypíšou data k zkopírování — nebo je sem vlož a dej Vložit data" '
-  +'style="width:100%;min-height:70px;margin-top:8px;background:var(--surface-1);color:var(--text-primary);'
-  +'border:1px solid var(--border);border-radius:8px;padding:8px;font:inherit;font-size:12px"></textarea>'
-  +'<div class="hint" id="dataMsg"></div></div>'
   +'<div class="card"><h3>Společná pravidla Šmídových</h3><table><tbody>'
   +'<tr><td>1</td><td>Nečekat na hlad — jí se podle hodin. Chuť se vrátí za 2–3 týdny.</td></tr>'
   +'<tr><td>2</td><td>Neděle rozhoduje: nákup + 10 autobagů + 10 vajec + vážení.</td></tr>'
@@ -4752,30 +5001,27 @@ function renderCile(){
 }
 
 /* ============ wiring ============ */
-function renderAll(){ uklidPlan(); uklidJidlo(); planPripominka(); kontrolaOdznaku(); renderNext(); buildMsgs(); renderDnes(); renderTyden(); renderRecepty(); renderNakup(); renderTrenink(); renderPlan(); renderProgres(); renderZpravy(); renderCile(); syncDot(); }
-const TABS = ["dnes","tyden","recepty","nakup","trenink","plan","progres","zpravy","cile"];
+function renderAll(){ uklidPlan(); uklidJidlo(); planPripominka(); kontrolaOdznaku(); renderNext(); buildMsgs(); renderDnes(); renderTyden(); renderRecepty(); renderNakup(); renderTrenink(); renderPlan(); renderProgres(); renderCile(); renderNastaveniTab();
+ if (state.notif) renderZpravy();
+ syncDot(); }
+const TABS = ["dnes","tyden","recepty","nakup","trenink","plan","progres","cile","nastaveni"];
 const GROUPS = {
  dnes:    { tabs:[["dnes","Dnes"]] },
  jidlo:   { tabs:[["tyden","Týden"],["recepty","Recepty"],["nakup","Nákup"]] },
  trenink: { tabs:[["trenink","Tréninky"],["plan","Plán"]] },
- progres: { tabs:[["progres","Průběh"],["zpravy","_"],["cile","Cíle"]] },
- zpravy:  { tabs:[["zpravy","Zprávy"]] }
+ progres: { tabs:[["progres","Průběh"]] },
+ nastaveni: { tabs:[["nastaveni","Nastavení"],["cile","Cíle"]] }
 };
-GROUPS.progres.tabs = [["progres","Průběh"],["cile","Cíle"]];
+GROUPS.progres.tabs = [["progres","Průběh"]];
 const GRP_OF = {};
 Object.keys(GROUPS).forEach(g => GROUPS[g].tabs.forEach(t => GRP_OF[t[0]] = g));
-const lastSub = { jidlo:"tyden", progres:"progres", trenink:"trenink" };
+const lastSub = { jidlo:"tyden", progres:"progres", trenink:"trenink", nastaveni:"nastaveni" };
 const RENDER = { dnes:renderDnes, tyden:renderTyden, recepty:renderRecepty, nakup:renderNakup,
-                 trenink:renderTrenink, plan:renderPlan, progres:renderProgres, zpravy:renderZpravy, cile:renderCile };
+                 trenink:renderTrenink, plan:renderPlan, progres:renderProgres, cile:renderCile,
+                 nastaveni:renderNastaveniTab };
 function showTab(t){
  state.tab = t;
  state.pairConfirm = false;
- if (t === "zpravy"){                 // otevřením se zprávy přečtou
-  buildMsgs();
-  const msgs = store.get("msgs", []);
-  msgs.forEach(m => m.r = true);
-  store.set("msgs", msgs);
- }
  if (RENDER[t]) RENDER[t]();          // vždy čerstvá data
  renderNext();
  const g = GRP_OF[t] || "dnes";
@@ -4848,7 +5094,32 @@ document.addEventListener("change", e=>{
  }
  else if (t.dataset.rem !== undefined){
    const sel = remSel(); sel[t.dataset.rem] = t.checked;
-   state.rem = sel; store.set("rem", sel); renderCile();
+   state.rem = sel; store.set("rem", sel); renderNastaveniTab();
+ }
+ else if (t.dataset.nsel !== undefined){
+   const v = t.value;
+   nastSet(t.dataset.nsel, isNaN(+v) ? v : +v);
+   renderAll();
+ }
+ else if (t.dataset.nnum !== undefined){
+   const q = t.dataset.nnum.split("|");
+   let v = Math.round(parseFloat(String(t.value).replace(",", ".")));
+   if (!v || isNaN(v)) v = +q[3];
+   v = Math.max(+q[1], Math.min(+q[2], v));
+   t.value = v; nastSet(q[0], v); renderAll();
+ }
+ else if (t.dataset.nkcal !== undefined){
+   const who = t.dataset.nkcal;
+   let v = Math.round(parseFloat(String(t.value).replace(",", ".")));
+   const lo = who === "p" ? 1200 : 1000, hi = who === "p" ? 6000 : 4000;
+   if (!v || isNaN(v)) v = BASE_T[who].kcal;
+   v = Math.max(lo, Math.min(hi, v));
+   t.value = v; store.set("kcal_"+who, v); renderAll();
+ }
+ else if (t.dataset.ncas !== undefined){
+   const q = t.dataset.ncas.split("|"), who = q[0], i = +q[1];
+   const arr = treninky(who).slice();
+   if (arr[i] && t.value){ arr[i] = [arr[i][0], t.value, arr[i][2], arr[i][3]]; nastSet("tren_"+who, arr); renderAll(); }
  }
  else if (t.id === "daySel"){ state.dayIso = t.value; renderDnes(); }
  else if (t.dataset.foto !== undefined && t.files && t.files[0]){
@@ -4879,6 +5150,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
+ if (e.target.closest("[data-notif]")){ otevriNotif(); return; }
  const gt = e.target.closest("[data-goto]");
  if (gt){ showTab(gt.dataset.goto); return; }
  const gb = e.target.closest("nav.tabs button");
@@ -4894,9 +5166,11 @@ document.addEventListener("click", e=>{
   return;
  }
  const nkd = e.target.closest("[data-nkdni]");
- if (nkd){ state.nakupDni = +nkd.dataset.nkdni; store.set("nakupDni", state.nakupDni); renderNakup(); return; }
+ if (nkd){ state.nakupDni = +nkd.dataset.nkdni; store.set("nakupDni", state.nakupDni);
+  renderNakup(); renderNastaveniTab(); return; }
  if (e.target.closest("[data-nkspiz]")){
-  state.spizOdecist = !state.spizOdecist; store.set("spizOdecist", state.spizOdecist); renderNakup(); return; }
+  state.spizOdecist = !state.spizOdecist; store.set("spizOdecist", state.spizOdecist);
+  renderNakup(); renderNastaveniTab(); return; }
  if (e.target.closest("[data-nkobchod]")){ state.obchod = !state.obchod; renderNakup(); return; }
  const cst = e.target.closest("[data-casto]");
  if (cst){
@@ -5010,7 +5284,7 @@ document.addEventListener("click", e=>{
   const p = wa.dataset.water.split("|");
   const now = waterGet(p[0], p[1]);
   waterSet(p[0], p[1], now + (+p[2]));
-  const cil = Math.round(WATER_T[p[0]]/GLASS);
+  const cil = Math.round(waterCil(p[0])/GLASS);
   if (+p[2] > 0 && now + 1 === cil) celebrate("💧");
   renderDnes(); return;
  }
@@ -5024,7 +5298,9 @@ document.addEventListener("click", e=>{
  }
 
  /* ---- párování ---- */
- if (e.target.closest("#syncPill")){ showTab("zpravy"); return; }
+ if (e.target.closest("#syncPill")){ otevriNotif(); return; }
+ if (e.target.closest("#bellBtn")){ otevriNotif(); return; }
+ if (e.target.id === "notifClose"){ zavriNotif(); return; }
  const sm = e.target.closest("[data-setme]");
  if (sm){
   const v = sm.dataset.setme;
@@ -5133,7 +5409,53 @@ document.addEventListener("click", e=>{
  }
  if (e.target.id === "schvalTgl"){
   store.set("schval", !store.get("schval", true));
-  renderCile(); renderDnes(); renderTyden(); return;
+  renderNastaveniTab(); renderDnes(); renderTyden(); return;
+ }
+ const ntg = e.target.closest("[data-ntgl]");
+ if (ntg){
+  const q = ntg.dataset.ntgl.split("|");
+  nastSet(q[0], !nast(q[0], q[1] === "1"));
+  renderAll(); return;
+ }
+ const nden = e.target.closest("[data-nden]");
+ if (nden){
+  const q = nden.dataset.nden.split("|"), who = q[0], d = +q[1];
+  const r = rozvrh(who).slice(), t = treninky(who).slice();
+  const i = r.findIndex(x => x[0] === d);
+  if (i >= 0){
+   if (r.length <= 1) return;
+   r.splice(i,1);
+   const j = t.findIndex(x => x[0] === d); if (j >= 0) t.splice(j,1);
+  } else {
+   const vzor = r.length ? r[r.length-1][1] : (who === "p" ? "A" : "FB1");
+   r.push([d, vzor]); r.sort((a,b)=>a[0]-b[0]);
+   t.push([d, who === "p" ? "18:00" : "18:00", who === "p" ? 75 : 55,
+           who === "p" ? "🏋️ Trénink" : "🏋️ Trénink"]);
+   t.sort((a,b)=>a[0]-b[0]);
+  }
+  nastSet("rozvrh_"+who, r); nastSet("tren_"+who, t);
+  renderAll(); return;
+ }
+ const ntm = e.target.closest("[data-ntema]");
+ if (ntm){
+  const v = ntm.dataset.ntema;
+  const root = document.documentElement;
+  if (v === "auto"){ root.removeAttribute("data-theme"); store.set("theme", "auto"); }
+  else { root.setAttribute("data-theme", v); store.set("theme", v); }
+  const tb = document.getElementById("themeBtn");
+  if (tb) tb.textContent = (root.getAttribute("data-theme") === "dark"
+    || (!root.getAttribute("data-theme") && window.matchMedia("(prefers-color-scheme: dark)").matches)) ? "Světlý" : "Tmavý";
+  renderNastaveniTab(); return;
+ }
+ if (e.target.id === "resetNast"){
+  if (!state.resetPtl){ state.resetPtl = true; renderNastaveniTab(); setTimeout(()=>{ state.resetPtl = false; }, 6000); return; }
+  state.resetPtl = false;
+  ["prot_p","prot_v","water_p","water_v","casy","mintr_p","mintr_v","rozvrh_p","rozvrh_v",
+   "tren_p","tren_v","hlasky","zpravyAuto","konfety","stouch"].forEach(k => store.set("n_"+k, null));
+  store.set("schval", true);
+  pushMsg("reset-"+Date.now(), "\u21a9️", "Nastavení zpátky ve výrobním stavu",
+    "Všechny šroubky zase tam, kde je Pepulus našel. Nic z jídla ani deníku se nesmazalo.");
+  renderAll(); return;
  }
  const jd = e.target.closest("[data-jidladen]");
  if (jd){ state.dayIso = jd.dataset.jidladen; renderDnes(); showTab("dnes"); return; }
@@ -5282,7 +5604,9 @@ document.addEventListener("click", e=>{
  if (e.target.id === "icsGet"){ stahniIcs(); return; }
  if (e.target.id === "expBtn"){
   const keys = ["week","pick","checks","shop","queue","fb","exsel","wtP","wtV","mrP","mrV","lastCheckin",
-                "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist","plan","jidlo","shopHist","shopCasto","nakupDni","navrhy","schval"];
+                "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist","plan","jidlo","shopHist","shopCasto","nakupDni","navrhy","schval","spizOdecist",
+                "n_prot_p","n_prot_v","n_water_p","n_water_v","n_casy","n_mintr_p","n_mintr_v",
+                "n_rozvrh_p","n_rozvrh_v","n_tren_p","n_tren_v","n_hlasky","n_zpravyAuto","n_konfety","n_stouch"];
   const dump = {};
   keys.forEach(k=>{ const v = store.get(k, null); if (v !== null) dump[k] = v; });
   const box = document.getElementById("dataBox");
@@ -5379,7 +5703,8 @@ document.addEventListener("click", e=>{
 
 document.addEventListener("keydown", e=>{
  if (e.key !== "Escape") return;
- if (state.cook) closeCook();
+ if (state.notif) zavriNotif();
+ else if (state.cook) closeCook();
  else if (state.sess){ const o = document.getElementById("sessOverlay"); o.hidden = true; document.body.style.overflow=""; renderTrenink(); }
  else if (state.onb !== null) closeOnb();
 });
