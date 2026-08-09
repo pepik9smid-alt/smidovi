@@ -218,6 +218,21 @@
   .mine:last-child{border-bottom:none}
   .mine .x{background:none;border:0;color:var(--muted);cursor:pointer;font-size:17px;padding:0 4px;line-height:1}
 
+  .navrh{border-left:3px solid var(--s2);background:color-mix(in srgb, var(--s2) 8%, transparent);
+         border-radius:0 12px 12px 0;padding:11px 13px;margin-bottom:9px}
+  .navrh .t{font-size:13.5px;line-height:1.45}
+  .navrh .t b{font-weight:700}
+  .navrh .kdy{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .navrh .btns{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+  .navrh button{font-size:13px;padding:7px 12px;border-radius:9px}
+  .btn-ano{background:var(--s3);color:#fff;border:0;font:inherit;font-weight:600;cursor:pointer}
+  .btn-ne{background:var(--surface-1);color:var(--text-secondary);border:1px solid var(--border);font:inherit;cursor:pointer}
+  .btn-force{background:var(--s2);color:#fff;border:0;font:inherit;font-weight:600;cursor:pointer}
+  .hlaska{display:flex;gap:11px;align-items:flex-start;background:var(--accent-soft);
+          border:1px solid var(--border);border-radius:13px;padding:11px 13px;margin-top:12px}
+  .hlaska .e{font-size:20px;line-height:1.2;flex:none}
+  .hlaska .t{font-size:13.5px;line-height:1.45;font-style:italic}
+
   .nk-top{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
   .nk-prog{height:8px;border-radius:5px;background:var(--grid);overflow:hidden;margin:4px 0 12px}
   .nk-prog i{display:block;height:100%;background:var(--s3);transition:width .25s ease}
@@ -1643,6 +1658,8 @@ const state = {
  hist: store.get("hist", []),
  plan: store.get("plan", {}),
  jidlo: store.get("jidlo", {}),
+ navrhy: store.get("navrhy", {}),
+ hlaskaI: null,
  nakupDni: store.get("nakupDni", 7),
  spizOdecist: store.get("spizOdecist", false),
  obchod: false,
@@ -1719,6 +1736,161 @@ function pickSet(iso, key, idx){
  p[key] = idx;
  jidloSet(iso, "p", p);
 }
+/* ---- hlášky dne ---- */
+const HLASKY = {
+ obe: [
+  "Nejtěžší cvik je otevřít lednici ve správný čas. 🥚",
+  "Kdo nejí, ten neroste. Kdo neroste, ten vaří. 🍳",
+  "Vejce jsou nová měna. Vy jste teď boháči.",
+  "Šlichta zakázána, rotace povinná. 🎲",
+  "Dvě váhy, jedna kuchyň, nula výmluv. 💪",
+  "Neděle rozhoduje o celém týdnu. Zbytek je jen provedení. 🛒",
+  "Nejsilnější domácnost v ulici. Zatím to nikdo neví, ale to je fuk.",
+  "Trénink, který neuděláš, spálí přesně nula kalorií.",
+  "Váha lže obden. Fotky a činka nelžou nikdy.",
+  "Kdo si zapisuje, ten ví. Kdo neví, ten hádá.",
+  "Dneska nechuť, za tři měsíce zvyk, za rok postava.",
+  "Nikdo nikdy nelitoval, že šel cvičit. Litoval jen, že nešel.",
+  "Kreatin funguje i ve dnech volna. Ty taky.",
+  "Když nevíš, dej si vejce. To je celá filozofie téhle appky. 🥚",
+  "Nejlepší trénink je ten, který se stane.",
+  "Hlad není nepřítel. Nepřítel je prázdná lednice v devět večer.",
+  "Objem roste, výmluvy klesají. To je celý graf.",
+  "Domácnost, kde oba zvedají, se nehádá o dálkové ovládání. Nemá na to sílu.",
+  "Kdo poslední zamíchá menu, ten vaří. Tak s tím opatrně. 🎲"
+ ],
+ v: [
+  "Verune, hip thrust je jediný cvik, kde přidávat kila znamená lepší džíny. ✨",
+  "Verune, ty tři čtvrtiny objemu na nohy a zadek nejsou náhoda. To je strategie.",
+  "Verune, činka ti neudělá chlapská ramena. Na to nejsou hormony ani čas.",
+  "Verune, když ti tenhle týden váha vyskočí, je to voda. Appka to ví, tak to vědět taky.",
+  "Verune, 125 gramů bílkovin není moc. Je to minimum, aby ta dřina k něčemu byla.",
+  "Verune, tvoje zadek na hip thrustu roste rychleji než Pepulovo ego. A to je co říct.",
+  "Verune, jedna svačina navíc není selhání. Vynechaná snídaně jo.",
+  "Verune, každý bulharský dřep je investice, kterou uvidíš v zrcadle dřív než na váze.",
+  "Verune, jsi jediná v téhle domácnosti, kdo umí uvařit i uklidit. Pepulus jen zvedá věci a pokládá je zpátky.",
+  "Verune, kdyby existoval odznak za trpělivost s Pepulem, měla bys ho zlatý. 🏅",
+  "Verune, nezapomeň: silná není opak ženská. Silná je verze, co unese nákup i Pepula.",
+  "Verune, tvoje série je tvoje. Nikdo ti ji nevezme — jen ty sama.",
+  "Verune, kdo dneska uvařil, ten dneska vyhrál. A appka si to pamatuje. 😏"
+ ],
+ p: [
+  "Ave, Pepule Maxime! Senát dnes čeká na tvůj výkon. 🏛️",
+  "Pepule, impérium se nestaví jedním benchem. Ale ani žádným.",
+  "Pepule, tvoje jediná bitva dneška je 3 150 kalorií. Poraz je.",
+  "Pepule, největší generál taky potřebuje souhlas lidu. A lid má rád, když se uvaří. 🍳",
+  "Pepule, nohy jsou jen jednou týdně. To není sleva, to je závazek.",
+  "Pepule, autobag v autě je rozdíl mezi plánem a výmluvou.",
+  "Pepule, 94,5 kila byl tvůj startovní blok, ne tvoje identita.",
+  "Pepule, ranní shake není volitelný. Je to daň impériu. 🏛️",
+  "Pepule, kdo nezapíše sérii, ten ji nezvedl. Tak praví kronika.",
+  "Pepule, durum je legální. Durum bez extra masa je zločin. 🌯",
+  "Pepule, dneska nemusíš být nejlepší. Stačí být lepší než ten, co si loni dal pauzu.",
+  "Pepule, sto pět kilo se nedá koupit. Dá se jen odpracovat a odjíst.",
+  "Pepule, Verunka má víc odznaků. Jen tak mimochodem. 🏅"
+ ]
+};
+function hlaskaDne(){
+ const me = store.get("meId", null);
+ const pool = HLASKY.obe.concat(me === "v" ? HLASKY.v : (me === "p" ? HLASKY.p : []));
+ const dnu = Math.floor(new Date(isoDnes()+"T12:00:00").getTime() / 86400000);
+ const i = (state.hlaskaI !== null && state.hlaskaI !== undefined)
+   ? state.hlaskaI % pool.length : dnu % pool.length;
+ return pool[i];
+}
+function hlaskaCard(){
+ return '<div class="hlaska"><span class="e">💬</span>'
+  +'<span class="t" style="flex:1">'+esc(hlaskaDne())+'</span>'
+  +'<button class="ghost" data-hlaska="1" type="button" title="Další" style="flex:none">🎲</button></div>';
+}
+
+/* ---- schvalování změn ---- */
+function rod(w, muz, zena){ return w === "v" ? zena : muz; }
+function schvalovaniZap(){
+ return store.get("schval", true) && window.sync && sync.on && !!store.get("meId", null);
+}
+function navrhyUloz(){
+ store.set("navrhy", state.navrhy);
+ if (window.sync && sync.on) sync.pushNavrhy();
+}
+function popisZmeny(n){
+ const d = new Date(n.iso+"T12:00:00");
+ const den = DAYS[wdOf(n.iso)]+" "+d.getDate()+". "+(d.getMonth()+1)+".";
+ if (n.pole === "d"){
+  const novy = dinnerById(n.hod).name, stary = dinIso(n.iso).name;
+  return "<b>"+esc(den)+"</b> — večeře <b>"+esc(novy)+"</b> místo "+esc(stary);
+ }
+ const kv = KDO[n.hod] || KDO.s;
+ return "<b>"+esc(den)+"</b> — vaří <b>"+kv[0]+" "+esc(kv[1])+"</b>";
+}
+function navrhNew(iso, pole, hod){
+ const me = store.get("meId", "p");
+ const id = "n"+Date.now()+Math.floor(Math.random()*100);
+ state.navrhy[id] = { od: me, iso: iso, pole: pole, hod: hod, cas: new Date().toISOString() };
+ navrhyUloz();
+ const druhy = me === "p" ? "v" : "p";
+ pushMsg("nav-"+id, "🤔", BASE_T[me].name+" navrhuje změnu",
+   popisZmeny(state.navrhy[id]).replace(/<[^>]+>/g,"")+" — čeká na tvoje slovo v Dnes nebo v Týdnu.");
+ syncDot();
+}
+function navrhSchval(id){
+ const n = state.navrhy[id];
+ if (!n) return;
+ jidloSet(n.iso, n.pole, n.hod);
+ delete state.navrhy[id]; navrhyUloz();
+ const me = store.get("meId", "p");
+ pushMsg("navok-"+id, "✅", "Schváleno",
+   BASE_T[me].name+" "+rod(me,"odsouhlasil","odsouhlasila")+": "+popisZmeny(n).replace(/<[^>]+>/g,"")+". Lid promluvil. 🏛️");
+ celebrate("✅");
+ renderAll();
+}
+function navrhZamit(id){
+ const n = state.navrhy[id];
+ if (!n) return;
+ delete state.navrhy[id]; navrhyUloz();
+ const me = store.get("meId", "p");
+ pushMsg("navne-"+id, "🚫", "Zamítnuto",
+   BASE_T[me].name+" návrh "+rod(me,"zamítl","zamítla")+": "+popisZmeny(n).replace(/<[^>]+>/g,"")+". Senát je proti. 🏛️");
+ renderAll();
+}
+function navrhForce(id){
+ const n = state.navrhy[id];
+ if (!n) return;
+ jidloSet(n.iso, n.pole, n.hod);
+ delete state.navrhy[id]; navrhyUloz();
+ pushMsg("navf-"+id, "⚡", BASE_T[n.od].name+" to "+rod(n.od,"prosadil","prosadila")+" silou",
+   popisZmeny(n).replace(/<[^>]+>/g,"")+". Bez hlasování. Dekret nabývá účinnosti okamžitě. 🏛️");
+ celebrate("⚡");
+ renderAll();
+}
+function jidloZmena(iso, pole, hod, force){
+ if (!force && schvalovaniZap()){ navrhNew(iso, pole, hod); return false; }
+ jidloSet(iso, pole, hod);
+ return true;
+}
+function navrhyCard(){
+ const ids = Object.keys(state.navrhy || {});
+ if (!ids.length) return "";
+ const me = store.get("meId", null);
+ return '<div class="card" style="border-color:var(--s2)">'
+  +'<div class="rhead"><h3>🤔 Čeká na schválení</h3><span class="rmeta">'+ids.length+'</span></div>'
+  + ids.sort().map(id=>{
+     const n = state.navrhy[id], moje = n.od === me;
+     return '<div class="navrh"><div class="t">'+(moje ? "Ty navrhuješ" : esc(BASE_T[n.od].name)+" navrhuje")+': '
+      + popisZmeny(n)+'</div>'
+      +'<div class="btns">'
+      + (moje
+         ? '<button class="btn-force" data-navrh="f|'+id+'" type="button">⚡ Prosadit i tak</button>'
+           +'<button class="btn-ne" data-navrh="x|'+id+'" type="button">Zrušit návrh</button>'
+         : '<button class="btn-ano" data-navrh="a|'+id+'" type="button">✅ Souhlasím</button>'
+           +'<button class="btn-ne" data-navrh="n|'+id+'" type="button">❌ Ne, díky</button>')
+      +'</div></div>';
+   }).join("")
+  +'<div class="hint">'+(schvalovaniZap()
+     ? 'Změny večeře a toho, kdo vaří, se propíšou až když je odsouhlasí ten druhý. Vypnout se to dá v Cílech.'
+     : 'Schvalování je vypnuté — tohle jsou zbylé návrhy.')+'</div></div>';
+}
+
 function uklidJidlo(){
  const h = isoPlus(-70);
  let n = 0;
@@ -1865,7 +2037,8 @@ function renderDnes(){
   + Object.keys(KDO).map(k=>'<option value="'+k+'"'+(k===kdoVari(iso)?" selected":"")+'>'+KDO[k][0]+' '+esc(KDO[k][1])+'</option>').join("")
   + '</select>';
  document.getElementById("tab-dnes").innerHTML =
-  ringCard(iso)
+  navrhyCard()
+  + ringCard(iso)
   +'<div class="card" style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">'
   +'<div><div class="time" style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px">Den</div>'
   +'<select id="daySel" style="min-width:150px">'+opts.join("")+'</select></div>'
@@ -1879,7 +2052,8 @@ function renderDnes(){
   +'<div class="note"><b>Přepínačem nahoře se dá skočit na kterýkoli den</b> — od včerejška po týden dopředu. '
   +'Co tam nastavíš (večeři, svačiny, kdo vaří), platí pro ten konkrétní den a vidí to i ten druhý. '
   +'<b>Odškrtávej, co sníš.</b> Každé jídlo jde vyměnit v rozbalovacím menu — a je tam i sekce <b>Venku 🌯</b> pro durum, mekáč, gyros nebo bagetu z pumpy. '
-  +'Když sníš něco venku, přepni to tam a čísla sedí dál. <b>Žádné výčitky, jen ať to víme.</b></div>';
+  +'Když sníš něco venku, přepni to tam a čísla sedí dál. <b>Žádné výčitky, jen ať to víme.</b></div>'
+  + hlaskaCard();
 }
 
 /* ============ Týden ============ */
@@ -1912,7 +2086,8 @@ function renderTyden(){
  const budouci = [];
  for (let i = 0; i < 7; i++) budouci.push(dinIso(isoPlus(i)).name);
  document.getElementById("tab-tyden").innerHTML =
-  '<div class="card"><div class="rhead"><h3>Jídelníček podle dnů</h3>'
+  navrhyCard()
+  +'<div class="card"><div class="rhead"><h3>Jídelníček podle dnů</h3>'
   +'<span class="rmeta">dva týdny</span></div>'
   +'<p class="who">'+DINNERS.filter(o=>!o.out).length+' večeří na výběr. Uplynulé dny zůstávají vidět zesvětlené, '
   +'nové přibývají zezdola — <b>okno se posouvá samo</b>. U každého dne jde vybrat, <b>kdo vaří</b>, '
@@ -3162,7 +3337,7 @@ function finishSession(){
  store.set("hist", state.hist);
 
  pushMsg("tr-"+who+"-"+new Date().toISOString().slice(0,10)+"-"+hotovo, "🏋️",
-   BASE_T[who].name+" odtrénoval(a) "+hotovo,
+   BASE_T[who].name+" "+rod(who,"odtrénoval","odtrénovala")+" "+hotovo,
    t.hot+" sérií za "+t.min+" minut"+(t.obj?", objem "+fmt(t.obj)+" kg":"")
    +(osobaky.length ? ". 🏆 Nový osobák: "+osobaky.join(", ")+"!" : "."));
  osobaky.forEach((o,i)=> pushMsg("pr-"+who+"-"+new Date().toISOString().slice(0,10)+"-"+i, "🏆",
@@ -3651,7 +3826,7 @@ function kontrolaOdznaku(){
  ted.filter(k => drive.indexOf(k) < 0).forEach(k => {
   const p = k.split("|"), o = ODZNAKY.find(x => x.id === p[1]);
   if (o) pushMsg("odz-"+k, o.ic, "Nový odznak: "+o.n,
-    BASE_T[p[0]].name+" si právě odemkl(a) odznak „"+o.n+"\". "
+    BASE_T[p[0]].name+" si právě "+rod(p[0],"odemkl","odemkla")+" odznak „"+o.n+"\". "
     + (ziskane(p[0]).length >= ODZNAKY.length ? "A to byl poslední — všechny!" : "Zbývá jich ještě "+(ODZNAKY.length - ziskane(p[0]).length)+"."));
  });
  store.set("odznaky", ted);
@@ -4040,6 +4215,16 @@ const sync = {
         if (state.tab === "nakup") renderNakup();
       }
     });
+    // návrhy ke schválení
+    onValue(this._ref("navrhy"), snap => {
+      const v = snap.val();
+      state.navrhy = (v && typeof v === "object") ? v : {};
+      store.set("navrhy", state.navrhy);
+      if (state.tab === "dnes") renderDnes();
+      if (state.tab === "tyden") renderTyden();
+      if (state.tab === "zpravy") renderZpravy();
+      syncDot();
+    });
     // jídelníček podle dnů
     onValue(this._ref("jidlo"), snap => {
       const v = snap.val();
@@ -4101,6 +4286,7 @@ const sync = {
   pushRec(){ this._set("recepty", store.get("myRecipes", [])); },
   pushPlan(){ this._set("plan", state.plan); },
   pushJidlo(){ this._set("jidlo", state.jidlo); },
+  pushNavrhy(){ this._set("navrhy", state.navrhy); },
   pushShopX(){ this._set("shopx", state.shopX); },
 
   pushStatus(){
@@ -4408,7 +4594,7 @@ function renderZpravy(){
     +'a budou se sdílet samy. Než to nastavíte, funguje tlačítko „Pochlub se Verune" — pošle zprávu do WhatsAppu.</div>';
 
  document.getElementById("tab-zpravy").innerHTML =
-  pairCard() + reakceCard()
+  navrhyCard() + pairCard() + reakceCard()
   +'<div class="card"><div class="rhead"><h3>Zprávy</h3>'
   +'<span style="display:flex;gap:6px">'
   +(un?'<button class="ghost" id="readAll" type="button">Označit přečtené</button>':'')
@@ -4532,6 +4718,16 @@ function renderCile(){
   +'<tr><td>Bílkoviny</td><td class="num">200 g</td><td class="num">125 g</td></tr>'
   +'<tr><td>Tuky</td><td class="num">90 g</td><td class="num">60 g</td></tr>'
   +'<tr><td>Sacharidy</td><td class="num">~385 g</td><td class="num">~215 g</td></tr></tbody></table></div>'
+  +'<div class="card"><h3>⚖️ Schvalování změn</h3>'
+  +'<p class="who">Když jeden z vás změní <b>večeři</b> nebo <b>kdo vaří</b>, druhý to musí odsouhlasit — '
+  +'teprve pak se to propíše oběma. Ten, kdo návrh podal, ho může kdykoli <b>prosadit silou</b> '
+  +'(⚡ Prosadit i tak) — ale druhému o tom přijde zpráva, takže to není zadarmo. 🏛️</p>'
+  +'<div class="wrow"><button class="'+(store.get("schval",true)?"act":"ghost")+' small" id="schvalTgl" type="button">'
+  + (store.get("schval",true) ? "Zapnuto — vypnout" : "Vypnuto — zapnout")+'</button>'
+  +'<span class="dim" style="font-size:12.5px">'
+  + (store.get("schval",true) ? "Férově: každá změna přes souhlas." : "Změny se propisují rovnou, bez ptaní.")+'</span></div>'
+  +'<div class="hint">Funguje to jen když jsou telefony propojené. Snídaně, svačiny a obědy schválení nepotřebují — '
+  +'to je věc každého zvlášť.</div></div>'
   +'<div class="card"><h3>👋 Průvodce nastavením</h3>'
   +'<p class="who">Když appku dostane do ruky někdo nový — nebo si chceš znovu projít, co kde je.</p>'
   +'<button class="act small" id="onbBtn" type="button">Spustit průvodce</button></div>'
@@ -4640,9 +4836,9 @@ document.addEventListener("change", e=>{
    if (window.sync && sync.on) sync.pushShop();
    renderNakup(); }
  else if (t.dataset.pick !== undefined){ pickSet(t.dataset.day, t.dataset.pick, +t.value); renderDnes(); renderNext(); }
- else if (t.dataset.din !== undefined){ jidloSet(t.dataset.din, "d", t.value);
+ else if (t.dataset.din !== undefined){ jidloZmena(t.dataset.din, "d", t.value);
    renderDnes(); renderTyden(); renderNakup(); renderNext(); }
- else if (t.dataset.kdo !== undefined){ jidloSet(t.dataset.kdo, "k", t.value);
+ else if (t.dataset.kdo !== undefined){ jidloZmena(t.dataset.kdo, "k", t.value);
    renderDnes(); renderTyden(); }
  else if (t.dataset.exsel !== undefined){ state.exsel[t.dataset.exsel] = t.value; store.set("exsel", state.exsel); renderTrenink(); }
  else if (t.dataset.planset !== undefined){
@@ -4672,7 +4868,7 @@ document.addEventListener("change", e=>{
        if (who === "p") state.fotoP = arr; else state.fotoV = arr;
        try { store.set(key, arr); } catch(err){}
        state.lastCheckin = iso; store.set("lastCheckin", iso);
-       pushMsg("foto-"+who+"-"+iso, "📸", BASE_T[who].name+" přidal(a) novou fotku",
+       pushMsg("foto-"+who+"-"+iso, "📸", BASE_T[who].name+" "+rod(who,"přidal","přidala")+" novou fotku",
          "Měsíční kontrola je zapsaná. Za pár měsíců bude ta srovnávací dvojice pořádná odměna.");
        renderProgres(); syncDot();
      };
@@ -4922,6 +5118,23 @@ document.addEventListener("click", e=>{
   store.set("msgs", msgs); renderZpravy(); return;
  }
  if (e.target.id === "clearMsgs"){ store.set("msgs", []); renderZpravy(); return; }
+ if (e.target.closest("[data-hlaska]")){
+  state.hlaskaI = Math.floor(Math.random()*1000);
+  renderDnes(); return;
+ }
+ const nv = e.target.closest("[data-navrh]");
+ if (nv){
+  const p = nv.dataset.navrh.split("|");
+  if (p[0] === "a") navrhSchval(p[1]);
+  else if (p[0] === "n") navrhZamit(p[1]);
+  else if (p[0] === "f") navrhForce(p[1]);
+  else { delete state.navrhy[p[1]]; navrhyUloz(); renderAll(); }
+  return;
+ }
+ if (e.target.id === "schvalTgl"){
+  store.set("schval", !store.get("schval", true));
+  renderCile(); renderDnes(); renderTyden(); return;
+ }
  const jd = e.target.closest("[data-jidladen]");
  if (jd){ state.dayIso = jd.dataset.jidladen; renderDnes(); showTab("dnes"); return; }
  const pd = e.target.closest("[data-planday]");
@@ -5069,7 +5282,7 @@ document.addEventListener("click", e=>{
  if (e.target.id === "icsGet"){ stahniIcs(); return; }
  if (e.target.id === "expBtn"){
   const keys = ["week","pick","checks","shop","queue","fb","exsel","wtP","wtV","mrP","mrV","lastCheckin",
-                "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist","plan","jidlo","shopHist","shopCasto","nakupDni"];
+                "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist","plan","jidlo","shopHist","shopCasto","nakupDni","navrhy","schval"];
   const dump = {};
   keys.forEach(k=>{ const v = store.get(k, null); if (v !== null) dump[k] = v; });
   const box = document.getElementById("dataBox");
