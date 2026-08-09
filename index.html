@@ -11,7 +11,7 @@
 <script src="firebase-config.js"></script>
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-title" content="PEVE FIT">
-<title>PEVE FIT — Pepule &amp; Verune</title>
+<title>PEVE FIT — Pepulus &amp; Verune</title>
 <style>
   :root{
     color-scheme:light;
@@ -179,6 +179,22 @@
   .odz .o.on .e{filter:none;opacity:1}
   .odz .t{font-size:11.5px;font-weight:600;margin-top:4px;line-height:1.25}
   .odz .s{font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.3}
+  .hbar{display:grid;grid-template-columns:1fr;gap:7px;margin-top:10px}
+  .hbar .row{display:grid;grid-template-columns:1fr 58px;gap:9px;align-items:center}
+  .hbar .nm{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .hbar .tr{height:9px;border-radius:5px;background:var(--grid);overflow:hidden;margin-top:3px}
+  .hbar .tr i{display:block;height:100%;border-radius:5px;background:var(--s1)}
+  .hbar .vl{font-size:12.5px;font-variant-numeric:tabular-nums;text-align:right;color:var(--text-secondary)}
+  .stack{display:flex;height:22px;border-radius:7px;overflow:hidden;margin:10px 0 8px;gap:2px;background:var(--grid)}
+  .stack i{display:block;height:100%}
+  .stack-leg{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--text-secondary)}
+  .stack-leg s{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:5px;text-decoration:none}
+  .kpi{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0 2px}
+  @media(min-width:741px){ .kpi{grid-template-columns:repeat(4,minmax(0,1fr))} }
+  .kpi div{background:var(--accent-soft);border-radius:11px;padding:9px 10px}
+  .kpi .k{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;line-height:1.3}
+  .kpi .v{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.25}
+
   .odz-next{display:flex;align-items:center;gap:11px;margin-top:10px;background:var(--accent-soft);
             border:1px solid var(--border);border-radius:12px;padding:9px 12px}
   .odz-next .e{font-size:24px;flex:none;line-height:1;filter:grayscale(.55);opacity:.75}
@@ -938,7 +954,7 @@ const DINNERS = [
  { id:"koprovka", tag:"klasika", name:"Koprová omáčka s vejcem a bramborem",
    v:{por:"1 porce, 2 vejce",kcal:470,prot:26}, p:{por:"velká porce, 4 vejce",kcal:850,prot:45},
    ing:[["Kopr",2,"bal"],["Smetana ke šlehání",1,"ks"],["Vejce",8,"ks"],["Brambory",1.5,"kg"],["Mléko",0.5,"l"]],
-   steps:["Z másla a mouky udělej jíšku, zalij mlékem a vodou, provař do hladka.","Přidej nasekaný kopr, lžíci octa a cukru — má být sladkokyselá.","Podávej s vařeným bramborem a vejci natvrdo, u Pepuleho čtyřmi."] },
+   steps:["Z másla a mouky udělej jíšku, zalij mlékem a vodou, provař do hladka.","Přidej nasekaný kopr, lžíci octa a cukru — má být sladkokyselá.","Podávej s vařeným bramborem a vejci natvrdo, u Pepula čtyřmi."] },
  { id:"bramboraky", tag:"klasika", name:"Bramboráky s mletým masem",
    v:{por:"3 kusy",kcal:510,prot:29}, p:{por:"6 kusů",kcal:930,prot:54},
    ing:[["Brambory",2,"kg"],["Mleté maso",500,"g"],["Vejce",3,"ks"],["Česnek",1,"ks"],["Majoránka",1,"bal"]],
@@ -982,7 +998,7 @@ const DINNERS = [
  { id:"hrachovka", tag:"klasika", name:"Hrachová kaše s uzeným a vejcem",
    v:{por:"1 porce",kcal:480,prot:34}, p:{por:"velká porce",kcal:870,prot:58},
    ing:[["Hrách",500,"g"],["Uzené maso",500,"g"],["Vejce",4,"ks"],["Cibule",2,"ks"]],
-   steps:["Hrách namoč přes noc a vař doměkka, pak rozšlehej metličkou nebo rozmixuj.","Uzené nakrájej a opeč s cibulkou dozlatova.","Na kaši dej uzené s cibulkou a sázené vejce, u Pepuleho dvě."] },
+   steps:["Hrách namoč přes noc a vař doměkka, pak rozšlehej metličkou nebo rozmixuj.","Uzené nakrájej a opeč s cibulkou dozlatova.","Na kaši dej uzené s cibulkou a sázené vejce, u Pepula dvě."] },
  { id:"bramborovygulas", tag:"klasika", name:"Bramborový guláš s klobásou",
    v:{por:"1 talíř + chleba",kcal:470,prot:26}, p:{por:"2 talíře + chleba",kcal:860,prot:48},
    ing:[["Brambory",1.5,"kg"],["Klobása",400,"g"],["Cibule",2,"ks"],["Mletá paprika",1,"ks"],["Majoránka",1,"bal"]],
@@ -1050,7 +1066,7 @@ const DINNERS = [
  { id:"kurecisalat", tag:"rychlo", name:"Velký kuřecí salát s vejci a pečivem",
    v:{por:"1 mísa",kcal:440,prot:40}, p:{por:"velká mísa + pečivo",kcal:820,prot:64},
    ing:[["Kuřecí prsa",700,"g"],["Vejce",6,"ks"],["Salát",2,"ks"],["Rajčata",4,"ks"],["Žitný chleba",1,"ks"]],
-   steps:["Kuře opeč na plátky se solí, pepřem a paprikou.","Do mísy salát, rajčata, okurku, vejce natvrdo a teplé maso.","Zalij dresinkem z jogurtu, hořčice a citronu. Pepule k tomu dvě krajíce chleba."] },
+   steps:["Kuře opeč na plátky se solí, pepřem a paprikou.","Do mísy salát, rajčata, okurku, vejce natvrdo a teplé maso.","Zalij dresinkem z jogurtu, hořčice a citronu. Pepulus k tomu dvě krajíce chleba."] },
  { id:"testovinypesto", tag:"rychlo", name:"Těstoviny s pestem, kuřetem a rajčaty",
    v:{por:"1 porce",kcal:490,prot:36}, p:{por:"velká porce",kcal:900,prot:60},
    ing:[["Těstoviny",500,"g"],["Kuřecí prsa",600,"g"],["Pesto",1,"ks"],["Rajčata",3,"ks"],["Parmezán",100,"g"]],
@@ -1118,7 +1134,7 @@ const DINNERS = [
  { id:"anglicka", tag:"rychlo", name:"Anglická snídaně jako večeře",
    v:{por:"2 vejce + příloha",kcal:480,prot:30}, p:{por:"4 vejce + příloha",kcal:900,prot:58},
    ing:[["Vejce",8,"ks"],["Slanina",250,"g"],["Fazole v tomatě",2,"ks"],["Klobása",4,"ks"],["Toustový chleba",1,"ks"]],
-   steps:["Na jedné pánvi opeč slaninu a klobásky, na druhé osmahni houby a rajčata.","Fazole prohřej, chleba opeč na výpeku ze slaniny.","Nakonec sázená vejce — Verune dvě, Pepule čtyři. Večeře jak z hospody."] },
+   steps:["Na jedné pánvi opeč slaninu a klobásky, na druhé osmahni houby a rajčata.","Fazole prohřej, chleba opeč na výpeku ze slaniny.","Nakonec sázená vejce — Verune dvě, Pepulus čtyři. Večeře jak z hospody."] },
  { id:"vajecnabowl", tag:"rychlo", name:"Vaječná mísa s rýží, avokádem a sezamem",
    v:{por:"1 miska",kcal:460,prot:28}, p:{por:"velká miska",kcal:850,prot:52},
    ing:[["Vejce",8,"ks"],["Rýže",300,"g"],["Avokádo",2,"ks"],["Sójová omáčka",1,"ks"],["Sezam",1,"bal"]],
@@ -1130,7 +1146,7 @@ const DINNERS = [
  { id:"venpizza", out:true, name:"🍕 Pizza (koupená venku)",
    v:{por:"3 kusy",kcal:500,prot:22}, p:{por:"celá + kuře/šunka navíc",kcal:950,prot:45},
    ing:[],
-   steps:["Objednej si navíc kuře, šunku nebo tuňáka — bílkovina je to jediné, co pizze chybí.","Pepule klidně celou, Verune tři kusy a k tomu salát."] },
+   steps:["Objednej si navíc kuře, šunku nebo tuňáka — bílkovina je to jediné, co pizze chybí.","Pepulus klidně celou, Verune tři kusy a k tomu salát."] },
  { id:"venmekac", out:true, name:"🍔 Mekáč (koupený venku)",
    v:{por:"McRoyal + malé hranolky",kcal:620,prot:31}, p:{por:"2× McRoyal + velké hranolky",kcal:1480,prot:65},
    ing:[],
@@ -1288,7 +1304,7 @@ const EXTRA_RECIPES = [
    steps:["Trouba na 180 °C, formu na muffiny vymaž olejem.","Vejce rozšlehej se solí, vmíchej nakrájenou šunku, sýr a zeleninu.","Rozlij do 12 formiček, peč 20 min.","V lednici vydrží 4 dny. Nejlepší svačina, jakou můžeš mít po ruce — studené i teplé."] },
  { t:"Šakšuka pro dva", k:"15 minut · jedna pánev",
    ing:["Vejce 4–6 ks","Rajčata krájená 2 konzervy","Paprika 2 ks","Cibule 2 ks","Feta 100 g","Kmín, mletá paprika, česnek"],
-   steps:["Cibuli a papriku osmahni doměkka, přidej česnek a koření.","Zalij rajčaty, 10 min povař, osol.","Udělej důlky, vklepni vejce, přiklop na 6–8 min — žloutek má zůstat tekutý.","Feta navrch, vytírej pečivem. Verune 2 vejce, Pepule 4."] },
+   steps:["Cibuli a papriku osmahni doměkka, přidej česnek a koření.","Zalij rajčaty, 10 min povař, osol.","Udělej důlky, vklepni vejce, přiklop na 6–8 min — žloutek má zůstat tekutý.","Feta navrch, vytírej pečivem. Verune 2 vejce, Pepulus 4."] },
  { t:"Proteinové palačinky", k:"rychlá snídaně i svačina",
    ing:["Vejce 2 ks","Tvaroh 150 g","Ovesná mouka 40 g","Prášek do pečiva špetka","Ovoce na ozdobu"],
    steps:["Vše rozmixuj.","Peč na středním plameni po 2 minutách z každé strany.","Podávej s ovocem, medem nebo lžící skyru."] },
@@ -1301,12 +1317,12 @@ const EXTRA_RECIPES = [
  { t:"Šťouchané brambory s cibulkou", k:"příloha, která zachrání každé maso",
    ing:["Brambory 1,2 kg","Cibule 2 ks","Máslo 40 g","Slanina (volitelně) 100 g"],
    steps:["Brambory uvař ve slupce, oloupej.","Cibulku (a slaninu) osmahni na másle dozlatova.","Brambory hrubě rozšťouchej vidličkou, vmíchej cibulku, osol, opepři."] },
- { t:"🌯 Durum a kebab — jak si objednat", k:"Verune 550 · Pepule 900 kcal",
+ { t:"🌯 Durum a kebab — jak si objednat", k:"Verune 550 · Pepulus 900 kcal",
    ing:["Malý kuřecí durum ≈ 550 kcal / 32 g B","Velký durum ≈ 750 kcal / 42 g B","Velký + extra maso ≈ 900 kcal / 55 g B","Kebab v pitě ≈ 600 kcal / 35 g B","Kebab talíř s hranolky ≈ 1 000 kcal / 50 g B"],
-   steps:["<b>Řekni si o extra maso.</b> Za pár korun přidá 15–20 g bílkovin — nejlepší investice v celém menu.","Kuřecí bývá libovější než hovězí míchané.","Omáčku česnekovou nebo jogurtovou místo majonézové, zeleniny co nejvíc.","<b>Pití voda.</b> Kola přidá 210 kcal a nula bílkovin — u Pepuleho to nevadí, u Verune je to šestina denního příjmu.","<b>Pepule:</b> durum je pro tebe skoro ideální oběd — hodně kalorií i bílkovin naráz. Vůbec se za něj nestyď.","<b>Verune:</b> jeden durum je třetina tvého dne. Když si ho dáš, ubere se u večeře — appka to spočítá sama."] },
+   steps:["<b>Řekni si o extra maso.</b> Za pár korun přidá 15–20 g bílkovin — nejlepší investice v celém menu.","Kuřecí bývá libovější než hovězí míchané.","Omáčku česnekovou nebo jogurtovou místo majonézové, zeleniny co nejvíc.","<b>Pití voda.</b> Kola přidá 210 kcal a nula bílkovin — u Pepula to nevadí, u Verune je to šestina denního příjmu.","<b>Pepulus:</b> durum je pro tebe skoro ideální oběd — hodně kalorií i bílkovin naráz. Vůbec se za něj nestyď.","<b>Verune:</b> jeden durum je třetina tvého dne. Když si ho dáš, ubere se u večeře — appka to spočítá sama."] },
  { t:"🍔 Mekáč — co si objednat", k:"orientační hodnoty",
    ing:["Big Mac ≈ 500 kcal / 26 g B","McRoyal ≈ 520 kcal / 30 g B","Cheeseburger ≈ 300 kcal / 16 g B","Nuggety 9 ks ≈ 415 kcal / 23 g B","Hranolky střední ≈ 330 kcal / 4 g B","Hranolky velké ≈ 440 kcal / 5 g B","Kola 0,5 l ≈ 210 kcal / 0 g B"],
-   steps:["<b>Dva burgery místo jednoho s velkým menu.</b> Podobné kalorie, ale dvojnásobek bílkovin.","Nuggety mají z celého menu nejlepší poměr bílkovin k ceně.","Hranolky jsou skoro čistá energie bez bílkovin — u Pepuleho fajn, u Verune spíš malé.","Pití bez cukru, ušetříš 210 prázdných kalorií.","<b>Nejde o zákaz.</b> Mekáč jednou za čas nic nezkazí — jen ať víš, co jsi snědl, a zbytek dne se tomu přizpůsobí."] }
+   steps:["<b>Dva burgery místo jednoho s velkým menu.</b> Podobné kalorie, ale dvojnásobek bílkovin.","Nuggety mají z celého menu nejlepší poměr bílkovin k ceně.","Hranolky jsou skoro čistá energie bez bílkovin — u Pepula fajn, u Verune spíš malé.","Pití bez cukru, ušetříš 210 prázdných kalorií.","<b>Nejde o zákaz.</b> Mekáč jednou za čas nic nezkazí — jen ať víš, co jsi snědl, a zbytek dne se tomu přizpůsobí."] }
 ];
 
 /* ============ data: training ============ */
@@ -1559,27 +1575,27 @@ const V_QUEUE = ["FB1","FB2","FB4"];
 const QUEUE_T = {A:"Horní tělo — tlaky",N:"Nohy komplet",C:"Horní tělo — tahy",G:"Ramena, paže a břicho",
                  B:"Dolní tělo — kvadricepsy",D:"Dolní tělo — hamstringy"};
 const DAYNOTE = {
- 0:"🏋️ Pepule 7:30 ráno · Verune FB večer",
- 1:"🏋️ 18:00 spolu (Pepule s Radkem)",
+ 0:"🏋️ Pepulus 7:30 ráno · Verune FB večer",
+ 1:"🏋️ 18:00 spolu (Pepulus s Radkem)",
  2:"Volno — procházka, spánek",
  3:"🏋️ 18:00 spolu",
  4:"Volno — regenerace",
- 5:"🏋️ Pepule 9:00",
+ 5:"🏋️ Pepulus 9:00",
  6:"⚖️ Ráno vážení · 17:00 nákup + 10 autobagů"
 };
 
 const STAPLES = {
  "Základ (shake a snídaně)":[["Ovesné vločky",1,"kg"],["Arašídové máslo",2,"ks"],["Mléko polotučné",7,"l"],["Banány",12,"ks"],["Granola",1,"bal"],["Med",1,"ks"],["Borůvky / mražené ovoce",2,"bal"]],
  "Vejce a bílkoviny do zásoby":[["Vejce",40,"ks"],["Skyr",10,"ks"],["Cottage / tvaroh",8,"ks"],["Řecký jogurt",4,"ks"],["Tuňák v kapsičce",6,"ks"],["Šunka / krůtí prsní",300,"g"],["Kefír",2,"l"]],
- "Autobagy a svačiny (Pepule)":[["Ořechy",1,"kg"],["Čokoládové mléko",6,"ks"],["Proteinové tyčinky",6,"ks"],["Sušené meruňky",500,"g"],["Rýžové chlebíčky",2,"bal"],["Rohlíky",10,"ks"]],
+ "Autobagy a svačiny (Pepulus)":[["Ořechy",1,"kg"],["Čokoládové mléko",6,"ks"],["Proteinové tyčinky",6,"ks"],["Sušené meruňky",500,"g"],["Rýžové chlebíčky",2,"bal"],["Rohlíky",10,"ks"]],
  "Ovoce a zelenina":[["Jablka",7,"ks"],["Okurka, rajčata, paprika",1,"nákup"],["Zelenina k večeřím",1,"nákup"],["Citron",2,"ks"]],
  "Ostatní":[["Olivový olej",1,"l"],["Máslo",1,"ks"],["Žitný chleba",1,"ks"],["Toustový chleba",1,"ks"],["Lučina / žervé",2,"ks"],["Jogurtový dresink / zakysaná",2,"ks"],["Sýr plátkový",200,"g"]],
- "Doplňky (kontrola zásob)":[["Kreatin monohydrát — 5 g denně oba",1,"ks"],["Vitamin D3 — 2000 IU denně oba",1,"ks"],["Omega-3 (rybí olej) — denně oba",1,"ks"],["Whey protein (Pepule má, vydrží ~6 týdnů)",0,"✓"]]
+ "Doplňky (kontrola zásob)":[["Kreatin monohydrát — 5 g denně oba",1,"ks"],["Vitamin D3 — 2000 IU denně oba",1,"ks"],["Omega-3 (rybí olej) — denně oba",1,"ks"],["Whey protein (Pepulus má, vydrží ~6 týdnů)",0,"✓"]]
 };
 
 /* ============ targets (dynamic) ============ */
 const BASE_T = {
- p:{ name:"Pepule", kcal:3150, prot:200 },
+ p:{ name:"Pepulus", kcal:3150, prot:200 },
  v:{ name:"Verune", kcal:1900, prot:125 }
 };
 function target(who){
@@ -1677,7 +1693,7 @@ const fmt = n => n.toLocaleString("cs-CZ");
 const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 /* ============ Jídelní plán podle dnů ============ */
-const KDO = { p:["💪","Pepule","kv-p"], v:["✨","Verune","kv-v"], s:["👫","Spolu","kv-s"], o:["🌯","Venku / koupené","kv-o"] };
+const KDO = { p:["💪","Pepulus","kv-p"], v:["✨","Verune","kv-v"], s:["👫","Spolu","kv-s"], o:["🌯","Venku / koupené","kv-o"] };
 function isoDnes(){ const d = new Date(); return d.getFullYear()+"-"+dvoj(d.getMonth()+1)+"-"+dvoj(d.getDate()); }
 function isoPlus(n){ const d = new Date(); d.setDate(d.getDate()+n); return d.getFullYear()+"-"+dvoj(d.getMonth()+1)+"-"+dvoj(d.getDate()); }
 function wdOf(iso){ const d = new Date(iso+"T12:00:00"); return (d.getDay()+6)%7; }
@@ -1906,7 +1922,7 @@ function renderTyden(){
   + rows.join("")
   +'<div class="note"><b>Nákup počítá s dalšími sedmi dny od dneška</b>, ne s kalendářním týdnem — '
   +'takže je jedno, jestli nakupuješ v neděli nebo ve středu.</div>'
-  +'<div class="note reco"><b>Pravidlo porce:</b> Pepule 1,7× víc masa i přílohy + lžíce oleje. '
+  +'<div class="note reco"><b>Pravidlo porce:</b> Pepulus 1,7× víc masa i přílohy + lžíce oleje. '
   +'Vař o porci navíc — Verunin zítřejší oběd.</div></div>';
 }
 
@@ -1939,7 +1955,7 @@ const OUT_KATALOG = [
    ["Celá 32 cm", 900, 38],
    ["Kuře / šunka / tuňák navíc", 120, 18],
    ["Česnekový dip", 150, 1]
- ], "Pizze chybí <b>jediná věc: bílkovina</b>. Objednej si navíc kuře, šunku nebo tuňáka — za 30–40 Kč je z toho slušné jídlo. Verune tři kusy a salát, Pepule klidně celou."],
+ ], "Pizze chybí <b>jediná věc: bílkovina</b>. Objednej si navíc kuře, šunku nebo tuňáka — za 30–40 Kč je z toho slušné jídlo. Verune tři kusy a salát, Pepulus klidně celou."],
  ["🍖 Hospoda", [
    ["Polévka", 150, 8],
    ["Řízek s bramborem", 820, 42],
@@ -1955,7 +1971,7 @@ const OUT_KATALOG = [
    ["Proteinová tyčinka", 210, 20],
    ["Čokoládové mléko 0,5 l", 320, 17],
    ["Sáček ořechů 50 g", 300, 10]
- ], "Tohle je <b>Pepuleho záchranná síť</b>, když nestihne autobag. Dvě bagety a čoko mléko je 1 300 kcal a 60 g bílkovin — plnohodnotné jídlo za tři minuty u pokladny."],
+ ], "Tohle je <b>Pepulova záchranná síť</b>, když nestihne autobag. Dvě bagety a čoko mléko je 1 300 kcal a 60 g bílkovin — plnohodnotné jídlo za tři minuty u pokladny."],
  ["🍜 Asie a zdravější volby", [
    ["Nudle/rýže s kuřetem", 650, 32],
    ["Pho / ramen", 550, 35],
@@ -2025,7 +2041,7 @@ function renderOnb(){
   telo = '<div class="cstep">Krok 1 ze 3 — kdo drží tenhle telefon</div>'
    +'<p class="ctext">Podle toho se pak ukazuje tvůj plán a tvoje čísla.</p>'
    +'<div class="tset" style="gap:10px">'
-   +'<button class="pchip'+(me==="p"?" on":"")+'" data-setme="p" type="button" style="font-size:15px;padding:12px 18px">Jsem Pepule 💪</button>'
+   +'<button class="pchip'+(me==="p"?" on":"")+'" data-setme="p" type="button" style="font-size:15px;padding:12px 18px">Jsem Pepulus 💪</button>'
    +'<button class="pchip'+(me==="v"?" on":"")+'" data-setme="v" type="button" style="font-size:15px;padding:12px 18px">Jsem Verune ✨</button>'
    +'</div>'
    +(me ? '<p class="who" style="margin-top:16px">Dobře, '+esc(BASE_T[me].name)+'. Tvůj denní cíl je <b>'
@@ -2095,7 +2111,7 @@ function renderCook(){
    +'<div class="tset">'+SCALES.map(x=>'<button class="pchip'+(state.scale===x[0]?" on":"")+'" '
      +'data-scale="'+x[0]+'" type="button">'+esc(x[1])+'</button>').join("")+'</div>'
    +'<ul class="cing">'+r.ing.map(x=>'<li>'+esc(x[0])+' — <b>'+qty(x[1])+' '+esc(x[2])+'</b></li>').join("")+'</ul>'
-   +'<p class="who" style="margin-top:14px">Verune '+esc(r.v.por)+' · Pepule '+esc(r.p.por)
+   +'<p class="who" style="margin-top:14px">Verune '+esc(r.v.por)+' · Pepulus '+esc(r.p.por)
    +' · odhadem '+recTime(r)+'</p>';
  } else if (st < n){
   telo = '<div class="cstep">Krok '+(st+1)+' z '+n+'</div>'
@@ -2154,7 +2170,7 @@ function novyReceptForm(){
   +'<input type="text" id="nrVpor" placeholder="1 porce"></div>'
   +'<div class="f" style="max-width:100px"><label>kcal</label><input type="number" id="nrVk" placeholder="470" inputmode="numeric"></div>'
   +'<div class="f" style="max-width:100px"><label>bílkoviny g</label><input type="number" id="nrVp" placeholder="32" inputmode="numeric"></div></div>'
-  +'<div class="form-row"><div class="f"><label>Pepule — porce</label>'
+  +'<div class="form-row"><div class="f"><label>Pepulus — porce</label>'
   +'<input type="text" id="nrPpor" placeholder="velká porce"></div>'
   +'<div class="f" style="max-width:100px"><label>kcal</label><input type="number" id="nrPk" placeholder="850" inputmode="numeric"></div>'
   +'<div class="f" style="max-width:100px"><label>bílkoviny g</label><input type="number" id="nrPp" placeholder="55" inputmode="numeric"></div></div>'
@@ -2215,7 +2231,7 @@ function renderRecepty(){
   +'<button class="star'+(favs.includes(r.id)?" on":"")+'" data-fav="'+r.id+'" title="Oblíbené">'+(favs.includes(r.id)?"★":"☆")+'</button>'
   +'</span></summary>'
   +'<div class="inner"><div class="badges"><span class="badge b1">Verune: '+esc(r.v.por)+' · '+r.v.prot+' g B</span>'
-  +'<span class="badge b3">Pepule: '+esc(r.p.por)+' · '+r.p.prot+' g B</span></div>'
+  +'<span class="badge b3">Pepulus: '+esc(r.p.por)+' · '+r.p.prot+' g B</span></div>'
   +'<div class="wrow" style="margin:6px 0 2px">'
   +(r.ing.length ? '<button class="act small" data-cookopen="'+r.id+'" type="button">👨‍🍳 Vařit krok za krokem</button>' : '')
   +'<button class="sh" data-recshare="'+r.id+'">📤 Poslat recept Verune</button></div>'
@@ -2238,7 +2254,7 @@ function renderRecepty(){
   +'<h2>Snídaně, shake &amp; meal prep</h2>'+extra
   +'<div class="note"><b>Anglické názvy u cviků</b> jsou schválně — v Hevy se cviky hledají anglicky, takže podle nich najdeš rutinu. '
   +'<b>Vajíčkový základ týdne:</b> v neděli uvař 10 vajec natvrdo — pokryjí svačiny, autobagy i pomazánku. '
-  +'<b>Trik na nechutenství (Pepule):</b> lžíce oleje = 120 kcal, v žaludku nezabere nic.</div>';
+  +'<b>Trik na nechutenství (Pepulus):</b> lžíce oleje = 120 kcal, v žaludku nezabere nic.</div>';
 }
 
 function outKatalog(){
@@ -2413,7 +2429,7 @@ function prepKroky(){
  const kroky = [
   ["Nákup podle seznamu výše", "Celý týden na jeden zátah. Co není doma, to se večer nesní.", 45],
   ["10 vajec natvrdo", "Devět minut varu, pak do studené vody. Vydrží týden a vyřeší svačiny i autobagy.", 12],
-  ["6 autobagů do auta", "Ořechy, tyčinka, čoko mléko, sušené ovoce. Pepule je bere ráno, ať už den dopadne jakkoli.", 10]
+  ["6 autobagů do auta", "Ořechy, tyčinka, čoko mléko, sušené ovoce. Pepulus je bere ráno, ať už den dopadne jakkoli.", 10]
  ];
  dopredu.forEach(r => kroky.push(["Uvařit dopředu: "+r.name,
    "Vydrží dva dny a je z toho i oběd do krabičky. Ve všední den pak stačí ohřát.", r.tag === "trouba" ? 50 : 35]));
@@ -2461,7 +2477,7 @@ const PRIPOMINKY = [
      popis:"Kreatin funguje jen když ho bereš KAŽDÝ den, i ve dnech volna. Zapij pořádně vodou." }] },
 
  { id:"trenink", ic:"🏋️", n:"Tréninky", pop:"Podle vašeho rozvrhu, upozornění 45 minut předem",
-   det:"Pepule Po ráno, Út, Čt a So. Verune Po, Út a Čt večer.", def:true,
+   det:"Pepulus Po ráno, Út, Čt a So. Verune Po, Út a Čt večer.", def:true,
    ev:(who)=>TRENINKY[who].map(t=>({ freq:"WEEKLY", dow:t[0], cas:t[1], min:t[2], alarm:45,
      nazev:t[3], popis:"Appka ti v Tréninku poradí, co dneska — a když nemáš čas, vybere kratší variantu." })) },
 
@@ -2498,7 +2514,7 @@ const PRIPOMINKY = [
         nazev:"🍽️ "+j[1], popis:"Nečekat na hlad — jí se podle hodin." })) },
 
  { id:"voda", ic:"💧", n:"Pitný režim", pop:"Třikrát denně",
-   det:"S kreatinem to není detail. Cíl: Pepule 3 l, Verune 2,2 l.", def:false,
+   det:"S kreatinem to není detail. Cíl: Pepulus 3 l, Verune 2,2 l.", def:false,
    ev:(who)=>["10:00","14:00","18:00"].map(c=>({ freq:"DAILY", cas:c, min:5,
      nazev:"💧 Napij se", popis:"Dvě sklenice teď a odškrtni si to v Dnes." })) },
 
@@ -2604,7 +2620,7 @@ function remCard(){
   +'</div>'
   +'<div class="wrow" style="margin-top:12px"><button class="act small" id="icsGet" type="button">Stáhnout připomínky</button>'
   +'<span class="dim" style="font-size:12.5px">'+kolik+' '+(kolik===1?"připomínka":(kolik<5?"připomínky":"připomínek"))+' · '
-  +'nastaveno pro <b>'+esc((BASE_T[who]||{name:"Pepule"}).name)+'</b></span></div>'
+  +'nastaveno pro <b>'+esc((BASE_T[who]||{name:"Pepulus"}).name)+'</b></span></div>'
   +'<div class="note"><b>Jak to otevřít:</b> soubor se stáhne do telefonu, ťukneš na něj a telefon se zeptá, '
   +'do kterého kalendáře to přidat. Doporučuju založit si na to <b>vlastní kalendář „PEVE FIT"</b> — pak jde jedním '
   +'přepínačem všechno vypnout, kdyby toho bylo moc. Události jsou označené jako „volno", '
@@ -2838,7 +2854,7 @@ function renderPlan(){
     +'</button>';
   }).join("");
   return '<div class="card"><div class="wk-head"><span class="lb">'+lb+'</span>'
-   +'<span class="st">Pepule <span class="'+(t.p>=t.cp?"ok":"no")+'">'+t.p+'/'+t.cp+'</span>'
+   +'<span class="st">Pepulus <span class="'+(t.p>=t.cp?"ok":"no")+'">'+t.p+'/'+t.cp+'</span>'
    +' · Verune <span class="'+(t.v>=t.cv?"ok":"no")+'">'+t.v+'/'+t.cv+'</span></span></div>'
    +'<div class="dim" style="font-size:12px">'+zac.getDate()+". "+(zac.getMonth()+1)+". – "+kon.getDate()+". "+(kon.getMonth()+1)+".</div>"
    +'<div class="kal">'+DL.map(x=>'<span class="dl">'+x+'</span>').join("")+dny+'</div></div>';
@@ -2850,7 +2866,7 @@ function renderPlan(){
       return '<div class="card" style="border-color:var(--s1)"><div class="rhead">'
       +'<h3>'+DL[(d.getDay()+6)%7]+' '+d.getDate()+". "+(d.getMonth()+1)+'.</h3>'
       +'<button class="ghost" data-planday="" type="button">Zavřít</button></div>'
-      +'<div class="form-row"><div class="f"><label>💪 Pepule</label>'+selRutin("p", vyb, x.p||"")+'</div></div>'
+      +'<div class="form-row"><div class="f"><label>💪 Pepulus</label>'+selRutin("p", vyb, x.p||"")+'</div></div>'
       +'<div class="form-row"><div class="f"><label>✨ Verune</label>'+selRutin("v", vyb, x.v||"")+'</div></div>'
       +'<div class="hint">Naplánovaný trénink se ukáže oběma a v Tréninku ho appka nabídne jako „Co dneska".</div></div>';
     })()
@@ -2860,7 +2876,7 @@ function renderPlan(){
  document.getElementById("tab-plan").innerHTML =
   '<div class="card"><div class="rhead"><h3>📅 Plán na čtyři týdny</h3>'
   +'<span class="rmeta">'+celkem+'/'+potreba+' tréninků</span></div>'
-  +'<p class="who">Minimum je <b>'+MIN_TR.p+' tréninky týdně pro Pepuleho</b> a <b>'+MIN_TR.v+' pro Verunku</b>. '
+  +'<p class="who">Minimum je <b>'+MIN_TR.p+' tréninky týdně pro Pepula</b> a <b>'+MIN_TR.v+' pro Verunku</b>. '
   +'Klepni na den a vyber, co se ten den dělá. Plán vidíte oba a mění se oběma.</p>'
   + (chybi > 0
      ? '<div class="note"><b>Do minima chybí '+chybi+' '+(chybi===1?"trénink":(chybi<5?"tréninky":"tréninků"))+'.</b> '
@@ -2868,11 +2884,11 @@ function renderPlan(){
      : '<div class="note reco"><b>Čtyři týdny máte pokryté.</b> Tohle je ta nudná část, která rozhoduje.</div>')
   +'<div class="wrow" style="margin:10px 0 0"><button class="act small" id="planFill" type="button">🪄 Doplnit podle rozvrhu</button>'
   +'<button class="ghost" id="planClear" type="button">Vyčistit</button></div>'
-  +'<div class="legend2"><span><i style="background:var(--s1-track)"></i>Pepule</span>'
+  +'<div class="legend2"><span><i style="background:var(--s1-track)"></i>Pepulus</span>'
   +'<span><i style="background:var(--s3-track)"></i>Verune</span>'
   +'<span><i style="background:var(--s3)"></i>odtrénováno</span></div></div>'
   + panel + tydny
-  +'<div class="note">Rozvrh v tlačítku „Doplnit": Pepule Po–Út–Čt–So (A → N nohy → C → G), Verune Po–Út–Čt (FB1→FB2→FB4). '
+  +'<div class="note">Rozvrh v tlačítku „Doplnit": Pepulus Po–Út–Čt–So (A → N nohy → C → G), Verune Po–Út–Čt (FB1→FB2→FB4). '
   +'Dny v minulosti se nepřepisují a co si zadáš ručně, to zůstane.</div>'
   +'<div class="note reco"><b>Okno se posouvá samo.</b> Jakmile týden skončí, spadne dolů a zezdola přibude nový — '
   +'takže tu pořád vidíš čtyři týdny dopředu. Ten nově přibylý je prázdný, takže jednou týdně sem zajdi '
@@ -2905,7 +2921,7 @@ function tydenTreninkCard(){
   +'<span class="rmeta">💪 '+t.p+'/'+t.cp+' · ✨ '+t.v+'/'+t.cv+'</span></div>'
   + (neco
      ? '<div class="tyden-tr">'+bunky+'</div>'
-       +'<div class="legend2"><span><i style="background:var(--s1-track)"></i>Pepule</span>'
+       +'<div class="legend2"><span><i style="background:var(--s1-track)"></i>Pepulus</span>'
        +'<span><i style="background:var(--s3-track)"></i>Verune</span></div>'
      : '<p class="who" style="margin:0">Zatím nic naplánovaného. Otevři <b>Trénink → Plán</b> a rozvrhni si čtyři týdny dopředu — '
        +'trvá to minutu a je to ta nejúčinnější věc, co jde pro pravidelnost udělat.</p>')
@@ -3275,7 +3291,7 @@ function trReco(who){
 function renderTrenink(){
  const who = state.trWho;
  const tgl = '<div class="seg-toggle" style="margin-bottom:14px">'
-  +'<button data-trwho="p" class="'+(who==="p"?"on":"")+'">Pepule</button>'
+  +'<button data-trwho="p" class="'+(who==="p"?"on":"")+'">Pepulus</button>'
   +'<button data-trwho="v" class="'+(who==="v"?"on":"")+'">Verune</button></div>';
  let head = "";
  if (who==="p") {
@@ -3485,6 +3501,32 @@ function suplDny(w){
 function histW(w){ return (state.hist || []).filter(x => x.who === w); }
 function objemCelkem(w){ return histW(w).reduce((a,x)=>a+(x.obj||0), 0); }
 function nejdelsi(w){ return histW(w).reduce((a,x)=>Math.max(a, x.min||0), 0); }
+function dnyVenku(){
+ return Object.keys(state.jidlo).filter(k => { const d = state.jidlo[k].d; const r = d && dinnerById(d); return r && r.out; }).length;
+}
+function pocetVeceri(id){
+ return Object.keys(state.jidlo).filter(k => state.jidlo[k].d === id).length;
+}
+function topVeceri(n){
+ const c = {};
+ Object.keys(state.jidlo).forEach(k => { const d = state.jidlo[k].d; if (d) c[d] = (c[d]||0)+1; });
+ return Object.keys(c).sort((a,b)=>c[b]-c[a]).slice(0,n).map(id=>({ id:id, n:c[id], name:dinnerById(id).name }));
+}
+function nohyDni(w){
+ const NOHOU = w === "p" ? ["N","B","D"] : ["GL","FB1","FB2","FB4"];
+ return histW(w).filter(x => NOHOU.indexOf(x.rid) >= 0).length;
+}
+function nedelniVazeni(w){
+ return wtArr(w).filter(x => new Date(x.d+"T12:00:00").getDay() === 0).length;
+}
+function vejcoRecepty(){
+ return store.get("favs", []).filter(id => {
+  const r = dinnerById(id);
+  return r && (/vejc|omelet|frittat|šakšuk|menemen/i.test(r.name) || r.ing.some(i=>/vejce/i.test(i[0])));
+ }).length;
+}
+function nakupu(){ return store.get("shopHist", []).length; }
+function nakupuSCastkou(){ return store.get("shopHist", []).filter(h=>h.c).length; }
 function stouchnuti(w){
  const jm = (BASE_T[w]||{}).name;
  return store.get("msgs", []).filter(m => String(m.id).indexOf("re-") === 0 && m.od === jm).length;
@@ -3529,7 +3571,19 @@ const ODZNAKY = [
  { id:"kuchar20",ic:"🍳", n:"Šéfkuchař",         s:"dovař 20× krok za krokem",      p:()=>[store.get("cooked",0),20] },
  { id:"vlastni", ic:"✍️", n:"Vlastní recept",    s:"přidej svůj recept",            p:()=>[store.get("myRecipes",[]).length,1] },
  { id:"plan4",   ic:"📅", n:"Čtyři týdny",       s:"naplánuj celé okno dopředu",    p:()=>[planChybi()===0?1:0,1] },
- { id:"stouch",  ic:"❤️", n:"Deset šťouchnutí",  s:"posílej si to navzájem",        p:w=>[stouchnuti(w),10] }
+ { id:"stouch",  ic:"❤️", n:"Deset šťouchnutí",  s:"posílej si to navzájem",        p:w=>[stouchnuti(w),10] },
+
+ /* --- ty vtipnější, ať to není samá dřina --- */
+ { id:"maximus", ic:"🏛️", n:"Maximus",           s:"25 dokončených jednotek — a lid tě zdraví", p:w=>[histW(w).length,25] },
+ { id:"kebab",   ic:"🌯", n:"Kebabový diplomat", s:"5 dní vyřešených venku (bez výčitek)",  p:()=>[dnyVenku(),5] },
+ { id:"nogen",   ic:"🛒", n:"Nedělní generál",   s:"4× dotažený nákup do konce",            p:()=>[nakupu(),4] },
+ { id:"ucetni",  ic:"💸", n:"Rodinný účetní",    s:"3× zapsaná útrata za nákup",            p:()=>[nakupuSCastkou(),3] },
+ { id:"hazard",  ic:"🎲", n:"Hazardér",          s:"5× zamíchané menu — ať to není nuda",   p:()=>[store.get("shuffleN",0),5] },
+ { id:"nohy",    ic:"🦵", n:"Den nohou přežit",  s:"5× odtrénované nohy (nikdo neutekl)",   p:w=>[nohyDni(w),5] },
+ { id:"vejcofil",ic:"🥚", n:"Vejcofil",          s:"3 vaječné recepty v oblíbených",        p:()=>[vejcoRecepty(),3] },
+ { id:"nedelnik",ic:"😴", n:"Nedělní vážič",     s:"4× vážení v neděli ráno, jak se patří", p:w=>[nedelniVazeni(w),4] },
+ { id:"blazen",  ic:"❤️‍🔥", n:"Zamilovaný blázen", s:"25 šťouchnutí — už to hraničí s obtěžováním", p:w=>[stouchnuti(w),25] },
+ { id:"slon",    ic:"🐘", n:"Stotunový",         s:"100 tun nazvedáno celkem",              p:w=>[objemCelkem(w),100000] }
 ];
 
 function odzStav(o, w){
@@ -3549,12 +3603,12 @@ function nejblizsi(w){
 
 const MOTIV_ODZ = [
  "Odznaky nejsou o parádě — jsou o tom, že to děláš pořád dokola.",
- "Každý odznak je den, kdy se ti nechtělo a stejně jsi šel(šla).",
- "Sbírej je pomalu. Ty rychlé nikoho nedrží.",
- "Kdo má víc odznaků, ten vaří příští neděli. 😏",
+ "Kdo má míň odznaků, ten vaří příští neděli. 😏",
  "Za půl roku ti tahle mřížka řekne víc než váha.",
+ "Ave, Pepule Maxime! Senát čeká na další odznak. 🏛️",
  "Jeden odznak = jeden zvyk, který už nemusíš řešit.",
- "Verunka je napřed? Tak s tím něco udělej. 💪"
+ "Verunka je napřed? Tak s tím něco udělej. 💪",
+ "Odznak za kebab existuje. Klidně si ho zasluž. 🌯"
 ];
 
 function odznakStrip(){
@@ -3601,6 +3655,178 @@ function kontrolaOdznaku(){
     + (ziskane(p[0]).length >= ODZNAKY.length ? "A to byl poslední — všechny!" : "Zbývá jich ještě "+(ODZNAKY.length - ziskane(p[0]).length)+"."));
  });
  store.set("odznaky", ted);
+}
+
+/* ---- grafy a statistiky ---- */
+function sloupceSvg(data, o){
+ o = o || {};
+ if (!data.length || !data.some(d=>d.v > 0))
+  return '<div class="dim" style="font-size:12.5px;margin:8px 0">'+(o.prazdno || "Zatím není z čeho kreslit.")+'</div>';
+ const w = 560, h = o.h || 132, l = o.l || 42, r = 8, tp = 16, bt = 22;
+ const mx = Math.max(o.cil || 0, ...data.map(d=>d.v)) * 1.15 || 1;
+ const bw = Math.min(24, (w-l-r)/data.length - 7);
+ const Y = v => tp + (1 - v/mx)*(h-tp-bt);
+ const cil = o.cil ? '<line class="gl" x1="'+l+'" y1="'+Y(o.cil).toFixed(1)+'" x2="'+(w-r)+'" y2="'+Y(o.cil).toFixed(1)+'"/>'
+   +'<text x="'+(l-6)+'" y="'+(Y(o.cil)+3.5).toFixed(1)+'" text-anchor="end">'+esc(o.cilLab || "cíl")+'</text>' : '';
+ const bars = data.map((d,i)=>{
+  const cx = l + (i+0.5)*(w-l-r)/data.length;
+  const y = Y(d.v), hh = Math.max(0, (h-bt)-y);
+  const col = d.c || o.c || "var(--s1)";
+  return (d.v > 0 ? '<rect x="'+(cx-bw/2).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)
+      +'" height="'+hh.toFixed(1)+'" rx="4" fill="'+col+'"/>' : '')
+   +'<text x="'+cx.toFixed(1)+'" y="'+(h-8)+'" text-anchor="middle">'+esc(d.lab)+'</text>'
+   +(i === data.length-1 && d.v ? '<text x="'+cx.toFixed(1)+'" y="'+(y-5).toFixed(1)+'" text-anchor="middle" '
+     +'style="font-weight:700;fill:var(--text-primary)">'+esc(d.top || fmt(d.v))+'</text>' : '');
+ }).join("");
+ return '<svg class="chart" viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+esc(o.alt||"graf")+'">'
+  + cil + bars + '<line class="ax" x1="'+l+'" y1="'+(h-bt)+'" x2="'+(w-r)+'" y2="'+(h-bt)+'"/></svg>';
+}
+
+function dvojSloupceSvg(data, o){
+ o = o || {};
+ if (!data.length || !data.some(d=>d.a > 0 || d.b > 0))
+  return '<div class="dim" style="font-size:12.5px;margin:8px 0">'+(o.prazdno || "Zatím není z čeho kreslit.")+'</div>';
+ const w = 560, h = 132, l = 42, r = 8, tp = 16, bt = 22;
+ const mx = Math.max(o.cil || 0, ...data.map(d=>Math.max(d.a,d.b))) * 1.2 || 1;
+ const slot = (w-l-r)/data.length;
+ const bw = Math.min(18, slot/2 - 6);
+ const Y = v => tp + (1 - v/mx)*(h-tp-bt);
+ const cil = o.cil ? '<line class="gl" x1="'+l+'" y1="'+Y(o.cil).toFixed(1)+'" x2="'+(w-r)+'" y2="'+Y(o.cil).toFixed(1)+'"/>'
+   +'<text x="'+(l-6)+'" y="'+(Y(o.cil)+3.5).toFixed(1)+'" text-anchor="end">min</text>' : '';
+ const bars = data.map((d,i)=>{
+  const cx = l + (i+0.5)*slot;
+  const xa = cx - bw - 1, xb = cx + 1;
+  const ya = Y(d.a), yb = Y(d.b);
+  return (d.a ? '<rect x="'+xa.toFixed(1)+'" y="'+ya.toFixed(1)+'" width="'+bw.toFixed(1)
+      +'" height="'+Math.max(0,(h-bt)-ya).toFixed(1)+'" rx="4" fill="var(--s1-track)"/>' : '')
+   + (d.b ? '<rect x="'+xb.toFixed(1)+'" y="'+yb.toFixed(1)+'" width="'+bw.toFixed(1)
+      +'" height="'+Math.max(0,(h-bt)-yb).toFixed(1)+'" rx="4" fill="var(--s3)"/>' : '')
+   +'<text x="'+cx.toFixed(1)+'" y="'+(h-8)+'" text-anchor="middle">'+esc(d.lab)+'</text>'
+   +(i === data.length-1 ? '<text x="'+xb.toFixed(1)+'" y="'+(Math.min(ya,yb)-5).toFixed(1)+'" text-anchor="middle" '
+      +'style="font-weight:700;fill:var(--text-primary)">'+d.a+'/'+d.b+'</text>' : '');
+ }).join("");
+ return '<svg class="chart" viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Plán a skutečnost">'
+  + cil + bars + '<line class="ax" x1="'+l+'" y1="'+(h-bt)+'" x2="'+(w-r)+'" y2="'+(h-bt)+'"/></svg>'
+  +'<div class="stack-leg" style="margin-top:-6px"><span><s style="background:var(--s1-track)"></s>naplánováno</span>'
+  +'<span><s style="background:var(--s3)"></s>odtrénováno</span></div>';
+}
+
+function tydenIndex(iso){                    // 0 = tenhle týden, 1 = minulý …
+ return Math.floor(daysBetween(iso, isoZ(pondeli(0))) / 7) + (iso < isoZ(pondeli(0)) ? 0 : 0);
+}
+function objemPoTydnech(w){
+ const out = [];
+ for (let k = 7; k >= 0; k--){
+  const zac = isoZ(pondeli(-k)), kon = isoZ(new Date(new Date(pondeli(-k)).setDate(pondeli(-k).getDate()+6)));
+  const v = histW(w).filter(x => x.d >= zac && x.d <= kon).reduce((a,x)=>a+(x.obj||0),0);
+  out.push({ lab: k === 0 ? "teď" : "-"+k, v: Math.round(v/1000), top: Math.round(v/1000)+" t" });
+ }
+ return out;
+}
+function planVsRealita(w){
+ const out = [];
+ for (let k = 3; k >= 0; k--){
+  const zacD = pondeli(-k), zac = isoZ(zacD);
+  const konD = new Date(zacD); konD.setDate(zacD.getDate()+6);
+  const kon = isoZ(konD);
+  let nap = 0;
+  for (let i = 0; i < 7; i++){ const d = new Date(zacD); d.setDate(zacD.getDate()+i);
+   if (planDne(isoZ(d))[w]) nap++; }
+  const hot = histW(w).filter(x => x.d >= zac && x.d <= kon).length;
+  out.push({ lab: k === 0 ? "teď" : "-"+k+"t", nap: nap, hot: hot });
+ }
+ return out;
+}
+function vodaPoDnech(w){
+ const cil = Math.round(WATER_T[w]/GLASS);
+ const out = [];
+ for (let i = 13; i >= 0; i--){
+  const iso = isoPlus(-i);
+  const n = state.water[iso+"|"+w] || 0;
+  out.push({ lab: i % 2 === 0 ? DAYS[wdOf(iso)] : "", v: n, c: n >= cil ? "var(--s3)" : "var(--s1)" });
+ }
+ return { data: out, cil: cil };
+}
+function suplPoslednich(w, dnu){
+ let n = 0;
+ for (let i = 0; i < dnu; i++) if (state.checks[isoPlus(-i)+"|"+w+"|sup-cr"]) n++;
+ return n;
+}
+function kdoVarilStat(){
+ const c = { p:0, v:0, s:0, o:0 };
+ for (let i = 0; i < 30; i++){
+  const j = state.jidlo[isoPlus(-i)];
+  if (j && j.k) c[j.k] = (c[j.k]||0) + 1;
+ }
+ return c;
+}
+
+function statyCard(w){
+ const t = target(w);
+ const pvr = planVsRealita(w);
+ const vd = vodaPoDnech(w);
+ const supl = suplPoslednich(w, 30);
+ const objem = objemPoTydnech(w);
+ const celkObjem = objemCelkem(w);
+ const trCelkem = histW(w).length;
+ const prumMin = trCelkem ? Math.round(histW(w).reduce((a,x)=>a+(x.min||0),0)/trCelkem) : 0;
+ return '<div class="card"><h3>📊 '+BASE_T[w].name+' — čísla</h3>'
+  +'<div class="kpi">'
+  +'<div><div class="k">Tréninků</div><div class="v">'+trCelkem+'</div></div>'
+  +'<div><div class="k">Objem</div><div class="v">'+(celkObjem>=1000?Math.round(celkObjem/1000)+" t":fmt(celkObjem)+" kg")+'</div></div>'
+  +'<div><div class="k">Průměrně</div><div class="v">'+prumMin+'′</div></div>'
+  +'<div><div class="k">Série</div><div class="v">'+streak(w)+'</div></div>'
+  +'</div>'
+  +'<div class="who" style="margin:14px 0 0">Objem po týdnech (tuny)</div>'
+  + sloupceSvg(objem, { c:"var(--s1)", alt:"Objem tréninku po týdnech", prazdno:"Dokonči trénink v appce a graf naskočí." })
+  +'<div class="who" style="margin:12px 0 0">Plán × skutečnost (4 týdny)</div>'
+  + dvojSloupceSvg(pvr.map(x=>({ lab:x.lab, a:x.nap, b:x.hot })), { cil:MIN_TR[w],
+      prazdno:"Naplánuj si tréninky v Trénink → Plán a bude co porovnávat." })
+  +'<div class="who" style="margin:12px 0 0">Voda za 14 dní (sklenice)</div>'
+  + sloupceSvg(vd.data, { cil:vd.cil, cilLab:"cíl", h:110, alt:"Pitný režim" })
+  +'<div class="meter-row"><span class="lab">Kreatin za posledních 30 dní</span><span class="val">'+supl+' / 30</span></div>'
+  +'<div class="meter m-prot"><i style="width:'+Math.round(supl/30*100)+'%"></i></div>'
+  +'<div class="hint">'+(supl >= 25 ? "Tohle je přesně ono — kreatin funguje jen když je každý den."
+     : (supl >= 10 ? "Jde to, ale mezery se počítají. Zapni si připomínku na 8:00."
+     : "Zatím to drhne. Připomínka v Cílech → Připomínky to vyřeší za tebe."))+'</div></div>';
+}
+
+function statyDomacnost(){
+ const hist = store.get("shopHist", []);
+ const sC = hist.filter(h=>h.c);
+ const prum = sC.length ? Math.round(sC.reduce((a,h)=>a+h.c,0)/sC.length) : 0;
+ const utrata = sC.slice(-8).map(h=>({ lab: czDate(h.d).replace(/\s/g,""), v: h.c, top: fmt(h.c) }));
+ const kv = kdoVarilStat();
+ const celkKv = kv.p + kv.v + kv.s + kv.o;
+ const top = topVeceri(5);
+ const maxTop = top.length ? top[0].n : 1;
+ const seg = (k, col) => kv[k] ? '<i style="flex:'+kv[k]+';background:'+col+'" title="'+KDO[k][1]+'"></i>' : '';
+ return '<div class="card"><h3>🏠 Domácnost v číslech</h3>'
+  +'<div class="kpi">'
+  +'<div><div class="k">Nákupů</div><div class="v">'+hist.length+'</div></div>'
+  +'<div><div class="k">Průměr</div><div class="v">'+(prum?fmt(prum)+" Kč":"—")+'</div></div>'
+  +'<div><div class="k">Uvařeno</div><div class="v">'+store.get("cooked",0)+'</div></div>'
+  +'<div><div class="k">Receptů</div><div class="v">'+DINNERS.filter(d=>!d.out).length+'</div></div>'
+  +'</div>'
+  +'<div class="who" style="margin:14px 0 0">Útrata za nákup</div>'
+  + sloupceSvg(utrata, { c:"var(--s2)", cil:prum, cilLab:"prům", alt:"Útrata za nákupy",
+      prazdno:"Po nákupu ťukni na „Nakoupeno\" a vyplň částku — po třech nákupech tu bude graf." })
+  + (celkKv
+     ? '<div class="who" style="margin:12px 0 0">Kdo vařil za 30 dní</div>'
+       +'<div class="stack">'+seg("p","var(--s1)")+seg("v","var(--s3)")+seg("s","var(--s1-track)")+seg("o","var(--s2)")+'</div>'
+       +'<div class="stack-leg">'
+       + Object.keys(KDO).filter(k=>kv[k]).map(k=>'<span><s style="background:'
+         +(k==="p"?"var(--s1)":k==="v"?"var(--s3)":k==="s"?"var(--s1-track)":"var(--s2)")+'"></s>'
+         +esc(KDO[k][1])+' '+kv[k]+'×</span>').join("")+'</div>'
+     : '')
+  + (top.length
+     ? '<div class="who" style="margin:14px 0 0">Nejčastější večeře</div><div class="hbar">'
+       + top.map(x=>'<div class="row"><div><div class="nm">'+esc(x.name)+'</div>'
+         +'<div class="tr"><i style="width:'+Math.round(x.n/maxTop*100)+'%"></i></div></div>'
+         +'<div class="vl">'+x.n+'×</div></div>').join("")+'</div>'
+     : '')
+  +'<div class="hint">Čísla se berou z toho, co si v appce naklikáte — nákupy, kdo vařil i jídelníček. '
+  +'Za pár týdnů tu uvidíte, kam vám doopravdy utíkají peníze a čas.</div></div>';
 }
 
 /* ---- nedělní report ---- */
@@ -3919,7 +4145,7 @@ function pairCard(){
     return '<div class="card"><h3>🔗 Propojit telefony</h3>'
      +'<p class="who">Ať to funguje mezi vámi dvěma, řekni nejdřív, kdo drží tenhle mobil. '
      +'Podle toho se tomu druhému ukazuje, jak si dneska vedeš.</p>'
-     +'<div class="wrow"><button class="act" data-setme="p" type="button">Jsem Pepule 💪</button>'
+     +'<div class="wrow"><button class="act" data-setme="p" type="button">Jsem Pepulus 💪</button>'
      +'<button class="act" data-setme="v" type="button">Jsem Verune ✨</button></div></div>';
   }
   const jmeno = BASE_T[me] ? BASE_T[me].name : me;
@@ -4127,10 +4353,10 @@ function buildMsgs(){
    const wk = "w"+Math.floor(daysBetween("2026-08-08", today)/7);
    const rt = Math.round(r.rate*100)/100;
    if (who==="p" && rt < 0.15)
-    pushMsg("adj-p-"+wk, "⚠️", "Pepule přibývá pomalu",
+    pushMsg("adj-p-"+wk, "⚠️", "Pepulus přibývá pomalu",
       "Tempo "+rt.toLocaleString("cs-CZ")+" kg/týden. V Progresu máš tlačítko, které přidá 250 kcal.");
    if (who==="p" && rt >= 0.15 && rt <= 0.6)
-    pushMsg("ok-p-"+wk, "📈", "Pepule roste přesně podle plánu",
+    pushMsg("ok-p-"+wk, "📈", "Pepulus roste přesně podle plánu",
       "Tempo "+rt.toLocaleString("cs-CZ")+" kg/týden. Nic neměň.");
    if (who==="v" && Math.abs(rt) < 0.45)
     pushMsg("ok-v-"+wk, "💪", "Verune drží váhu, jak má",
@@ -4264,7 +4490,7 @@ function renderProgres(){
   +'<div class="grid2">'+wtCard("p")+wtCard("v")+'</div>'
   +'<div class="card"><h3>Kolik toho fakt sníte — po týdnech</h3>'
   +'<p class="who">Osm týdnů zpátky. Počítá se jen to, co je odškrtnuté v Dnes, takže je to poctivé zrcadlo, ne přání.</p>'
-  +'<div class="grid2" style="gap:8px"><div><div class="who" style="margin:0 0 2px">Pepule</div>'+(tydnyChart("p")||'<div class="dim" style="font-size:12.5px">Zatím není co kreslit — odškrtávej jídla a graf naskočí.</div>')+'</div>'
+  +'<div class="grid2" style="gap:8px"><div><div class="who" style="margin:0 0 2px">Pepulus</div>'+(tydnyChart("p")||'<div class="dim" style="font-size:12.5px">Zatím není co kreslit — odškrtávej jídla a graf naskočí.</div>')+'</div>'
   +'<div><div class="who" style="margin:0 0 2px">Verune</div>'+(tydnyChart("v")||'<div class="dim" style="font-size:12.5px">Zatím není co kreslit — odškrtávej jídla a graf naskočí.</div>')+'</div></div></div>'
   + cyklusCard()
   +'<div class="card"><h3>Měsíční vizuální kontrola</h3>'
@@ -4273,6 +4499,10 @@ function renderProgres(){
   +'<button class="act small" id="checkinBtn" type="button">Označit dnešní kontrolu ✓</button></div>'
   +'<div class="grid2">'+mrCard("p")+mrCard("v")+'</div>'
   +'<div class="grid2">'+fotoCard("p")+fotoCard("v")+'</div>'
+  +'<h2>Statistiky</h2>'
+  +'<div class="grid2">'+statyCard("p")+statyCard("v")+'</div>'
+  + statyDomacnost()
+  +'<h2>Odznaky</h2>'
   +'<div class="grid2">'+odznakCard("p")+odznakCard("v")+'</div>'
   +'<div class="note"><b>Váží se v neděli ráno</b> — nalačno, po WC. Denní výkyvy jsou voda. '
   +'Verune: cyklus hýbe váhou o 1–2 kg, proto u ní rozhodují fotky, míry a síla — ne váha. '
@@ -4284,7 +4514,7 @@ function renderCile(){
  const tp = target("p"), tv = target("v");
  document.getElementById("tab-cile").innerHTML =
   '<div class="grid2">'
-  +'<div class="card"><h3>Pepule</h3><p class="who">190 cm · start 94,5 kg · 34 let — nabrat zpět svaly</p>'
+  +'<div class="card"><h3>Pepulus</h3><p class="who">190 cm · start 94,5 kg · 34 let — nabrat zpět svaly</p>'
   +'<table><tbody><tr><td>Kalorie</td><td class="num">'+fmt(tp.kcal)+' kcal'+(tp.kcal!==3150?' (upraveno)':'')+'</td></tr><tr><td>Bílkoviny</td><td class="num">200 g</td></tr>'
   +'<tr><td>Tuky</td><td class="num">90 g</td></tr><tr><td>Sacharidy</td><td class="num">~385 g</td></tr>'
   +'<tr><td>Minimum v nejhorším dni</td><td class="num">2 800 kcal</td></tr><tr><td>Cíl</td><td class="num">105 kg</td></tr></tbody></table>'
@@ -4297,7 +4527,7 @@ function renderCile(){
   +'</div>'
   +'<div class="card"><h3>Nastavení v Kalorických tabulkách</h3>'
   +'<p class="who">Appka si u obou spočítá čísla špatně — přepište je ručně. Zapisujte jen první 2–3 týdny, pak stačí odhad a tahle appka.</p>'
-  +'<table><thead><tr><th>Cíl</th><th class="num">Pepule</th><th class="num">Verune</th></tr></thead><tbody>'
+  +'<table><thead><tr><th>Cíl</th><th class="num">Pepulus</th><th class="num">Verune</th></tr></thead><tbody>'
   +'<tr><td>Kalorie</td><td class="num">'+fmt(tp.kcal)+'</td><td class="num">'+fmt(tv.kcal)+'</td></tr>'
   +'<tr><td>Bílkoviny</td><td class="num">200 g</td><td class="num">125 g</td></tr>'
   +'<tr><td>Tuky</td><td class="num">90 g</td><td class="num">60 g</td></tr>'
@@ -4662,7 +4892,7 @@ document.addEventListener("click", e=>{
   const r = dinnerById(rs.dataset.recshare);
   const txt = "🍽️ *"+r.name+"*\n"
    + "Verune: "+r.v.por+" ("+r.v.kcal+" kcal, "+r.v.prot+" g B)\n"
-   + "Pepule: "+r.p.por+" ("+r.p.kcal+" kcal, "+r.p.prot+" g B)\n\n"
+   + "Pepulus: "+r.p.por+" ("+r.p.kcal+" kcal, "+r.p.prot+" g B)\n\n"
    + (r.ing.length ? "*Suroviny:*\n"+r.ing.map(x=>"• "+x[0]+" — "+x[1]+" "+x[2]).join("\n")+"\n\n" : "")
    + "*Postup:*\n" + r.steps.map((s,i)=>(i+1)+". "+s.replace(/<[^>]+>/g,"")).join("\n");
   shareText(txt); return;
@@ -4788,7 +5018,7 @@ document.addEventListener("click", e=>{
  if (e.target.id === "doneBtn"){
   const hotovo = QUEUE[state.queue];
   state.queue = (state.queue+1)%4; store.set("queue", state.queue);
-  pushMsg("tr-p-"+new Date().toISOString().slice(0,10)+"-"+hotovo, "🏋️", "Pepule odtrénoval "+hotovo,
+  pushMsg("tr-p-"+new Date().toISOString().slice(0,10)+"-"+hotovo, "🏋️", "Pepulus odtrénoval "+hotovo,
     QUEUE_T[hotovo]+" je hotové. Zítra je na řadě "+QUEUE[state.queue]+".");
   celebrate("🏋️"); renderTrenink(); syncDot(); return;
  }
@@ -4831,6 +5061,7 @@ document.addEventListener("click", e=>{
    if (iso < dnes) continue;                 // minulost neměníme
    jidloSet(iso, "d", pool[n % pool.length]); n++;
   }
+  store.set("shuffleN", store.get("shuffleN",0)+1);
   renderDnes(); renderTyden(); renderNakup(); renderNext(); return;
  }
  if (e.target.id === "checkinBtn"){ state.lastCheckin = new Date().toISOString().slice(0,10); store.set("lastCheckin", state.lastCheckin); renderProgres(); return; }
