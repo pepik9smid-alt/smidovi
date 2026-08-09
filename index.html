@@ -859,9 +859,20 @@ async function nacti(){
 const cislo = n => Math.round(n || 0).toLocaleString("cs-CZ").replace(/ /g, " ");
 const pct = (a, b) => Math.max(0, Math.min(100, Math.round((a || 0) * 100 / (b || 1))));
 
+// jak stará jsou data — ať poznáš rozdíl mezi "nefunguje" a "iOS to ještě neobnovil"
+function stari(d){
+  if (!d || !d.kdy) return "";
+  const m = Math.round((Date.now() - new Date(d.kdy).getTime()) / 60000);
+  if (m < 2) return "teď";
+  if (m < 60) return "před " + m + " min";
+  const h = Math.round(m / 60);
+  return "před " + h + " h";
+}
+
 function coTed(d){
   if (!d) return { ic: "🍽️", t: "Otevři appku", p: "žádná data", url: WEB };
-  if (d.sess) return { ic: "🏋️", t: "Trénink " + d.sess.rid + " běží",
+  if (d.sess) return { ic: "🏋️",
+    t: "Trénink " + d.sess.rid + " běží" + (d.sess.kdo && d.sess.kdo !== ME && d.sess.jm ? " (" + d.sess.jm + ")" : ""),
     p: d.sess.hot + "/" + d.sess.cel + " sérií · " + d.sess.min + " min" + (d.sess.bud ? " · s " + d.sess.bud : ""),
     url: WEB + "?tab=trenink&akce=sess" };
   if (d.tr && !d.tr.hot) return { ic: "🏋️", t: "Dneska " + d.tr.co, p: "zatím nezapsáno", url: WEB + "?tab=trenink" };
@@ -908,7 +919,7 @@ function kolecko(d){
     const t = w.addText(d.sess.hot + "/" + d.sess.cel);
     t.font = Font.boldSystemFont(13); t.centerAlignText();
   } else {
-    const z = Math.max(0, (d.cil || 0) - (d.kcal || 0));
+    const z = Math.max(0, ((d && d.cil) || 0) - ((d && d.kcal) || 0));
     const t = w.addText(pct(d && d.kcal, d && d.cil) + "%");
     t.font = Font.boldSystemFont(16); t.centerAlignText();
     const u = w.addText(z > 999 ? Math.round(z / 100) / 10 + "k" : cislo(z));
@@ -930,7 +941,7 @@ function obdelnik(d){
   p.lineLimit = 1;
   w.addSpacer(3);
   const s = w.addText("🔥 " + (d && d.serie || 0) + "  💧 " + (d && d.voda || 0) + "/" + (d && d.vodaCil || 0)
-    + "  🍽 " + pct(d && d.kcal, d && d.cil) + "%");
+    + "  🍽 " + pct(d && d.kcal, d && d.cil) + "%  " + stari(d));
   s.font = Font.systemFont(10);
   s.textColor = BARVA.dim;
   s.lineLimit = 1;
@@ -958,7 +969,7 @@ function maly(d){
   nm.font = Font.boldSystemFont(10);
   nm.textColor = BARVA[ME] || BARVA.p;
   hl.addSpacer();
-  const sr = hl.addText("🔥 " + (d && d.serie || 0));
+  const sr = hl.addText("🔥 " + (d && d.serie || 0) + " · " + stari(d));
   sr.font = Font.systemFont(10);
   sr.textColor = BARVA.dim;
   w.addSpacer(7);
@@ -993,7 +1004,7 @@ function stredni(vse){
   const sr = hl.addText("🔥 " + (ja && ja.serie || 0) + "  💧 " + (ja && ja.voda || 0) + "/" + (ja && ja.vodaCil || 0));
   sr.font = Font.systemFont(11);
   sr.textColor = BARVA.dim;
-  const p = w.addText(c.p);
+  const p = w.addText(c.p + (stari(ja) ? "  ·  data " + stari(ja) : ""));
   p.font = Font.systemFont(11);
   p.textColor = BARVA.dim;
   w.addSpacer(9);
@@ -1034,9 +1045,10 @@ function chyba(e){
 }
 
 // ---------- běh ----------
-let widget;
+let widget, vseGlob = null;
 try {
   const vse = await nacti();
+  vseGlob = vse;
   const f = config.widgetFamily || "medium";
   if (f === "accessoryCircular") widget = kolecko(vse[ME]);
   else if (f === "accessoryRectangular") widget = obdelnik(vse[ME]);
@@ -1046,7 +1058,10 @@ try {
 } catch(e){
   widget = chyba(e);
 }
-widget.refreshAfterDate = new Date(Date.now() + 15 * 60 * 1000);
+// když trénink běží, prosíme iOS o častější obnovu (je to jen prosba, ne příkaz)
+let bezi = false;
+try { bezi = !!(vseGlob && vseGlob[ME] && vseGlob[ME].sess); } catch(e){}
+widget.refreshAfterDate = new Date(Date.now() + (bezi ? 2 : 15) * 60 * 1000);
 if (config.runsInWidget) Script.setWidget(widget);
 else widget.presentMedium();
 Script.complete();
@@ -3587,6 +3602,28 @@ function widgetSkript(){
   .replace("__DB__", (FB && FB.databaseURL) || "")
   .replace("__WEB__", location.origin + location.pathname);
 }
+function widgetStav(){
+ const on = window.sync && sync.on;
+ const kdy = window.sync && sync._lastW ? sync._lastW : null;
+ const cas = kdy ? dvoj(kdy.getHours())+":"+dvoj(kdy.getMinutes())+":"+dvoj(kdy.getSeconds()) : "zatím nikdy";
+ let d = null;
+ try { d = on ? sync.widgetData() : null; } catch(e){ d = null; }
+ const co = d ? (d.sess ? "🏋️ běžící trénink "+esc(d.sess.rid)+" ("+d.sess.hot+"/"+d.sess.cel+" sérií)"
+                        : (d.tr ? "🏋️ dnešní trénink "+esc(d.tr.co) : (d.next ? "🍽️ "+esc(d.next.cas+" "+d.next.n) : "kalorie a voda")))
+              : "—";
+ return '<div class="nblok" style="margin-top:12px">'
+  +'<div class="nh">🔎 Kontrola spojení</div>'
+  +'<table><tbody>'
+  +'<tr><td>Spojení s databází</td><td class="num">'+(on?'<b style="color:var(--good)">jede</b>':'<b style="color:var(--s2)">nejede</b>')+'</td></tr>'
+  +'<tr><td>Naposledy odesláno</td><td class="num">'+cas+'</td></tr>'
+  +'<tr><td>Co se právě posílá</td><td class="num">'+co+'</td></tr>'
+  +'</tbody></table>'
+  +'<div class="wrow" style="margin-top:8px"><button class="act small" id="widPush" type="button">Odeslat teď</button>'
+  +'<span class="dim" style="font-size:12.5px">Pak ve Scriptable dej ▶︎ a musí to tam být.</span></div>'
+  +'<div class="hint">Appka posílá sama: při startu i konci tréninku, po každé zapsané sérii, '
+  +'po odškrtnutí jídla, po vodě — a pak ještě každou minutu, dokud je otevřená.</div></div>';
+}
+
 function widgetCard(){
  const fam = store.get("famId", null), me = store.get("meId", null);
  const pripraveno = !!(fam && me && FB);
@@ -3614,8 +3651,8 @@ function widgetCard(){
   +'<div class="wrow" style="margin-top:12px">'
   +'<button class="act small" id="widGet" type="button"'+(pripraveno?'':' disabled')+'>Zkopírovat skript</button>'
   +'<button class="ghost" id="widShare" type="button"'+(pripraveno?'':' disabled')+'>Poslat si ho</button></div>'
-  +'<div class="hint" id="widMsg">Skript už v sobě má váš rodinný kód, takže se nic nevyplňuje. '
-  +'Widget se obnovuje zhruba každých 15 minut — a hned, když appku otevřeš.</div>'
+  +'<div class="hint" id="widMsg">Skript už v sobě má váš rodinný kód, takže se nic nevyplňuje.</div>'
+  + widgetStav()
   +'<div class="note"><b>Verunka to má stejně</b> — jen ať si skript zkopíruje ze svého telefonu, '
   +'aby v něm byla podepsaná jako ona. Uvidí pak na widgetu sebe i tebe.</div></div>';
 }
@@ -3828,6 +3865,7 @@ function renderSession(){
   if (!el) return;
   const m = Math.max(0, Math.round((Date.now() - new Date(state.sess.start).getTime())/60000));
   el.textContent = dvoj(Math.floor(m/60))+":"+dvoj(m%60);
+  if (window.sync && sync.on && m % 2 === 0) sync.pushWidget();
  }, 15000);
 }
 
@@ -4829,6 +4867,7 @@ const sync = {
       this.on = true; this.status = "live";
       this._listen();
       this.pushStatus();
+      this.pushWidget();
       syncDot();
     } catch(e){
       this.status = "error"; this.err = String(e && e.message || e);
@@ -4946,7 +4985,9 @@ const sync = {
 
   /* kompaktní balíček pro widget na iPhonu (čte ho Scriptable přes REST) */
   widgetData(){
-    const who = this.me, t = target(who);
+    const who = (this.me === "p" || this.me === "v") ? this.me : store.get("meId", null);
+    if (!who || !BASE_T[who]) return null;
+    const t = target(who);
     const today = new Date().toISOString().slice(0,10);
     const tot = dayTotals(who, today);
     const ted = new Date(), nyni = ted.getHours()*60 + ted.getMinutes();
@@ -4963,10 +5004,11 @@ const sync = {
     const tr = dnesPlan ? { co: String(dnesPlan).slice(0,28), hot: !!odtrenovano(today, who) } : null;
 
     let se = null;
-    if (state.sess && state.sess.who === who){
+    if (state.sess){
       const a = sessSoucty("ty");
       se = { rid: String(state.sess.rid).slice(0,20), hot: a.hot, cel: a.cel, min: a.min,
-             bud: state.sess.bud || null };
+             bud: state.sess.bud || null, kdo: state.sess.who,
+             jm: (BASE_T[state.sess.who] || {}).name || "" };
     }
     return {
       jm: BASE_T[who].name,
@@ -4977,7 +5019,23 @@ const sync = {
       kdy: new Date().toISOString()
     };
   },
-  pushWidget(){ if (this.on) this._set("widget/"+this.me, this.widgetData()); },
+  _wq: false, _lastW: null,
+  pushWidget(){
+    if (!this.on){ this._wq = true; return false; }   // nemame spojeni -> posleme, jakmile bude
+    const d = this.widgetData();
+    if (!d) return false;
+    this._wq = false;
+    this._lastW = new Date();
+    this._set("widget/"+this.me, d);
+    return true;
+  },
+  /* tep — volá se každou minutu i při návratu do appky */
+  tik(){
+    if (!this.on) return;
+    const bezi = !!state.sess;
+    const stari = this._lastW ? (Date.now() - this._lastW.getTime()) : 1e9;
+    if (this._wq || bezi || stari > 110000) this.pushWidget();
+  },
 
   pushStatus(){
     if (!this.on) return;
@@ -5584,7 +5642,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">19</td></tr>'
+  +'<tr><td>Verze</td><td class="num">20</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
   +'<tr><td>Receptů na večeře</td><td class="num">'+pc.rec+'</td></tr>'
   +'<tr><td>Tréninkových variant</td><td class="num">'+pc.tr+'</td></tr>'
@@ -6079,6 +6137,17 @@ document.addEventListener("click", e=>{
     || (!root.getAttribute("data-theme") && window.matchMedia("(prefers-color-scheme: dark)").matches)) ? "Světlý" : "Tmavý";
   renderNastaveniTab(); return;
  }
+ if (e.target.id === "widPush"){
+  const ok = !!(window.sync && sync.pushWidget());
+  renderNastaveniTab();
+  const msg = document.getElementById("widMsg");
+  if (msg){
+   msg.textContent = ok ? "Odesláno ✓ Teď to ve Scriptable musí být vidět."
+                        : "Nejde to — appka není připojená k databázi. Zkontroluj propojení telefonů nahoře.";
+   msg.style.color = ok ? "var(--good)" : "var(--s2)";
+  }
+  return;
+ }
  if (e.target.id === "widGet" || e.target.id === "widShare"){
   const txt = widgetSkript();
   const msg = document.getElementById("widMsg");
@@ -6403,7 +6472,11 @@ document.addEventListener("keydown", e=>{
  sync();
 })();
 
-setInterval(()=>{ renderNext(); }, 60000);
+setInterval(()=>{ renderNext(); if (window.sync) sync.tik(); }, 60000);
+document.addEventListener("visibilitychange", ()=>{
+ if (!document.hidden && window.sync) sync.tik();
+});
+window.addEventListener("focus", ()=>{ if (window.sync) sync.tik(); });
 document.getElementById("todayLine").textContent = "Dnes je "+DAYFULL[todayIdx]+" · "+DAYNOTE[todayIdx].replace(/^[^\s]+\s/,"");
 nactiMoje();
 renderAll();
