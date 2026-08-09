@@ -229,7 +229,38 @@
   .sheet{position:fixed;inset:0;z-index:130;background:var(--page);overflow-y:auto;
          padding:0 12px calc(28px + env(safe-area-inset-bottom))}
   .sheet[hidden]{display:none}
-  .nrow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  .duoswitch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
+ .duoswitch button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:9px 11px;
+   border-radius:12px;border:1px solid var(--border);background:var(--surface-1);color:var(--text-secondary);
+   font:inherit;font-size:14px;font-weight:700;cursor:pointer;text-align:left;min-width:0}
+ .duoswitch button i{font-style:normal;font-size:11.5px;font-weight:600;opacity:.8;
+   font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+ .duoswitch button.on{background:var(--s1);border-color:var(--s1);color:#fff}
+ .duoscore{font-size:13px;padding:9px 12px;border-radius:11px;margin:0 0 12px;line-height:1.4;
+   border:1px solid var(--border);background:var(--surface-1)}
+ .duoscore.vedes{border-color:var(--s3)}
+ .duoscore.prohravas{border-color:var(--s2)}
+ .duotag{font-size:11.5px;color:var(--text-secondary);margin:-2px 0 6px}
+ .duotag b{color:var(--text-primary)}
+ .duobadge{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;
+   background:var(--s1-track);color:var(--text-primary);vertical-align:middle;margin-left:4px}
+ .duomini{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px;padding-top:8px;
+   border-top:1px solid var(--grid);font-size:12px;color:var(--text-secondary);font-variant-numeric:tabular-nums}
+ .duomini b{color:var(--text-primary)}
+ .duomini em{font-style:normal;margin-left:auto;font-weight:700;color:var(--s1)}
+ .sparcard{border-color:var(--s1-track)}
+ .sparbil{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;font-size:12.5px;
+   color:var(--text-secondary);font-variant-numeric:tabular-nums}
+ .sparbil span{background:var(--surface-1);border:1px solid var(--border);border-radius:99px;padding:4px 10px}
+ .sparrow{padding:11px 0;border-bottom:1px solid var(--grid)}
+ .sparrow:last-of-type{border-bottom:0}
+ .sparrow .sh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+ .sbar{position:relative;height:20px;border-radius:7px;background:var(--grid);overflow:hidden;margin:7px 0}
+ .sbar i{display:block;height:100%;background:var(--s3)}
+ .sbar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+   font-size:11.5px;font-weight:700;color:var(--text-primary)}
+ td.num.win{color:var(--s3);font-weight:700}
+ .nrow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
    padding:11px 0;border-bottom:1px solid var(--grid)}
  .nrow:last-child{border-bottom:0}
  .nlab{min-width:0;flex:1 1 150px;display:flex;flex-direction:column;gap:2px;font-size:14px}
@@ -1721,6 +1752,8 @@ const state = {
  planDen: null,
  recOpen: false,
  resetPtl: false,
+ budName: "",
+ spar: store.get("spar", []),
  fotoP: store.get("fotoP", []),
  fotoV: store.get("fotoV", [])
 };
@@ -1813,7 +1846,19 @@ const HLASKY = {
   "Hlad není nepřítel. Nepřítel je prázdná lednice v devět večer.",
   "Objem roste, výmluvy klesají. To je celý graf.",
   "Domácnost, kde oba zvedají, se nehádá o dálkové ovládání. Nemá na to sílu.",
-  "Kdo poslední zamíchá menu, ten vaří. Tak s tím opatrně. 🎲"
+  "Kdo poslední zamíchá menu, ten vaří. Tak s tím opatrně. 🎲",
+  "Appka nic neřeší. Appka jenom ví. A pamatuje si to. 📓",
+  "Motivace je přeceňovaná. Rozvrh je nepřekonatelný.",
+  "Zítra je oblíbený den lidí, kteří nic nedokázali.",
+  "Váha se dneska nehnula? Ona počítá týdny, ne tvoje nervy.",
+  "„Nemám čas“ znamená „mám jiné priority“. Obojí je v pořádku, jen si to přiznej.",
+  "Kdo hledá zkratku, najde akorát další appku. Vy už jednu máte. 🫡",
+  "Do posilovny se nechodí s náladou. Chodí se tam s rozvrhem.",
+  "Jeden koláč nic nezkazí. To říká i ten desátý koláč.",
+  "Bílkoviny nebo výmluvy. Obojí se do dne nevejde.",
+  "Statistiky nelžou, jenom občas trapně mlčí. 📊",
+  "Neděle bez nákupu je pondělí s pumpou. 🌯",
+  "Cvičí se i ve dnech, kdy se nechce. Hlavně v těch."
  ],
  v: [
   "Verune, hip thrust je jediný cvik, kde přidávat kila znamená lepší džíny. ✨",
@@ -1843,7 +1888,12 @@ const HLASKY = {
   "Pepule, durum je legální. Durum bez extra masa je zločin. 🌯",
   "Pepule, dneska nemusíš být nejlepší. Stačí být lepší než ten, co si loni dal pauzu.",
   "Pepule, sto pět kilo se nedá koupit. Dá se jen odpracovat a odjíst.",
-  "Pepule, Verunka má víc odznaků. Jen tak mimochodem. 🏅"
+  "Pepule, Verunka má víc odznaků. Jen tak mimochodem. 🏅",
+  "Pepule Maxime, impérium se nestaví z odpočinkových dnů.",
+  "Pepule, sto pět kilo tě nepotká náhodou na ulici.",
+  "Pepule, kámoš, co s tebou cvičí, je taky soupeř. Neplet si to. 🤜",
+  "Pepule, kdo prohrál sparing, ten vaří. Tak nějak by to bylo fér, ne? 🍳",
+  "Pepule, ta činka o tvých plánech nic neví. Ukaž jí je."
  ]
 };
 function hlaskaDne(){
@@ -3274,26 +3324,96 @@ function nejlepsiPred(who, exId){
  return best;
 }
 
-function startSession(who, rid){
+/* ---- sparing: trénink s parťákem ---- */
+/* 7. pád (s kým) — Radek → s Radkem, Jana → s Janou. Není to dokonalá čeština,
+   ale je to nekonečně lepší než „s Radek".                                    */
+function sKym(n){
+ const x = String(n || "").trim();
+ if (!x) return x;
+ const l = x.toLowerCase();
+ if (/[aá]$/.test(l)) return x.slice(0,-1) + "ou";
+ if (/[eě]$/.test(l)) return x;
+ if (/[íyý]$/.test(l)) return x.slice(0,-1) + "ím";
+ if (/o$/.test(l)) return x.slice(0,-1) + "em";
+ if (/ěk$/.test(l)) return x.slice(0,-2).replace(/n$/i, m=>m==="N"?"Ň":"ň") + "kem";
+ if (/ek$/.test(l)) return x.slice(0,-2) + "kem";
+ if (/[eě]l$/.test(l)) return x.slice(0,-2) + "lem";
+ if (/[eě]r$/.test(l) && x.length > 4) return x.slice(0,-2) + "rem";
+ return x + "em";
+}
+
+function partiSeznam(){ return store.get("parti", []); }
+function partiPridej(n){
+ n = String(n || "").trim().replace(/\s+/g," ").slice(0,18);
+ if (!n) return "";
+ const a = partiSeznam().filter(x => x.toLowerCase() !== n.toLowerCase());
+ a.unshift(n); store.set("parti", a.slice(0,10));
+ return n;
+}
+function partiSmaz(n){
+ store.set("parti", partiSeznam().filter(x => x !== n));
+}
+function budLogAll(){ return store.get("tlogB", {}); }
+function budLog(bud, ex){ return budLogAll()[bud+"|"+ex] || []; }
+function budLogAdd(bud, ex, kg, reps){
+ const all = budLogAll(), k = bud+"|"+ex;
+ const arr = (all[k] || []).slice();
+ const iso = new Date().toISOString().slice(0,10);
+ let ses = arr.find(x => x.d === iso);
+ if (!ses){ ses = { d: iso, s: [] }; arr.push(ses); }
+ ses.s.push([kg, reps]);
+ arr.sort((a,b)=>a.d.localeCompare(b.d));
+ all[k] = arr.slice(-30); store.set("tlogB", all);
+}
+function budMinula(bud, exId){
+ const iso = new Date().toISOString().slice(0,10);
+ const ses = budLog(bud, exId).filter(x => x.d !== iso);
+ return ses.length ? ses[ses.length-1] : null;
+}
+function budNejlepsi(bud, exId){
+ let best = 0;
+ budLog(bud, exId).forEach(x => x.s.forEach(pp => { if (pp[0] > best) best = pp[0]; }));
+ return best;
+}
+function sparHist(){ return store.get("spar", []); }
+function sparUloz(z){
+ const a = sparHist().concat([z]).slice(-60);
+ store.set("spar", a); state.spar = a;
+}
+
+function startSession(who, rid, bud){
  const r = ROUTINES[who].find(x => x.id === rid);
  if (!r) return;
+ bud = bud ? partiPridej(bud) : null;
  state.sess = {
   who: who, rid: rid, start: new Date().toISOString(),
+  bud: bud || null, akt: "ty",
   ex: r.ex.map((e,i) => {
    const exId = state.exsel[rid+"|"+i] || e[0];
    const min = minulaLekce(who, exId);
+   const bmin = bud ? budMinula(bud, exId) : null;
    const n = plannedSets(e[1]);
+   const mk = (m) => Array.from({length:n}, (_,j) => ({
+     kg: m && m.s[j] ? m.s[j][0] : (m && m.s.length ? m.s[m.s.length-1][0] : ""),
+     reps: "", done: false
+   }));
    return {
     id: exId, popis: e[1], pauza: e[3], klic: rid+"|"+i,
-    sets: Array.from({length:n}, (_,j) => ({
-      kg: min && min.s[j] ? min.s[j][0] : (min && min.s.length ? min.s[min.s.length-1][0] : ""),
-      reps: "", done: false
-    }))
+    sets: mk(min), bsets: bud ? mk(bmin) : []
    };
   })
  };
  store.set("session", state.sess);
  renderSession();
+}
+function sessKdo(){ return (state.sess && state.sess.akt === "bud") ? "bud" : "ty"; }
+function sessSets(i, kdo){
+ const x = state.sess.ex[i];
+ return (kdo || sessKdo()) === "bud" ? x.bsets : x.sets;
+}
+function sessJmeno(kdo){
+ if (!state.sess) return "";
+ return kdo === "bud" ? (state.sess.bud || "Kámoš") : "Ty";
 }
 function saveSess(){ store.set("session", state.sess); }
 function cancelSession(){
@@ -3308,15 +3428,17 @@ function cancelSession(){
 function sessPauza(){
  const s0 = state.sess;
  if (!s0) return "2:00";
- for (let i = s0.ex.length-1; i >= 0; i--) if (s0.ex[i].sets.some(p=>p.done)) return s0.ex[i].pauza;
+ for (let i = s0.ex.length-1; i >= 0; i--)
+   if (s0.ex[i].sets.some(p=>p.done) || (s0.ex[i].bsets||[]).some(p=>p.done)) return s0.ex[i].pauza;
  return s0.ex[0].pauza;
 }
-function sessSoucty(){
+function sessSoucty(kdo){
  const s0 = state.sess;
- let hot = 0, cel = 0, obj = 0;
- s0.ex.forEach(x => x.sets.forEach(p => { cel++; if (p.done){ hot++; obj += (+p.kg || 0) * (+p.reps || 0); } }));
+ let hot = 0, cel = 0, obj = 0, rep = 0;
+ s0.ex.forEach(x => ((kdo === "bud") ? (x.bsets||[]) : x.sets).forEach(p => {
+   cel++; if (p.done){ hot++; rep += (+p.reps || 0); obj += (+p.kg || 0) * (+p.reps || 0); } }));
  const min = Math.max(1, Math.round((Date.now() - new Date(s0.start).getTime())/60000));
- return { hot, cel, obj: Math.round(obj), min };
+ return { hot, cel, obj: Math.round(obj), rep, min };
 }
 
 let sessTick = null;
@@ -3324,15 +3446,18 @@ function renderSession(){
  const o = document.getElementById("sessOverlay");
  if (!state.sess){ o.hidden = true; if (sessTick){ clearInterval(sessTick); sessTick = null; } return; }
  const s0 = state.sess, who = s0.who;
+ const duo = !!s0.bud;
+ const kdo = sessKdo();
  const r = ROUTINES[who].find(x => x.id === s0.rid) || { title: s0.rid };
- const t = sessSoucty();
+ const t = sessSoucty(kdo);
+ const tTy = sessSoucty("ty"), tBud = duo ? sessSoucty("bud") : null;
  document.body.style.overflow = "hidden";
  o.hidden = false;
 
  const telo = s0.ex.map((x,i)=>{
   const E = EX[x.id] || { n: x.id, m: "", i: "machine", t: "" };
-  const min = minulaLekce(who, x.id);
-  const rady = x.sets.map((p,j)=>{
+  const min = kdo === "bud" ? budMinula(s0.bud, x.id) : minulaLekce(who, x.id);
+  const rady = sessSets(i, kdo).map((p,j)=>{
    const mp = min && min.s[j] ? (fmt(min.s[j][0])+" kg × "+min.s[j][1]) : "—";
    return '<div class="setrow'+(p.done?" done":"")+'">'
     +'<span class="n">'+(j+1)+'</span>'
@@ -3344,23 +3469,55 @@ function renderSession(){
     +'<button class="okbtn" data-sdone="'+i+'|'+j+'" type="button" aria-label="Hotovo">✓</button>'
     +'</div>';
   }).join("");
+  const duoMini = duo ? (()=>{
+    const a = x.sets.filter(q=>q.done).reduce((s1,q)=>s1+(+q.kg||0)*(+q.reps||0),0);
+    const b = (x.bsets||[]).filter(q=>q.done).reduce((s1,q)=>s1+(+q.kg||0)*(+q.reps||0),0);
+    if (!a && !b) return '';
+    const vede = a === b ? "remíza" : (a > b ? "vedeš" : "vede "+esc(s0.bud));
+    return '<div class="duomini"><span>Ty <b>'+fmt(Math.round(a))+'</b></span>'
+      +'<span>'+esc(s0.bud)+' <b>'+fmt(Math.round(b))+'</b></span>'
+      +'<em>'+vede+'</em></div>';
+  })() : '';
   return '<div class="card">'
    +'<div class="exhead"><span class="exic"><svg viewBox="0 0 24 24" aria-hidden="true">'+(ICO[E.i]||ICO.machine)+'</svg></span>'
    +'<span class="n">'+esc(E.n)+'</span><span class="tgt">'+esc(x.popis)+'</span></div>'
+   + (duo ? '<div class="duotag">zapisuješ za <b>'+esc(sessJmeno(kdo))+'</b></div>' : '')
    +'<div class="sethead"><span>#</span><span>Minule</span><span>kg</span><span>opak.</span><span></span></div>'
    + rady
    +'<button class="addset" data-addsess="'+i+'" type="button">+ Přidat sérii</button>'
+   + duoMini
    +'<div class="hint" style="margin-top:6px">'+esc(E.t)+'</div>'
    +'</div>';
  }).join("");
 
+ const prepinac = duo
+  ? '<div class="duoswitch">'
+    +'<button class="'+(kdo==="ty"?"on":"")+'" data-sakt="ty" type="button">💪 Ty'
+    +'<i>'+tTy.hot+'/'+tTy.cel+' · '+fmt(tTy.obj)+' kg</i></button>'
+    +'<button class="'+(kdo==="bud"?"on":"")+'" data-sakt="bud" type="button">🤜 '+esc(s0.bud)
+    +'<i>'+tBud.hot+'/'+tBud.cel+' · '+fmt(tBud.obj)+' kg</i></button>'
+    +'</div>'
+    + (()=>{
+       const rozdil = tTy.obj - tBud.obj;
+       if (!tTy.obj && !tBud.obj) return '<div class="duoscore rovnost">Skóre 0 : 0. Někdo musí začít. 👀</div>';
+       if (rozdil === 0) return '<div class="duoscore rovnost">Naprostá remíza. To je buď kamarádství, nebo lenost obou. 🤝</div>';
+       return '<div class="duoscore '+(rozdil>0?"vedes":"prohravas")+'">'
+        + (rozdil>0
+           ? 'Vedeš o <b>'+fmt(rozdil)+' kg</b> objemu. '+esc(s0.bud)+' zatím jen tvoří atmosféru.'
+           : esc(s0.bud)+' vede o <b>'+fmt(-rozdil)+' kg</b>. Tohle si fakt necháš líbit?')
+        +'</div>';
+      })()
+  : '';
+
  o.innerHTML =
   '<div class="sess-head">'
-  +'<div class="t"><div class="nm">'+esc(r.title)+'</div>'
-  +'<div class="mt">'+t.hot+'/'+t.cel+' sérií'+(t.obj?' · '+fmt(t.obj)+' kg objem':'')+'</div></div>'
+  +'<div class="t"><div class="nm">'+esc(r.title)+(duo?' <span class="duobadge">🤜 s '+esc(sKym(s0.bud))+'</span>':'')+'</div>'
+  +'<div class="mt">'+t.hot+'/'+t.cel+' sérií'+(t.obj?' · '+fmt(t.obj)+' kg objem':'')
+  +(duo?' · zapisuješ za '+esc(sessJmeno(kdo)):'')+'</div></div>'
   +'<div class="clock" id="sessClock">'+dvoj(Math.floor(t.min/60))+":"+dvoj(t.min%60)+'</div>'
   +'<button class="ghost" data-sess="zrus" type="button">Zrušit</button></div>'
   +'<div class="sess-bar"><i style="width:'+Math.round(t.hot/Math.max(1,t.cel)*100)+'%"></i></div>'
+  + prepinac
   + telo
   +'<div class="sess-foot">'
   +'<button class="ghost" data-sess="pauza" type="button">⏱ Pauza '+esc(sessPauza())+'</button>'
@@ -3379,8 +3536,10 @@ function renderSession(){
 function finishSession(){
  const s0 = state.sess;
  if (!s0) return;
- const who = s0.who, t = sessSoucty();
- if (!t.hot){ cancelSession(); return; }
+ const who = s0.who, t = sessSoucty("ty");
+ const duo = !!s0.bud;
+ const tBud = duo ? sessSoucty("bud") : null;
+ if (!t.hot && !(duo && tBud.hot)){ cancelSession(); return; }
  let osobaky = [];
  s0.ex.forEach(x => {
   const pred = nejlepsiPred(who, x.id);
@@ -3390,6 +3549,8 @@ function finishSession(){
    if ((+p.kg || 0) > nej) nej = (+p.kg || 0);
   });
   if (nej > 0 && nej > pred && pred > 0) osobaky.push((EX[x.id]||{n:x.id}).n+" "+fmt(nej)+" kg");
+  if (duo) (x.bsets||[]).filter(p => p.done).forEach(p =>
+    budLogAdd(s0.bud, x.id, (+p.kg || 0), (+p.reps || 0)));
  });
  // fronta
  let hotovo = s0.rid;
@@ -3400,8 +3561,26 @@ function finishSession(){
  }
  // historie
  state.hist = (state.hist || []).concat([{ d: new Date().toISOString().slice(0,10), who: who,
-   rid: hotovo, min: t.min, sets: t.hot, obj: t.obj }]).slice(-40);
+   rid: hotovo, min: t.min, sets: t.hot, obj: t.obj, bud: duo ? s0.bud : null }]).slice(-40);
  store.set("hist", state.hist);
+
+ if (duo){
+  const iso = new Date().toISOString().slice(0,10);
+  const vysl = t.obj === tBud.obj ? "R" : (t.obj > tBud.obj ? "V" : "P");
+  sparUloz({ d: iso, who: who, bud: s0.bud, rid: hotovo, min: t.min,
+             sTy: t.hot, sBud: tBud.hot, oTy: t.obj, oBud: tBud.obj, v: vysl });
+  const hlas = vysl === "V"
+    ? ["Vyhrál jsi o "+fmt(t.obj - tBud.obj)+" kg objemu. Zapsáno navěky, "+s0.bud+" už to nikdy nevymaže. 🏆",
+       "Objem "+fmt(t.obj)+" : "+fmt(tBud.obj)+" kg. "+s0.bud+" má teď dobrou příležitost mluvit o tom, že se dneska necítil."]
+    : vysl === "P"
+    ? [s0.bud+" tě přejel o "+fmt(tBud.obj - t.obj)+" kg objemu. Appka to zaznamenala. Appka nezapomíná. 📓",
+       "Objem "+fmt(t.obj)+" : "+fmt(tBud.obj)+" kg. Prohra s parťákem je jenom pozvánka na odvetu — a ta je hned příště."]
+    : ["Přesná remíza, "+fmt(t.obj)+" kg oba. Buď jste sehraní, nebo jste se navzájem šetřili. 🤝"];
+  pushMsg("spar-"+iso+"-"+s0.bud+"-"+hotovo,
+    vysl === "V" ? "🏆" : (vysl === "P" ? "😤" : "🤝"),
+    "Sparing s "+sKym(s0.bud)+" — "+(vysl==="V"?"vyhráls":(vysl==="P"?"prohráls":"remíza")),
+    hlas[(t.hot + tBud.hot) % hlas.length]);
+ }
 
  pushMsg("tr-"+who+"-"+new Date().toISOString().slice(0,10)+"-"+hotovo, "🏋️",
    BASE_T[who].name+" "+rod(who,"odtrénoval","odtrénovala")+" "+hotovo,
@@ -3417,7 +3596,7 @@ function finishSession(){
  if (sessTick){ clearInterval(sessTick); sessTick = null; }
  if (state.timer){ state.timer = null; if (timerId){ clearInterval(timerId); timerId = null; }
    const b = document.getElementById("timerBar"); if (b) b.hidden = true; }
- kontrolaOdznaku(); celebrate(osobaky.length ? "🏆" : "💪");
+ kontrolaOdznaku(); celebrate(osobaky.length ? "🏆" : (duo ? "🤜" : "💪"));
  renderAll(); showTab("trenink"); syncDot();
  if (window.sync && sync.on) sync.pushStatus();
 }
@@ -3487,6 +3666,111 @@ function exRow(rid, e, i){
   +'</details>';
 }
 const TYP_LABEL = { sila:"🏋️ síla", kardio:"🏃 kardio", doma:"🏠 doma", mobilita:"🧘 mobilita" };
+/* ---- karta: trénink s kámošem ---- */
+const SPAR_HLASKY = [
+ "Sparingpartner je jediný člověk, kterému nemůžeš říct, že ti to dneska nešlo.",
+ "Sám si nikdo nezvedl osobák z ješitnosti. Ve dvou jo.",
+ "Parťák je nejlevnější doplněk stravy, co existuje.",
+ "Nikdo nevynechá sérii, když se někdo dívá. To je celá věda.",
+ "Ve dvou se to líp táhne. A hlavně se to líp počítá kámošovi do statistik. 😈"
+];
+function sparingCard(who){
+ const parti = partiSeznam();
+ const vyber = state.budName || "";
+ const bil = sparBilance();
+ const shrn = bil.length
+  ? '<div class="sparbil">'+bil.slice(0,4).map(b=>
+      '<span><b>'+esc(b.bud)+'</b> '+b.v+'–'+b.p+(b.r?'–'+b.r:'')+'</span>').join("")+'</div>'
+  : '';
+ return '<div class="card sparcard"><div class="rhead"><h3>🤜 Trénink s kámošem</h3>'
+  +'<span class="rmeta">'+(bil.length ? bil.reduce((a,b)=>a+b.v+b.p+b.r,0)+' společných' : 'nový režim')+'</span></div>'
+  +'<p class="who">Jdeš do posilky s někým? Napiš jeho jméno, spusť trénink a zapisuj série <b>za oba</b> — '
+  +'přepínačem nahoře. Appka počítá objem každému zvlášť a na konci vyhlásí vítěze. '
+  + esc(SPAR_HLASKY[(new Date().getDate()) % SPAR_HLASKY.length])+'</p>'
+  +'<div class="wrow"><input type="text" id="budName" placeholder="Jméno parťáka — třeba Radek" '
+  +'value="'+esc(vyber)+'" maxlength="18" autocomplete="off" style="flex:1;min-width:150px;width:auto"></div>'
+  + (parti.length ? '<div class="chips" style="margin-top:8px">'
+      + parti.map(n=>'<button class="chip'+(vyber===n?" on":"")+'" data-budpick="'+esc(n)+'" type="button">🤜 '+esc(n)+'</button>').join("")
+      + '</div>' : '')
+  +'<div class="wrow" style="margin-top:10px">'
+  +'<select id="budRid" style="flex:1;min-width:160px;width:auto">'
+  + ROUTINES[who].map(r=>'<option value="'+r.id+'">'+esc(r.title)+' · ~'+r.min+' min</option>').join("")
+  +'</select>'
+  +'<button class="act small" id="budStart" type="button">▶︎ Spustit ve dvou</button></div>'
+  + shrn
+  +'<div class="hint">Kámošovy série se ukládají zvlášť — do tvého deníku ani rekordů se nepletou. '
+  +'Až přijde příště, appka mu rovnou nabídne, co zvedal minule.</div></div>';
+}
+
+/* ---- bilance sparingu ---- */
+function sparBilance(){
+ const m = {};
+ sparHist().forEach(x=>{
+  const k = x.bud;
+  if (!m[k]) m[k] = { bud:k, v:0, p:0, r:0, oTy:0, oBud:0, min:0, posl:x.d };
+  if (x.v === "V") m[k].v++; else if (x.v === "P") m[k].p++; else m[k].r++;
+  m[k].oTy += x.oTy || 0; m[k].oBud += x.oBud || 0; m[k].min += x.min || 0;
+  if (x.d > m[k].posl) m[k].posl = x.d;
+ });
+ return Object.keys(m).map(k=>m[k]).sort((a,b)=>(b.v+b.p+b.r)-(a.v+a.p+a.r));
+}
+function sparHlaskaBilance(b){
+ const c = b.v + b.p + b.r;
+ if (c < 3) return "Zatím málo dat. Tři tréninky a začne to bolet toho horšího.";
+ if (b.v > b.p * 2) return "Tohle už není rivalita, tohle je doučování. 😎";
+ if (b.v > b.p) return "Vedeš. Drž si to, protože statistika je veřejná.";
+ if (b.p > b.v * 2) return "Tady se něco pokazilo. Konkrétně ty. 🫣";
+ if (b.p > b.v) return "Prohráváš. Zatím. Odveta je vždycky o jeden trénink dál.";
+ return "Naprosto vyrovnané. Tohle je ta nejlepší možná varianta — nikdo nemůže přestat.";
+}
+function sparStatyCard(){
+ const bil = sparBilance();
+ if (!bil.length){
+  return '<div class="card"><h3>🤜 Sparing — souboje s parťáky</h3>'
+   +'<p class="who">Zatím tu nic není. Vezmi kámoše do posilovny, v Tréninku spusť '
+   +'<b>Trénink s kámošem</b> a od té chvíle se tady vede kronika: kdo koho, o kolik a jak často. '
+   +'Vzájemné pošťuchování je vědecky ověřený anabolik. 😏</p></div>';
+ }
+ const celkem = bil.reduce((a,b)=>a+b.v+b.p+b.r, 0);
+ const vyhry = bil.reduce((a,b)=>a+b.v, 0);
+ const prohry = bil.reduce((a,b)=>a+b.p, 0);
+ const posledni = sparHist().slice(-8);
+ const graf = dvojSloupceSvg(posledni.map(x=>({ lab: czDate(x.d).replace(/\s/g,""), a: x.oTy, b: x.oBud })),
+   { prazdno:"Zatím není z čeho kreslit." })
+   .replace("naplánováno","ty").replace("odtrénováno","parťák");
+
+ return '<div class="card"><div class="rhead"><h3>🤜 Sparing — souboje s parťáky</h3>'
+  +'<span class="rmeta">'+celkem+' společných · '+vyhry+'–'+prohry+'</span></div>'
+  +'<p class="who">Objem = kg × opakování sečtený za celý trénink. Kdo má víc, ten den vyhrál. '
+  +'Žádná diskuze, žádné výmluvy o „dneska jsem jen doprovod".</p>'
+  + bil.map(b=>{
+     const c = b.v + b.p + b.r;
+     const pct = Math.round(b.v * 100 / Math.max(1, c));
+     return '<div class="sparrow">'
+      +'<div class="sh"><b>🤜 '+esc(b.bud)+'</b>'
+      +'<span class="rmeta">'+b.v+' V · '+b.p+' P'+(b.r?' · '+b.r+' R':'')+' · '+c+' '+(c===1?'trénink':(c<5?'tréninky':'tréninků'))+'</span></div>'
+      +'<div class="sbar"><i style="width:'+pct+'%"></i><span>'+pct+' % výher</span></div>'
+      +'<table><tbody>'
+      +'<tr><td>Tvůj objem celkem</td><td class="num">'+fmt(Math.round(b.oTy))+' kg</td></tr>'
+      +'<tr><td>Objem — '+esc(b.bud)+'</td><td class="num">'+fmt(Math.round(b.oBud))+' kg</td></tr>'
+      +'<tr><td>Společně odmakáno</td><td class="num">'+(b.min>=60?(Math.round(b.min/60*10)/10).toLocaleString("cs-CZ")+' h':b.min+' min')+'</td></tr>'
+      +'<tr><td>Naposledy</td><td class="num">'+czDate(b.posl)+'</td></tr>'
+      +'</tbody></table>'
+      +'<div class="hint" style="margin-top:4px">'+esc(sparHlaskaBilance(b))+'</div>'
+      +'</div>';
+    }).join("")
+  +'<h4 style="margin:14px 0 2px;font-size:14px">'+(posledni.length===1?'Poslední souboj':'Posledních '+posledni.length+(posledni.length<5?' souboje':' soubojů'))+' — objem</h4>'
+  + graf
+  +'<table style="margin-top:8px"><thead><tr><th>Kdy</th><th>S kým</th><th>Co</th>'
+  +'<th class="num">Ty</th><th class="num">On/ona</th></tr></thead><tbody>'
+  + sparHist().slice(-10).reverse().map(x=>
+     '<tr><td>'+czDate(x.d)+'</td><td>'+esc(x.bud)+'</td><td>'+esc(x.rid)+'</td>'
+     +'<td class="num'+(x.v==="V"?' win':'')+'">'+fmt(x.oTy)+'</td>'
+     +'<td class="num'+(x.v==="P"?' win':'')+'">'+fmt(x.oBud)+'</td></tr>').join("")
+  +'</tbody></table>'
+  +'<div class="hint">Kámošovy série se ukládají mimo tvůj deník — tvoje rekordy zůstávají tvoje.</div></div>';
+}
+
 function routineCard(r){
  const serie = r.ex.reduce((a,e)=>{ const m = String(e[1]).match(/^(\d+)\s*×/); return a + (m ? +m[1] : 1); }, 0);
  return '<div class="card"><div class="rhead"><h3>'+esc(r.title)+'</h3>'
@@ -3592,7 +3876,7 @@ function renderTrenink(){
  const tip = who==="p"
   ? '<div class="note"><b>Dvojitá progrese:</b> stejná váha, přidávej opakování. Horní hranice ve všech sériích → +2,5 kg (horní tělo) / +5 kg (dolní) a znovu. U každého cviku jde vybrat varianta — když je nářadí obsazené nebo něco nesedí. Deload každý 7. týden: poloviční série.</div>'
   : '<div class="note"><b>Neboj se činek:</b> silový trénink u ženy = pevné tvary, ne „chlapské svaly" — na ty nejsou hormony, nestane se to omylem. U každého cviku jde vybrat varianta. Váhy zapisuj do Hevy: síla nahoru = postava se mění, i když váha stojí.</div>';
- document.getElementById("tab-trenink").innerHTML = tgl + bezi + head + trReco(who) + hledejEx + nalez + filtry + list + histCard(who) + rekordy(who) + tip
+ document.getElementById("tab-trenink").innerHTML = tgl + bezi + head + trReco(who) + sparingCard(who) + hledejEx + nalez + filtry + list + histCard(who) + rekordy(who) + tip
   + '<div class="note"><b>Deník máš přímo tady.</b> Rozklikni cvik, zapiš kg a opakování — appka si pamatuje, '
   + 'co jsi zvedal(a) minule, a sama řekne, kdy přidat. Tlačítko s časem spustí odpočinek mezi sériemi.</div>';
 }
@@ -3775,6 +4059,12 @@ function stouchnuti(w){
 }
 
 const ODZNAKY = [
+ { id:"spar1",   ic:"🤜", n:"První sparing",     s:"trénink s kámošem",             p:w=>[w==="p"?sparHist().length:0,1] },
+ { id:"spar5",   ic:"🥊", n:"Pět soubojů",       s:"tohle už je rivalita",          p:w=>[w==="p"?sparHist().length:0,5] },
+ { id:"sparw3",  ic:"👑", n:"Tři výhry",         s:"tři vyhrané souboje",           p:w=>[w==="p"?sparHist().filter(x=>x.v==="V").length:0,3] },
+ { id:"sparw10", ic:"🏛️", n:"Deset výher",       s:"kámoši už chodí neradi",        p:w=>[w==="p"?sparHist().filter(x=>x.v==="V").length:0,10] },
+ { id:"parti3",  ic:"👥", n:"Tři parťáci",       s:"cvič se třemi různými lidmi",   p:w=>[w==="p"?new Set(sparHist().map(x=>x.bud)).size:0,3] },
+
  { id:"vaha1",   ic:"⚖️", n:"První vážení",      s:"zapiš první váhu",              p:w=>[wtArr(w).length,1] },
  { id:"vaha8",   ic:"📊", n:"Osm vážení",        s:"dva měsíce poctivě",            p:w=>[wtArr(w).length,8] },
  { id:"vaha25",  ic:"📈", n:"Pětadvacet vážení", s:"půl roku bez vynechání",        p:w=>[wtArr(w).length,25] },
@@ -4803,6 +5093,8 @@ function renderProgres(){
   + statyDomacnost()
   +'<h2>Odznaky</h2>'
   +'<div class="grid2">'+odznakCard("p")+odznakCard("v")+'</div>'
+  +'<h2>Sparing</h2>'
+  + sparStatyCard()
   +'<div class="note"><b>Váží se v neděli ráno</b> — nalačno, po WC. Denní výkyvy jsou voda. '
   +'Verune: cyklus hýbe váhou o 1–2 kg, proto u ní rozhodují fotky, míry a síla — ne váha. '
   +'<b>Doporučení výše samo přepočítá kalorie</b>, když se váha 2+ týdny nehýbe správným směrem — stačí kliknout.</div>';
@@ -4956,7 +5248,8 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">17</td></tr>'
+  +'<tr><td>Verze</td><td class="num">18</td></tr>'
+  +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
   +'<tr><td>Receptů na večeře</td><td class="num">'+pc.rec+'</td></tr>'
   +'<tr><td>Tréninkových variant</td><td class="num">'+pc.tr+'</td></tr>'
   +'<tr><td>Cviků v databázi</td><td class="num">'+pc.cvik+'</td></tr>'
@@ -5048,12 +5341,14 @@ function keepFocus(id){
 }
 document.addEventListener("input", e=>{
  if (state.sess && e.target.dataset && (e.target.dataset.sk !== undefined || e.target.dataset.sr !== undefined)){
+  // hodnota jde do aktivni osoby
   const key = e.target.dataset.sk !== undefined ? e.target.dataset.sk : e.target.dataset.sr;
-  const p = key.split("|"), set = state.sess.ex[+p[0]].sets[+p[1]];
+  const p = key.split("|"), set = sessSets(+p[0])[+p[1]];
   if (e.target.dataset.sk !== undefined) set.kg = e.target.value; else set.reps = e.target.value;
   saveSess();
   return;
  }
+ if (e.target.id === "budName"){ state.budName = e.target.value; return; }
  if (e.target.id === "recQ"){ state.recQ = e.target.value; renderRecepty(); keepFocus("recQ"); }
  else if (e.target.id === "exQ"){ state.exQ = e.target.value; renderTrenink(); keepFocus("exQ"); }
 });
@@ -5473,6 +5768,24 @@ document.addEventListener("click", e=>{
  if (e.target.id === "planFill"){ doplnPlan(); renderPlan(); renderDnes(); renderNext(); celebrate("📅"); return; }
  if (e.target.id === "planClear"){ vycistitPlan(); state.planDen = null; renderPlan(); renderDnes(); renderNext(); return; }
 
+ const bp = e.target.closest("[data-budpick]");
+ if (bp){
+  const n = bp.dataset.budpick;
+  state.budName = (state.budName === n) ? "" : n;
+  renderTrenink(); return;
+ }
+ if (e.target.id === "budStart"){
+  const inp = document.getElementById("budName");
+  const sel = document.getElementById("budRid");
+  const n = (inp && inp.value.trim()) || state.budName || "";
+  if (!n){ if (inp){ inp.focus(); inp.placeholder = "Nejdřív jméno parťáka \u2014 bez něj to není souboj"; } return; }
+  if (state.sess && state.sess.ex.some(x => x.sets.some(q=>q.done) || (x.bsets||[]).some(q=>q.done))){
+   renderSession(); return;
+  }
+  state.budName = "";
+  startSession(state.trWho, sel.value, n);
+  return;
+ }
  const st0 = e.target.closest("[data-start]");
  if (st0){
   const rozdelany = state.sess && state.sess.ex.some(x => x.sets.some(p => p.done));
@@ -5480,12 +5793,13 @@ document.addEventListener("click", e=>{
    renderSession();          // rozdělaný trénink nepřepisujeme — otevřeme ho
    return;
   }
-  startSession(state.trWho, st0.dataset.start); return;
+  startSession(state.trWho, st0.dataset.start, state.budName || null);
+  state.budName = null; return;
  }
  const sd = e.target.closest("[data-sdone]");
  if (sd){
   const p = sd.dataset.sdone.split("|"), i = +p[0], j = +p[1];
-  const set = state.sess.ex[i].sets[j];
+  const set = sessSets(i)[j];
   const kgEl = document.querySelector('[data-sk="'+i+'|'+j+'"]');
   const rEl  = document.querySelector('[data-sr="'+i+'|'+j+'"]');
   if (!set.done){
@@ -5502,11 +5816,13 @@ document.addEventListener("click", e=>{
  }
  const ad = e.target.closest("[data-addsess]");
  if (ad){
-  const i = +ad.dataset.addsess, sety = state.sess.ex[i].sets;
+  const i = +ad.dataset.addsess, sety = sessSets(i);
   const posl = sety[sety.length-1] || { kg:"", reps:"" };
   sety.push({ kg: posl.kg, reps: "", done: false });
   saveSess(); renderSession(); return;
  }
+ const sa = e.target.closest("[data-sakt]");
+ if (sa && state.sess){ state.sess.akt = sa.dataset.sakt; saveSess(); renderSession(); return; }
  const sx = e.target.closest("[data-sess]");
  if (sx){
   const a = sx.dataset.sess;
