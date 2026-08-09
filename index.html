@@ -202,6 +202,27 @@
   .mine:last-child{border-bottom:none}
   .mine .x{background:none;border:0;color:var(--muted);cursor:pointer;font-size:17px;padding:0 4px;line-height:1}
 
+  .nk-top{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+  .nk-prog{height:8px;border-radius:5px;background:var(--grid);overflow:hidden;margin:4px 0 12px}
+  .nk-prog i{display:block;height:100%;background:var(--s3);transition:width .25s ease}
+  .aisle{display:flex;align-items:center;gap:8px;font-size:12px;text-transform:uppercase;
+         letter-spacing:.8px;color:var(--muted);font-weight:600;margin:14px 0 4px;
+         padding-top:10px;border-top:1px solid var(--grid)}
+  .aisle:first-of-type{border-top:none;padding-top:0;margin-top:6px}
+  .aisle .n{margin-left:auto;font-weight:600;letter-spacing:0;text-transform:none;font-size:11.5px}
+  ul.shop li .qt{color:var(--text-secondary);font-variant-numeric:tabular-nums;white-space:nowrap}
+  ul.shop li .raw{font-size:11px;color:var(--muted);display:block}
+  ul.shop li.doma{opacity:.45}
+  ul.shop li.doma .qt{text-decoration:line-through}
+  .obchod ul.shop li{padding:11px 0}
+  .obchod ul.shop li input[type=checkbox]{width:26px;height:26px}
+  .obchod ul.shop li span{font-size:15.5px}
+  .obchod ul.shop li.on{display:none}
+  .casto{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}
+  .casto button{background:var(--accent-soft);border:1px solid var(--border);border-radius:999px;
+                padding:5px 11px;font:inherit;font-size:12.5px;color:var(--text-primary);cursor:pointer}
+  .nk-hist{font-size:12.5px;color:var(--text-secondary);font-variant-numeric:tabular-nums}
+
   .jr{display:grid;grid-template-columns:52px 1fr auto;gap:9px;align-items:start;
       padding:10px 0;border-bottom:1px solid var(--grid)}
   .jr:last-child{border-bottom:none}
@@ -1606,6 +1627,9 @@ const state = {
  hist: store.get("hist", []),
  plan: store.get("plan", {}),
  jidlo: store.get("jidlo", {}),
+ nakupDni: store.get("nakupDni", 7),
+ spizOdecist: store.get("spizOdecist", false),
+ obchod: false,
  dayIso: null,
  planDen: null,
  recOpen: false,
@@ -2231,43 +2255,148 @@ function outKatalog(){
 }
 
 /* ============ Nákup ============ */
+/* ---- oddělení obchodu ---- */
+const ODDELENI = [
+ ["zelenina", "🥬 Ovoce a zelenina", ["cibul","česnek","mrkev","brambor","batát","paprik","rajč","okurk","salát","špenát",
+   "brokolic","cuket","zelí","houb","citron","limetk","jablk","banán","avokádo","ananas","petržel","pažitk","kopr",
+   "bazalk","rozmarýn","bylink","kořenová","wok zelenina","zelenina","hrášek","kukuřic"]],
+ ["pecivo",   "🍞 Pečivo a knedlíky", ["chleb","rohlík","housk","pita","tortill","toust","pečivo","knedlík","noky","gnocchi"]],
+ ["maso",     "🥩 Maso a uzeniny", ["hovězí","vepřov","kuřec","kuře","krůt","mleté maso","klobás","slanin","šunka",
+   "uzené","žebírk","kotlet","panenk","krkovic","kýta","plec","steak","kližk","pancett"]],
+ ["mlecne",   "🥛 Mléčné a chlazené", ["mléko","jogurt","skyr","cottage","tvaroh","smetan","zakysan","máslo","sýr",
+   "mozzarell","parmaz","parmez","feta","lučina","žervé","vejce","kefír"]],
+ ["mrazene",  "🧊 Mražené", ["mražen"]],
+ ["trvanlive","🍚 Trvanlivé a koření", ["rýže","těstovin","špaget","nudle","mouka","vločk","granol","med","olej","ocet",
+   "sójov","kečup","hořčic","majonéz","pesto","passat","protlak","konzerv","fazol","cizrn","čočk","hrách","kokosov",
+   "kari","mletá paprika","kmín","nové koření","majoránk","sezam","strouhank","arašíd","ořech","tuňák","kapar",
+   "brusink","lasagne","bulgur","rýžov","tyčink","čokoládové","meruňk","ovoce","cukr","sůl"]],
+ ["doplnky",  "💊 Doplňky", ["kreatin","vitamin","omega","whey","protein"]],
+ ["ostatni",  "🧺 Ostatní", []]
+];
+function oddeleniPro(nazev){
+ const t = String(nazev).toLowerCase();
+ for (const o of ODDELENI) if (o[2].some(k => t.indexOf(k) >= 0)) return o[0];
+ return "ostatni";
+}
+/* ---- normalizace jednotek a zaokrouhlení na balení ---- */
+function normUnit(q, u){
+ if (u === "kg") return [q*1000, "g"];
+ if (u === "l")  return [q*1000, "ml"];
+ return [q, u];
+}
+function baleni(q, u){
+ if (u === "g"){  return q >= 1000 ? [Math.ceil(q/100)/10, "kg"] : [Math.ceil(q/50)*50, "g"]; }
+ if (u === "ml"){ return q >= 1000 ? [Math.ceil(q/100)/10, "l"]  : [Math.ceil(q/100)*100, "ml"]; }
+ if (u === "ks" || u === "bal") return [Math.ceil(q), u];
+ return [Math.round(q*100)/100, u];
+}
+function mamDoma(nazev){
+ return state.spizOdecist && (state.pantry || []).some(p => p.toLowerCase() === String(nazev).toLowerCase());
+}
+/* ---- často přidávané položky ---- */
+function castoPridej(t){
+ const h = store.get("shopCasto", {});
+ h[t] = (h[t] || 0) + 1;
+ store.set("shopCasto", h);
+}
+function castoSeznam(){
+ const h = store.get("shopCasto", {});
+ return Object.keys(h).sort((a,b)=>h[b]-h[a]).filter(t => !state.shopX.some(x => x.t === t)).slice(0,8);
+}
+
 function renderNakup(){
+ const dni = state.nakupDni || 7;
  const agg = {};
- for (let i = 0; i < 7; i++) dinIso(isoPlus(i)).ing.forEach(x=>{
-  const k = x[0]+"|"+x[2];
-  agg[k] = (agg[k]||0) + x[1];
+ for (let i = 0; i < dni; i++) dinIso(isoPlus(i)).ing.forEach(x=>{
+  const n = normUnit(x[1], x[2]);
+  const k = x[0]+"|"+n[1];
+  agg[k] = (agg[k] || 0) + n[0];
  });
- const item = (key,label)=>{
-  const on = !!state.shop[key];
-  return '<li class="'+(on?"on":"")+'"><input type="checkbox" data-shop="'+esc(key)+'"'+(on?" checked":"")+'><span>'+esc(label)+'</span></li>';
+ Object.keys(STAPLES).forEach(h => STAPLES[h].forEach(x => {
+  const n = normUnit(x[1] || 0, x[2]);
+  const k = x[0]+"|"+n[1];
+  agg[k] = (agg[k] || 0) + n[0];
+ }));
+
+ const polozky = Object.keys(agg).map(k => {
+  const p = k.split("|"), b = baleni(agg[k], p[1]);
+  return { nazev:p[0], q:b[0], u:b[1], syrove:agg[k], su:p[1], odd:oddeleniPro(p[0]), key:"d|"+p[0] };
+ });
+
+ const hotovo = polozky.filter(x => state.shop[x.key] || mamDoma(x.nazev)).length
+   + state.shopX.filter(x => state.shop["x|"+x.id]).length;
+ const celkem = polozky.length + state.shopX.length;
+
+ const radek = x => {
+  const on = !!state.shop[x.key], doma = mamDoma(x.nazev);
+  const mn = x.u === "✓" || x.u === "nákup" || !x.q
+    ? '' : '<span class="qt">'+fmt(x.q)+' '+esc(x.u)+'</span>';
+  const surove = (x.q && x.su !== x.u ? "" : "");
+  return '<li class="'+(on?"on ":"")+(doma?"doma":"")+'">'
+   +'<input type="checkbox" data-shop="'+esc(x.key)+'"'+(on?" checked":"")+(doma?" disabled":"")+'>'
+   +'<span style="flex:1">'+esc(x.nazev)+(doma?' <span class="dim" style="font-size:11.5px">· máš doma</span>':'')+'</span>'
+   + mn + '</li>';
  };
- const dinList = Object.keys(agg).sort((a,b)=>a.localeCompare(b,"cs")).map(k=>{
-  const p = k.split("|"); const q = Math.round(agg[k]*100)/100;
-  return item("d|"+k, q > 0 ? p[0]+" — "+fmt(q)+" "+p[1] : p[0]);
- }).join("");
- let staples = "";
- for (const h in STAPLES) staples += '<div class="shop-head">'+esc(h)+'</div>'
-  + STAPLES[h].map(x=>item("s|"+x[0], x[0]+(x[1]?" — "+fmt(x[1])+" "+x[2]:""))).join("");
+
+ let telo = "";
+ ODDELENI.forEach(o => {
+  const v = polozky.filter(x => x.odd === o[0]).sort((a,b)=>a.nazev.localeCompare(b.nazev,"cs"));
+  if (!v.length) return;
+  const zbyva = v.filter(x => !state.shop[x.key] && !mamDoma(x.nazev)).length;
+  telo += '<div class="aisle">'+o[1]+'<span class="n">'+(zbyva ? zbyva+" ks" : "hotovo ✓")+'</span></div>'
+       +  '<ul class="shop">'+v.map(radek).join("")+'</ul>';
+ });
+
+ const dniBtn = [3,5,7,14].map(d =>
+   '<button class="chip'+(dni===d?" on":"")+'" data-nkdni="'+d+'">'+d+' dní</button>').join("");
+
+ const hist = store.get("shopHist", []);
+ const posl = hist.slice(-3).reverse();
+ const prumer = hist.filter(h=>h.c).length
+   ? Math.round(hist.filter(h=>h.c).reduce((a,h)=>a+h.c,0) / hist.filter(h=>h.c).length)
+   : 0;
+
  document.getElementById("tab-nakup").innerHTML =
-  '<div class="card"><div class="rhead"><h3>Nákupní seznam</h3>'
-  +'<span style="display:flex;gap:6px"><button class="ghost" id="shareShop" type="button">📤 Poslat</button>'
-  +'<button class="ghost" id="clearShop" type="button">Vyčistit</button></span></div>'
-  +'<p class="who">Spočítaný z večeří v Týdnu + týdenní zásoby pro dva. Odškrtávej rovnou v obchodě.</p>'
-  +'<ul class="shop"><div class="shop-head">Na večeře (příštích 7 dní)</div>'+dinList+staples+'</ul>'
-  +'<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--baseline)">'
-  +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Co ještě potřebujeme</div>'
+  '<div class="card'+(state.obchod?" obchod":"")+'"><div class="rhead"><h3>🛒 Nákupní seznam</h3>'
+  +'<span class="rmeta">'+hotovo+' / '+celkem+'</span></div>'
+  +'<div class="nk-prog"><i style="width:'+Math.round(hotovo/Math.max(1,celkem)*100)+'%"></i></div>'
+  +'<div class="nk-top">'+dniBtn
+  +'<button class="chip'+(state.spizOdecist?" on":"")+'" data-nkspiz="1">🏠 Odečíst spíž</button>'
+  +'<button class="chip'+(state.obchod?" on":"")+'" data-nkobchod="1">🛍️ Režim obchodu</button></div>'
+  +'<p class="who">Spočítané z večeří na <b>'+dni+' dní dopředu</b> + týdenní zásoby, sečtené dohromady '
+  +'a zaokrouhlené na to, co se reálně kupuje. Seřazené podle oddělení, jak jdeš obchodem.'
+  + (state.obchod ? ' <b>Režim obchodu:</b> odškrtnuté mizí, ať vidíš jen co zbývá.' : '')+'</p>'
+  + telo
+  +'<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--baseline)">'
+  +'<div class="aisle" style="border:none;padding:0;margin:0 0 4px">🧺 Co ještě potřebujeme</div>'
   + (state.shopX.length
      ? '<ul class="shop">'+state.shopX.map(x=>{
          const on = !!state.shop["x|"+x.id];
          return '<li class="'+(on?"on":"")+'"><input type="checkbox" data-shop="x|'+esc(x.id)+'"'+(on?" checked":"")+'>'
           +'<span style="flex:1">'+esc(x.t)+'</span>'
-          +'<button class="x" data-delshopx="'+esc(x.id)+'" title="Smazat" style="background:none;border:0;color:var(--muted);cursor:pointer;font-size:17px;padding:0 4px">×</button></li>';
+          +'<button data-delshopx="'+esc(x.id)+'" title="Smazat" style="background:none;border:0;color:var(--muted);cursor:pointer;font-size:17px;padding:0 4px">×</button></li>';
        }).join("")+'</ul>'
      : '<p class="who" style="margin:0 0 8px">Zatím nic navíc. Cokoli sem přidáš, uvidí i ten druhý.</p>')
-  +'<div class="wrow" style="margin:8px 0 0"><input type="text" id="shopXInp" placeholder="Např. prací prášek, zubní pasta, mrkev navíc…" '
+  +'<div class="wrow" style="margin:8px 0 0"><input type="text" id="shopXInp" placeholder="Např. prací prášek, zubní pasta…" '
   +'style="flex:1;min-width:160px;width:auto" autocomplete="off">'
-  +'<button class="act small" id="shopXAdd" type="button">Přidat</button></div></div>'
-  +'<div class="note"><b>Nejdůležitější hodina týdne:</b> nedělní nákup + příprava 10 autobagů + 10 vajec natvrdo. Když vyjde neděle, vyjde týden.</div></div>'
+  +'<button class="act small" id="shopXAdd" type="button">Přidat</button></div>'
+  + (castoSeznam().length
+     ? '<div class="casto">'+castoSeznam().map(t=>'<button data-casto="'+esc(t)+'" type="button">+ '+esc(t)+'</button>').join("")+'</div>'
+       +'<div class="hint">Co přidáváš často — jedním ťuknutím zpátky do seznamu.</div>'
+     : '')
+  +'</div>'
+  +'<div class="wrow" style="margin-top:14px">'
+  +'<input type="number" id="shopCastka" placeholder="Kč" inputmode="numeric" style="width:86px">'
+  +'<button class="act small" id="shopDone" type="button">✅ Nakoupeno</button>'
+  +'<button class="ghost" id="shareShop" type="button">📤 Poslat</button>'
+  +'<button class="ghost" id="clearShop" type="button">Odškrtnout vše</button></div>'
+  +'<div class="hint">Po nákupu ťukni na <b>Nakoupeno</b> — seznam se odškrtne a zapíše se datum. Částku vyplň, jen když chceš vidět, kolik vás týden stojí.</div>'
+  + (posl.length
+     ? '<div class="hint nk-hist">Poslední nákupy: '
+       + posl.map(h=>czDate(h.d)+(h.c?" — "+fmt(h.c)+" Kč":"")).join(" · ")
+       + (prumer ? ' · průměr <b>'+fmt(prumer)+' Kč</b>' : '')+'</div>'
+     : '')
+  +'</div>'
   + prepCard();
 }
 
@@ -4338,12 +4467,38 @@ document.addEventListener("click", e=>{
   else if (a === "next"){ if (state.onb >= 3) closeOnb(); else { state.onb++; renderOnb(); } }
   return;
  }
+ const nkd = e.target.closest("[data-nkdni]");
+ if (nkd){ state.nakupDni = +nkd.dataset.nkdni; store.set("nakupDni", state.nakupDni); renderNakup(); return; }
+ if (e.target.closest("[data-nkspiz]")){
+  state.spizOdecist = !state.spizOdecist; store.set("spizOdecist", state.spizOdecist); renderNakup(); return; }
+ if (e.target.closest("[data-nkobchod]")){ state.obchod = !state.obchod; renderNakup(); return; }
+ const cst = e.target.closest("[data-casto]");
+ if (cst){
+  const t = cst.dataset.casto;
+  state.shopX = state.shopX.concat([{ id:"x"+Date.now(), t:t }]);
+  store.set("shopX", state.shopX); castoPridej(t);
+  if (window.sync && sync.on) sync.pushShopX();
+  renderNakup(); return;
+ }
+ if (e.target.id === "shopDone"){
+  const hist = store.get("shopHist", []);
+  const box = document.getElementById("shopCastka");
+  const c = box ? (parseInt(String(box.value).replace(/\s/g,""), 10) || 0) : 0;
+  hist.push({ d: isoDnes(), c: c });
+  store.set("shopHist", hist.slice(-20));
+  state.shop = {}; store.set("shop", state.shop);
+  state.obchod = false;
+  if (window.sync && sync.on) sync.pushShop();
+  celebrate("🛒");
+  pushMsg("nakup-"+isoDnes(), "🛒", "Nakoupeno", "Seznam je odškrtnutý a vyčištěný. Teď ještě 10 vajec natvrdo a autobagy — a týden je zajištěný.");
+  renderNakup(); syncDot(); return;
+ }
  if (e.target.id === "shopXAdd"){
   const el = document.getElementById("shopXInp");
   const t = (el.value || "").trim();
   if (!t) { el.focus(); return; }
   state.shopX = state.shopX.concat([{ id: "x"+Date.now(), t: t.slice(0,80) }]);
-  store.set("shopX", state.shopX);
+  store.set("shopX", state.shopX); castoPridej(t.slice(0,80));
   if (window.sync && sync.on) sync.pushShopX();
   renderNakup();
   const nl = document.getElementById("shopXInp"); if (nl) nl.focus();
@@ -4649,13 +4804,14 @@ document.addEventListener("click", e=>{
   state.sugOpen = (state.sugOpen === sg.dataset.sug) ? null : sg.dataset.sug;
   renderDnes(); return;
  }
- if (e.target.id === "clearShop"){ state.shop = {}; store.set("shop", state.shop); renderNakup(); return; }
+ if (e.target.id === "clearShop"){ state.shop = {}; store.set("shop", state.shop);
+   if (window.sync && sync.on) sync.pushShop(); renderNakup(); return; }
  if (e.target.id === "shareShop"){
-  const lines = [...document.querySelectorAll("#tab-nakup ul.shop > *")].map(el=>{
-   if (el.classList.contains("shop-head")) return "\n*"+el.textContent.trim()+"*";
-   if (el.classList.contains("on")) return null;
-   return "• "+el.textContent.trim();
-  }).filter(Boolean);
+  const lines = [];
+  [...document.querySelectorAll("#tab-nakup .aisle, #tab-nakup ul.shop li")].forEach(el=>{
+   if (el.classList.contains("aisle")) lines.push("\n*"+el.textContent.replace(/\s+/g," ").replace(/ \d+ ks$| hotovo ✓$/,"").trim()+"*");
+   else if (!el.classList.contains("on") && !el.classList.contains("doma")) lines.push("• "+el.textContent.replace(/\s+/g," ").replace(/×$/,"").trim());
+  });
   const txt = "🛒 Nákup PEVE FIT\n"+lines.join("\n");
   if (navigator.share) navigator.share({title:"Nákupní seznam", text:txt}).catch(()=>{});
   else if (navigator.clipboard) navigator.clipboard.writeText(txt).then(()=>{
@@ -4682,7 +4838,7 @@ document.addEventListener("click", e=>{
  if (e.target.id === "icsGet"){ stahniIcs(); return; }
  if (e.target.id === "expBtn"){
   const keys = ["week","pick","checks","shop","queue","fb","exsel","wtP","wtV","mrP","mrV","lastCheckin",
-                "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist","plan","jidlo"];
+                "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist","plan","jidlo","shopHist","shopCasto","nakupDni"];
   const dump = {};
   keys.forEach(k=>{ const v = store.get(k, null); if (v !== null) dump[k] = v; });
   const box = document.getElementById("dataBox");
