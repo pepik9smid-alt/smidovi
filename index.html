@@ -801,6 +801,256 @@
   <div id="tab-zpravy"></div>
 </div>
 <div class="sess" id="sessOverlay" hidden></div>
+<script type="text/plain" id="widgetSrc">
+// PEVE FIT — widget na plochu a zamčenou obrazovku
+// Scriptable · vygenerováno appkou. Nic tu nemusíš měnit.
+// Varianty: kolecko / obdelnik / radek (zamčená obrazovka), malý / střední (plocha)
+
+const FAM = "__FAM__";
+const ME  = "__ME__";
+const KEY = "__KEY__";
+const DB  = "__DB__";
+const WEB = "__WEB__";
+
+const BARVA = { p: new Color("#2a78d6"), v: new Color("#eb6834"),
+                ok: new Color("#1baf7a"), dim: new Color("#8b8f98") };
+
+// ---------- přihlášení (anonymní, token se schová do cache) ----------
+async function token(){
+  const fm = FileManager.local();
+  const cesta = fm.joinPath(fm.cacheDirectory(), "pevefit-token.json");
+  let d = null;
+  if (fm.fileExists(cesta)){ try { d = JSON.parse(fm.readString(cesta)); } catch(e){} }
+  if (d && d.id && d.exp > Date.now() + 60000) return d.id;
+
+  let id = null, ref = null, exp = 0;
+  if (d && d.ref){
+    try {
+      const r = new Request("https://securetoken.googleapis.com/v1/token?key=" + KEY);
+      r.method = "POST";
+      r.headers = { "Content-Type": "application/x-www-form-urlencoded" };
+      r.body = "grant_type=refresh_token&refresh_token=" + encodeURIComponent(d.ref);
+      const j = await r.loadJSON();
+      if (j.id_token){ id = j.id_token; ref = j.refresh_token; exp = Date.now() + (+j.expires_in - 120) * 1000; }
+    } catch(e){}
+  }
+  if (!id){
+    const r = new Request("https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=" + KEY);
+    r.method = "POST";
+    r.headers = { "Content-Type": "application/json" };
+    r.body = JSON.stringify({ returnSecureToken: true });
+    const j = await r.loadJSON();
+    if (!j.idToken) throw new Error("Přihlášení selhalo");
+    id = j.idToken; ref = j.refreshToken; exp = Date.now() + (+j.expiresIn - 120) * 1000;
+  }
+  fm.writeString(cesta, JSON.stringify({ id: id, ref: ref, exp: exp }));
+  return id;
+}
+
+async function nacti(){
+  const t = await token();
+  const r = new Request(DB + "/rodiny/" + FAM + "/widget.json?auth=" + t);
+  r.timeoutInterval = 12;
+  const j = await r.loadJSON();
+  return j || {};
+}
+
+// ---------- pomocníci ----------
+const cislo = n => Math.round(n || 0).toLocaleString("cs-CZ").replace(/ /g, " ");
+const pct = (a, b) => Math.max(0, Math.min(100, Math.round((a || 0) * 100 / (b || 1))));
+
+function coTed(d){
+  if (!d) return { ic: "🍽️", t: "Otevři appku", p: "žádná data", url: WEB };
+  if (d.sess) return { ic: "🏋️", t: "Trénink " + d.sess.rid + " běží",
+    p: d.sess.hot + "/" + d.sess.cel + " sérií · " + d.sess.min + " min" + (d.sess.bud ? " · s " + d.sess.bud : ""),
+    url: WEB + "?tab=trenink&akce=sess" };
+  if (d.tr && !d.tr.hot) return { ic: "🏋️", t: "Dneska " + d.tr.co, p: "zatím nezapsáno", url: WEB + "?tab=trenink" };
+  if (d.next) return { ic: "🍽️", t: d.next.cas + " · " + d.next.n, p: "další na řadě", url: WEB + "?tab=dnes" };
+  const zbyva = (d.cil || 0) - (d.kcal || 0);
+  if (zbyva > 0) return { ic: "🌙", t: cislo(zbyva) + " kcal do cíle", p: "dojeď to", url: WEB + "?tab=dnes" };
+  return { ic: "✅", t: "Dnešek splněný", p: cislo(d.kcal) + " kcal", url: WEB + "?tab=progres" };
+}
+
+function pruh(st, hod, max, barva, sirka){
+  const c = st.addStack();
+  c.size = new Size(sirka, 5);
+  c.cornerRadius = 2.5;
+  c.backgroundColor = new Color("#000000", 0.14);
+  const i = c.addStack();
+  i.size = new Size(Math.max(2, sirka * pct(hod, max) / 100), 5);
+  i.cornerRadius = 2.5;
+  i.backgroundColor = barva;
+  return c;
+}
+
+function radek(st, popis, hod, max, jednotka, barva){
+  const r = st.addStack();
+  r.layoutHorizontally();
+  const a = r.addText(popis);
+  a.font = Font.systemFont(10);
+  a.textColor = BARVA.dim;
+  r.addSpacer();
+  const b = r.addText(cislo(hod) + " / " + cislo(max) + (jednotka || ""));
+  b.font = Font.mediumSystemFont(10);
+  b.textColor = pct(hod, max) >= 100 ? BARVA.ok : Color.dynamic(Color.black(), Color.white());
+  st.addSpacer(2);
+  pruh(st, hod, max, barva, 130);
+  st.addSpacer(6);
+}
+
+// ---------- zamčená obrazovka ----------
+function kolecko(d){
+  const w = new ListWidget();
+  const c = coTed(d);
+  w.url = c.url;
+  if (d && d.sess){
+    w.addText("🏋️").centerAlignText();
+    const t = w.addText(d.sess.hot + "/" + d.sess.cel);
+    t.font = Font.boldSystemFont(13); t.centerAlignText();
+  } else {
+    const z = Math.max(0, (d.cil || 0) - (d.kcal || 0));
+    const t = w.addText(pct(d && d.kcal, d && d.cil) + "%");
+    t.font = Font.boldSystemFont(16); t.centerAlignText();
+    const u = w.addText(z > 999 ? Math.round(z / 100) / 10 + "k" : cislo(z));
+    u.font = Font.systemFont(9); u.centerAlignText();
+  }
+  return w;
+}
+
+function obdelnik(d){
+  const w = new ListWidget();
+  const c = coTed(d);
+  w.url = c.url;
+  const h = w.addText(c.ic + " " + c.t);
+  h.font = Font.boldSystemFont(13);
+  h.lineLimit = 1;
+  const p = w.addText(c.p);
+  p.font = Font.systemFont(11);
+  p.textColor = BARVA.dim;
+  p.lineLimit = 1;
+  w.addSpacer(3);
+  const s = w.addText("🔥 " + (d && d.serie || 0) + "  💧 " + (d && d.voda || 0) + "/" + (d && d.vodaCil || 0)
+    + "  🍽 " + pct(d && d.kcal, d && d.cil) + "%");
+  s.font = Font.systemFont(10);
+  s.textColor = BARVA.dim;
+  s.lineLimit = 1;
+  return w;
+}
+
+function radekWidget(d){
+  const w = new ListWidget();
+  const c = coTed(d);
+  w.url = c.url;
+  w.addText(c.ic + " " + c.t);
+  return w;
+}
+
+// ---------- plocha ----------
+function maly(d){
+  const w = new ListWidget();
+  const c = coTed(d);
+  w.url = c.url;
+  w.setPadding(12, 13, 12, 13);
+
+  const hl = w.addStack();
+  hl.layoutHorizontally();
+  const nm = hl.addText("PEVE FIT");
+  nm.font = Font.boldSystemFont(10);
+  nm.textColor = BARVA[ME] || BARVA.p;
+  hl.addSpacer();
+  const sr = hl.addText("🔥 " + (d && d.serie || 0));
+  sr.font = Font.systemFont(10);
+  sr.textColor = BARVA.dim;
+  w.addSpacer(7);
+
+  const t = w.addText(c.ic + " " + c.t);
+  t.font = Font.boldSystemFont(14);
+  t.lineLimit = 2;
+  const p = w.addText(c.p);
+  p.font = Font.systemFont(11);
+  p.textColor = BARVA.dim;
+  p.lineLimit = 1;
+  w.addSpacer();
+
+  radek(w, "kalorie", d && d.kcal, d && d.cil, "", BARVA[ME] || BARVA.p);
+  radek(w, "bílkoviny", d && d.prot, d && d.cilP, " g", BARVA.ok);
+  return w;
+}
+
+function stredni(vse){
+  const w = new ListWidget();
+  const ja = vse[ME], on = vse[ME === "p" ? "v" : "p"];
+  const c = coTed(ja);
+  w.url = c.url;
+  w.setPadding(12, 14, 12, 14);
+
+  const hl = w.addStack();
+  hl.layoutHorizontally();
+  const t = hl.addText(c.ic + " " + c.t);
+  t.font = Font.boldSystemFont(15);
+  t.lineLimit = 1;
+  hl.addSpacer();
+  const sr = hl.addText("🔥 " + (ja && ja.serie || 0) + "  💧 " + (ja && ja.voda || 0) + "/" + (ja && ja.vodaCil || 0));
+  sr.font = Font.systemFont(11);
+  sr.textColor = BARVA.dim;
+  const p = w.addText(c.p);
+  p.font = Font.systemFont(11);
+  p.textColor = BARVA.dim;
+  w.addSpacer(9);
+
+  const dva = w.addStack();
+  dva.layoutHorizontally();
+  dva.spacing = 14;
+  [ja, on].forEach((d, i) => {
+    if (!d) return;
+    const s = dva.addStack();
+    s.layoutVertically();
+    const n = s.addText(d.jm || (i ? "Druhý" : "Ty"));
+    n.font = Font.boldSystemFont(12);
+    s.addSpacer(4);
+    radek(s, "kalorie", d.kcal, d.cil, "", i === 0 ? (BARVA[ME] || BARVA.p) : BARVA.v);
+    radek(s, "bílkoviny", d.prot, d.cilP, " g", BARVA.ok);
+    if (d.tr){
+      const x = s.addText((d.tr.hot ? "✅ " : "🏋️ ") + d.tr.co);
+      x.font = Font.systemFont(10);
+      x.textColor = d.tr.hot ? BARVA.ok : BARVA.dim;
+      x.lineLimit = 1;
+    }
+  });
+  return w;
+}
+
+function chyba(e){
+  const w = new ListWidget();
+  w.url = WEB;
+  w.addText("PEVE FIT").font = Font.boldSystemFont(11);
+  w.addSpacer(4);
+  const t = w.addText("Data se nenačetla");
+  t.font = Font.systemFont(12);
+  const p = w.addText(String(e && e.message || e).slice(0, 60));
+  p.font = Font.systemFont(9);
+  p.textColor = BARVA.dim;
+  return w;
+}
+
+// ---------- běh ----------
+let widget;
+try {
+  const vse = await nacti();
+  const f = config.widgetFamily || "medium";
+  if (f === "accessoryCircular") widget = kolecko(vse[ME]);
+  else if (f === "accessoryRectangular") widget = obdelnik(vse[ME]);
+  else if (f === "accessoryInline") widget = radekWidget(vse[ME]);
+  else if (f === "small") widget = maly(vse[ME]);
+  else widget = stredni(vse);
+} catch(e){
+  widget = chyba(e);
+}
+widget.refreshAfterDate = new Date(Date.now() + 15 * 60 * 1000);
+if (config.runsInWidget) Script.setWidget(widget);
+else widget.presentMedium();
+Script.complete();
+</script>
 <div class="cook" id="cookOverlay" hidden></div>
 <div class="cook" id="onbOverlay" hidden></div>
 <div class="tbar" id="timerBar" hidden></div>
@@ -3324,6 +3574,52 @@ function nejlepsiPred(who, exId){
  return best;
 }
 
+/* ---- widget na iPhone (Scriptable) ---- */
+function widgetSkript(){
+ const src = document.getElementById("widgetSrc");
+ if (!src) return "";
+ const fam = store.get("famId", "") || "";
+ const me = store.get("meId", "p") || "p";
+ return src.textContent
+  .replace("__FAM__", fam)
+  .replace("__ME__", me)
+  .replace("__KEY__", (FB && FB.apiKey) || "")
+  .replace("__DB__", (FB && FB.databaseURL) || "")
+  .replace("__WEB__", location.origin + location.pathname);
+}
+function widgetCard(){
+ const fam = store.get("famId", null), me = store.get("meId", null);
+ const pripraveno = !!(fam && me && FB);
+ return '<div class="card"><h3>📱 Widget na plochu iPhonu</h3>'
+  +'<p class="who">Malý panel na ploše <b>i na zamčené obrazovce</b>: co je teď na řadě, '
+  +'kolik zbývá sníst, dnešní trénink, série a voda. Když trénink zrovna běží, ukáže '
+  +'<b>kolik máš sérií hotových</b> — a ťuknutím se appka otevře rovnou v něm.</p>'
+  + (pripraveno ? '' :
+     '<div class="note"><b>Nejdřív propoj telefony.</b> Widget tahá data z rodinného kódu — '
+     +'bez něj nemá odkud. Nastav to o kus výš. 🔗</div>')
+  +'<div class="note"><b>Zapisovat série přímo z widgetu nejde.</b> Tlačítka ve widgetech '
+  +'a živé pruhy na zamčené obrazovce umí Apple jen nativním appkám. Widget tedy ukazuje '
+  +'a jedním ťuknutím otevře — víc z toho bez placeného Apple účtu nikdo nedostane.</div>'
+  +'<div style="margin:12px 0 4px"><b style="font-size:14px">Postup — asi 3 minuty</b></div>'
+  +'<table><tbody>'
+  +'<tr><td>1</td><td>V App Store si nainstaluj appku <b>Scriptable</b> (zdarma, ikonka bílý kód na černém).</td></tr>'
+  +'<tr><td>2</td><td>Tady dole dej <b>Zkopírovat skript</b>.</td></tr>'
+  +'<tr><td>3</td><td>Otevři Scriptable → <b>+</b> vpravo nahoře → do prázdného souboru vlož skript (podrž prst → Vložit).</td></tr>'
+  +'<tr><td>4</td><td>Nahoře ťukni na název souboru a přejmenuj ho na <b>PEVE FIT</b>. Hotovo, zavři.</td></tr>'
+  +'<tr><td>5</td><td><b>Na plochu:</b> podrž prst na ploše → <b>+</b> → najdi Scriptable → vyber velikost → Přidat. '
+  +'Pak na widget podrž prst → <b>Upravit widget</b> → Script = <b>PEVE FIT</b>.</td></tr>'
+  +'<tr><td>6</td><td><b>Na zamčenou obrazovku:</b> podrž prst na zamčené obrazovce → Přizpůsobit → Uzamčená obrazovka '
+  +'→ ťukni pod hodiny → Scriptable → a stejně nastav Script = PEVE FIT.</td></tr>'
+  +'</tbody></table>'
+  +'<div class="wrow" style="margin-top:12px">'
+  +'<button class="act small" id="widGet" type="button"'+(pripraveno?'':' disabled')+'>Zkopírovat skript</button>'
+  +'<button class="ghost" id="widShare" type="button"'+(pripraveno?'':' disabled')+'>Poslat si ho</button></div>'
+  +'<div class="hint" id="widMsg">Skript už v sobě má váš rodinný kód, takže se nic nevyplňuje. '
+  +'Widget se obnovuje zhruba každých 15 minut — a hned, když appku otevřeš.</div>'
+  +'<div class="note"><b>Verunka to má stejně</b> — jen ať si skript zkopíruje ze svého telefonu, '
+  +'aby v něm byla podepsaná jako ona. Uvidí pak na widgetu sebe i tebe.</div></div>';
+}
+
 /* ---- sparing: trénink s parťákem ---- */
 /* 7. pád (s kým) — Radek → s Radkem, Jana → s Janou. Není to dokonalá čeština,
    ale je to nekonečně lepší než „s Radek".                                    */
@@ -3404,6 +3700,7 @@ function startSession(who, rid, bud){
   })
  };
  store.set("session", state.sess);
+ if (window.sync && sync.on) sync.pushWidget();
  renderSession();
 }
 function sessKdo(){ return (state.sess && state.sess.akt === "bud") ? "bud" : "ty"; }
@@ -3418,6 +3715,7 @@ function sessJmeno(kdo){
 function saveSess(){ store.set("session", state.sess); }
 function cancelSession(){
  state.sess = null; store.set("session", null);
+ if (window.sync && sync.on) sync.pushWidget();
  const o = document.getElementById("sessOverlay");
  o.hidden = true; o.innerHTML = "";
  document.body.style.overflow = "";
@@ -4646,6 +4944,41 @@ const sync = {
   pushNavrhy(){ this._set("navrhy", state.navrhy); },
   pushShopX(){ this._set("shopx", state.shopX); },
 
+  /* kompaktní balíček pro widget na iPhonu (čte ho Scriptable přes REST) */
+  widgetData(){
+    const who = this.me, t = target(who);
+    const today = new Date().toISOString().slice(0,10);
+    const tot = dayTotals(who, today);
+    const ted = new Date(), nyni = ted.getHours()*60 + ted.getMinutes();
+
+    let next = null;
+    planFor(who, todayIdx).forEach(j => {
+      if (next) return;
+      if (state.checks[today+"|"+who+"|"+j.slot]) return;
+      if (minutyZ(j.time) + 150 < nyni) return;
+      next = { cas: j.time, n: String(j.name).slice(0, 46) };
+    });
+
+    const dnesPlan = planDne(today)[who] || null;
+    const tr = dnesPlan ? { co: String(dnesPlan).slice(0,28), hot: !!odtrenovano(today, who) } : null;
+
+    let se = null;
+    if (state.sess && state.sess.who === who){
+      const a = sessSoucty("ty");
+      se = { rid: String(state.sess.rid).slice(0,20), hot: a.hot, cel: a.cel, min: a.min,
+             bud: state.sess.bud || null };
+    }
+    return {
+      jm: BASE_T[who].name,
+      kcal: tot.k, cil: t.kcal, prot: tot.p, cilP: t.prot,
+      next: next, tr: tr, sess: se,
+      voda: waterGet(who, today), vodaCil: Math.round(waterCil(who)/GLASS),
+      serie: streak(who),
+      kdy: new Date().toISOString()
+    };
+  },
+  pushWidget(){ if (this.on) this._set("widget/"+this.me, this.widgetData()); },
+
   pushStatus(){
     if (!this.on) return;
     const who = this.me, t = target(who);
@@ -4660,6 +4993,7 @@ const sync = {
       vaha: last ? last.kg : null,
       kdy: new Date().toISOString()
     });
+    this.pushWidget();
   },
 
   reset(){
@@ -5229,6 +5563,8 @@ function renderNastaveniTab(){
      +(state.spizOdecist?"Zapnuto 🏠":"Vypnuto")+'</button>', "Co máš doma, se z nákupu odečte")
   +'</div>'
 
+  + widgetCard()
+
   + remCard()
 
   /* --- data --- */
@@ -5248,7 +5584,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">18</td></tr>'
+  +'<tr><td>Verze</td><td class="num">19</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
   +'<tr><td>Receptů na večeře</td><td class="num">'+pc.rec+'</td></tr>'
   +'<tr><td>Tréninkových variant</td><td class="num">'+pc.tr+'</td></tr>'
@@ -5581,6 +5917,7 @@ document.addEventListener("click", e=>{
   waterSet(p[0], p[1], now + (+p[2]));
   const cil = Math.round(waterCil(p[0])/GLASS);
   if (+p[2] > 0 && now + 1 === cil) celebrate("💧");
+  if (window.sync && sync.on) sync.pushWidget();
   renderDnes(); return;
  }
  const rk = e.target.closest("[data-reak]");
@@ -5742,6 +6079,28 @@ document.addEventListener("click", e=>{
     || (!root.getAttribute("data-theme") && window.matchMedia("(prefers-color-scheme: dark)").matches)) ? "Světlý" : "Tmavý";
   renderNastaveniTab(); return;
  }
+ if (e.target.id === "widGet" || e.target.id === "widShare"){
+  const txt = widgetSkript();
+  const msg = document.getElementById("widMsg");
+  if (!txt){ if (msg) msg.textContent = "Skript se nepodařilo sestavit — zkus obnovit stránku."; return; }
+  if (e.target.id === "widShare"){ shareText(txt); return; }
+  const ta = document.createElement("textarea");
+  ta.value = txt;
+  ta.style.cssText = "position:fixed;top:0;left:0;opacity:0;height:1px";
+  document.body.appendChild(ta);
+  ta.select(); ta.setSelectionRange(0, txt.length);
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch(err){}
+  if (navigator.clipboard){ navigator.clipboard.writeText(txt).then(()=>{}, ()=>{}); ok = true; }
+  ta.remove();
+  if (msg){
+   msg.textContent = ok
+     ? "Zkopírováno ✓ Teď otevři Scriptable, dej + a podrž prst → Vložit."
+     : "Kopírování telefon nepustil — dej „Poslat si ho\" a zkopíruj to odtamtud.";
+   msg.style.color = ok ? "var(--good)" : "var(--s2)";
+  }
+  return;
+ }
  if (e.target.id === "resetNast"){
   if (!state.resetPtl){ state.resetPtl = true; renderNastaveniTab(); setTimeout(()=>{ state.resetPtl = false; }, 6000); return; }
   state.resetPtl = false;
@@ -5807,7 +6166,8 @@ document.addEventListener("click", e=>{
    if (!reps){ rEl.focus(); return; }
    set.kg = parseFloat(String(kgEl.value).replace(",", ".")) || 0;
    set.reps = reps; set.done = true;
-   saveSess(); renderSession();
+   saveSess(); if (window.sync && sync.on) sync.pushWidget();
+   renderSession();
    startTimer(parseMin(state.sess.ex[i].pauza), state.sess.ex[i].pauza);
   } else {
    set.done = false; saveSess(); renderSession();
@@ -6048,7 +6408,15 @@ document.getElementById("todayLine").textContent = "Dnes je "+DAYFULL[todayIdx]+
 nactiMoje();
 renderAll();
 if (state.sess) renderSession();
-showTab("dnes");
+(function deepLink(){
+ try {
+  const q = new URLSearchParams(location.search);
+  const t = q.get("tab");
+  if (t && TABS.indexOf(t) >= 0) showTab(t); else showTab("dnes");
+  if (q.get("akce") === "sess" && state.sess) renderSession();
+  if (q.get("akce") === "zpravy") otevriNotif();
+ } catch(e){ showTab("dnes"); }
+})();
 renderNastaveni();
 if (!store.get("onb", false)) openOnb();
 if (store.get("famId", null) && store.get("meId", null)) sync.start();
