@@ -424,7 +424,28 @@
              font:inherit;font-size:12px;font-weight:600;padding:5px 8px;cursor:pointer;line-height:1}
   .tbar.done{background:var(--s3);border-color:var(--s3)}
   .tbar.done .tlab,.tbar.done .tnum{color:#fff}
-  @media(min-width:741px){ .tbar{bottom:22px} }
+  body.has-mini .tbar{bottom:calc(140px + env(safe-area-inset-bottom))}
+  @media(min-width:741px){ .tbar{bottom:22px} body.has-mini .tbar{bottom:96px} }
+
+  .minibar{position:fixed;left:10px;right:10px;bottom:calc(74px + env(safe-area-inset-bottom));z-index:110;
+        display:flex;align-items:center;gap:11px;width:auto;text-align:left;
+        background:var(--s3);border:0;border-radius:14px;padding:10px 13px;cursor:pointer;
+        box-shadow:0 8px 24px rgba(0,0,0,.22);color:#fff;font:inherit;-webkit-tap-highlight-color:transparent}
+  .minibar[hidden]{display:none}
+  .minibar .mb-ic{font-size:19px;line-height:1;flex:none}
+  .minibar .mb-t{flex:1;min-width:0}
+  .minibar .mb-n{display:block;font-size:14px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .minibar .mb-s{display:block;font-size:11.5px;opacity:.92;font-variant-numeric:tabular-nums;
+        white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .minibar .mb-c{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;flex:none;letter-spacing:-.4px}
+  .minibar .mb-go{flex:none;font-size:12px;font-weight:700;background:rgba(255,255,255,.22);
+        border-radius:9px;padding:6px 9px}
+  .minibar .mb-bar{position:absolute;left:13px;right:13px;bottom:5px;height:3px;border-radius:2px;
+        background:rgba(255,255,255,.28);overflow:hidden}
+  .minibar .mb-bar i{display:block;height:100%;background:#fff}
+  @media(min-width:741px){ .minibar{left:auto;right:22px;width:330px;bottom:22px} }
+  .sess-head .mini{background:var(--surface-1);border:1px solid var(--border);border-radius:9px;
+        color:var(--text-primary);font:inherit;font-size:13px;font-weight:600;padding:7px 11px;cursor:pointer}
 
   .logbox{border-top:1px solid var(--grid);margin-top:9px;padding-top:9px}
   .logline{font-size:12.5px;color:var(--text-secondary);margin-bottom:6px}
@@ -863,14 +884,28 @@ async function nacti(){
 const cislo = n => Math.round(n || 0).toLocaleString("cs-CZ").replace(/ /g, " ");
 const pct = (a, b) => Math.max(0, Math.min(100, Math.round((a || 0) * 100 / (b || 1))));
 
-// jak stará jsou data — ať poznáš rozdíl mezi "nefunguje" a "iOS to ještě neobnovil"
+// POZOR: widget je jen obrázek, který iOS překreslí, kdy se mu zachce.
+// Relativní čas ("teď") by v tom obrázku zamrzl a lhal by. Proto ukazujeme
+// pevné hodiny: čas dat a čas posledního překreslení. Ty se porovnají samy.
+function hod(iso){
+  const d = iso ? new Date(iso) : new Date();
+  return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+}
 function stari(d){
-  if (!d || !d.kdy) return "";
-  const m = Math.round((Date.now() - new Date(d.kdy).getTime()) / 60000);
-  if (m < 2) return "teď";
-  if (m < 60) return "před " + m + " min";
-  const h = Math.round(m / 60);
-  return "před " + h + " h";
+  if (!d || !d.kdy) return hod() + " ⟳";
+  const t = hod(d.kdy), n = hod();
+  return t === n ? t : t + " ⟳" + n;
+}
+// delší verze pro střední widget, kde je místo
+function stariDlouhy(d){
+  if (!d || !d.kdy) return "kresleno " + hod();
+  const t = hod(d.kdy), n = hod();
+  return t === n ? "data " + t : "data " + t + " · kresleno " + n;
+}
+// je záznam čerstvý v okamžiku kreslení?
+function cerstve(d){
+  if (!d || !d.kdy) return false;
+  return (Date.now() - new Date(d.kdy).getTime()) < 12 * 60000;
 }
 
 function coTed(d){
@@ -992,7 +1027,7 @@ function obdelnik(d){
   p.lineLimit = 1;
   w.addSpacer(3);
   const s = w.addText("🔥 " + ((d && d.serie) || 0) + "   💧 " + ((d && d.voda) || 0) + "/" + ((d && d.vodaCil) || 0)
-    + "   🍽 " + pct(d && d.kcal, d && d.cil) + "%");
+    + "   🍽 " + pct(d && d.kcal, d && d.cil) + "%   " + stari(d));
   s.font = Font.systemFont(10);
   s.textColor = BARVA.dim;
   s.lineLimit = 1;
@@ -1024,11 +1059,6 @@ function maly(d){
   return w;
 }
 
-function cerstve(d){
-  if (!d || !d.kdy) return false;
-  return (Date.now() - new Date(d.kdy).getTime()) < 12 * 60000;
-}
-
 function sloupecOsoba(st, d, barva, sirka){
   const s = st.addStack();
   s.layoutVertically();
@@ -1054,7 +1084,7 @@ function sloupecOsoba(st, d, barva, sirka){
   else if (d.tr) odstavec(s, d.tr.hot ? "✅" : "🏋️", d.tr.co, d.tr.hot ? BARVA.ok : BARVA.dim);
   else odstavec(s, "🛋", "dnes volno");
   odstavec(s, "🔥", (d.serie || 0) + " dní   💧 " + (d.voda || 0) + "/" + (d.vodaCil || 0)
-    + (cerstve(d) ? "" : "   " + stari(d)));
+    );
   s.addSpacer();
   return s;
 }
@@ -1086,7 +1116,7 @@ function stredni(vse){
   w.url = c.url;
   pozadi(w);
   w.setPadding(11, 14, 10, 14);
-  nadpis(w, c, stari(ja));
+  nadpis(w, c, stariDlouhy(ja));
   w.addSpacer(9);
 
   const dva = w.addStack();
@@ -1135,7 +1165,7 @@ try {
 // když trénink běží, prosíme iOS o častější obnovu (je to jen prosba, ne příkaz)
 let bezi = false;
 try { bezi = !!(vseGlob && vseGlob[ME] && vseGlob[ME].sess); } catch(e){}
-widget.refreshAfterDate = new Date(Date.now() + (bezi ? 2 : 15) * 60 * 1000);
+widget.refreshAfterDate = new Date(Date.now() + (bezi ? 1 : 5) * 60 * 1000);
 if (config.runsInWidget) Script.setWidget(widget);
 else widget.presentMedium();
 Script.complete();
@@ -1143,6 +1173,7 @@ Script.complete();
 <div class="cook" id="cookOverlay" hidden></div>
 <div class="cook" id="onbOverlay" hidden></div>
 <div class="tbar" id="timerBar" hidden></div>
+<button class="minibar" id="miniBar" type="button" hidden></button>
 
 <nav class="tabs" role="tablist">
   <button role="tab" data-grp="dnes"    aria-selected="true"><span class="ticon">🍽️</span>Dnes</button>
@@ -2092,6 +2123,7 @@ const state = {
  recOpen: false,
  resetPtl: false,
  budName: "",
+ sessMin: !!(store.get("session", null) || {}).min,
  spar: store.get("spar", []),
  fotoP: store.get("fotoP", []),
  fotoV: store.get("fotoV", [])
@@ -3798,7 +3830,7 @@ function startSession(who, rid, bud){
  bud = bud ? partiPridej(bud) : null;
  state.sess = {
   who: who, rid: rid, start: new Date().toISOString(),
-  bud: bud || null, akt: "ty",
+  bud: bud || null, akt: "ty", min: false,
   ex: r.ex.map((e,i) => {
    const exId = state.exsel[rid+"|"+i] || e[0];
    const min = minulaLekce(who, exId);
@@ -3814,6 +3846,7 @@ function startSession(who, rid, bud){
    };
   })
  };
+ state.sessMin = false;
  store.set("session", state.sess);
  if (window.sync && sync.on) sync.pushWidget();
  renderSession();
@@ -3829,7 +3862,7 @@ function sessJmeno(kdo){
 }
 function saveSess(){ store.set("session", state.sess); }
 function cancelSession(){
- state.sess = null; store.set("session", null);
+ state.sess = null; state.sessMin = false; store.set("session", null);
  if (window.sync && sync.on) sync.pushWidget();
  const o = document.getElementById("sessOverlay");
  o.hidden = true; o.innerHTML = "";
@@ -3854,10 +3887,63 @@ function sessSoucty(kdo){
  return { hot, cel, obj: Math.round(obj), rep, min };
 }
 
+/* ---- minimalizovaný trénink: plovoucí lišta ---- */
+let miniTick = null;
+function sessMinimalizuj(){
+ if (!state.sess) return;
+ state.sessMin = true;
+ state.sess.min = true; saveSess();
+ const o = document.getElementById("sessOverlay");
+ o.hidden = true;
+ document.body.style.overflow = "";
+ if (sessTick){ clearInterval(sessTick); sessTick = null; }
+ renderMini();
+ renderTrenink();
+}
+function sessObnov(){
+ if (!state.sess) return;
+ state.sessMin = false;
+ state.sess.min = false; saveSess();
+ renderMini();
+ renderSession();
+}
+function renderMini(){
+ const el = document.getElementById("miniBar");
+ if (!el) return;
+ if (!state.sess || !state.sessMin){
+  el.hidden = true; el.innerHTML = "";
+  document.body.classList.remove("has-mini");
+  if (miniTick){ clearInterval(miniTick); miniTick = null; }
+  return;
+ }
+ document.body.classList.add("has-mini");
+ const kresli = ()=>{
+  if (!state.sess || !state.sessMin){ renderMini(); return; }
+  const s0 = state.sess;
+  const r = (ROUTINES[s0.who] || []).find(x => x.id === s0.rid) || { title: s0.rid };
+  const t = sessSoucty(sessKdo());
+  const ty = sessSoucty("ty");
+  const pct = Math.round(ty.hot / Math.max(1, ty.cel) * 100);
+  el.innerHTML = '<span class="mb-ic">🏋️</span>'
+   +'<span class="mb-t"><span class="mb-n">'+esc(r.title)+'</span>'
+   +'<span class="mb-s">'+t.hot+'/'+t.cel+' sérií'+(t.obj?' · '+fmt(t.obj)+' kg':'')
+   +(s0.bud?' · s '+esc(sKym(s0.bud)):'')+'</span></span>'
+   +'<span class="mb-c">'+dvoj(Math.floor(t.min/60))+":"+dvoj(t.min%60)+'</span>'
+   +'<span class="mb-go">Zpět</span>'
+   +'<span class="mb-bar"><i style="width:'+pct+'%"></i></span>';
+ };
+ el.hidden = false;
+ kresli();
+ if (miniTick) clearInterval(miniTick);
+ miniTick = setInterval(kresli, 15000);
+}
+
 let sessTick = null;
 function renderSession(){
  const o = document.getElementById("sessOverlay");
- if (!state.sess){ o.hidden = true; if (sessTick){ clearInterval(sessTick); sessTick = null; } return; }
+ if (!state.sess){ o.hidden = true; if (sessTick){ clearInterval(sessTick); sessTick = null; } renderMini(); return; }
+ if (state.sessMin){ o.hidden = true; renderMini(); return; }
+ renderMini();
  const s0 = state.sess, who = s0.who;
  const duo = !!s0.bud;
  const kdo = sessKdo();
@@ -3928,6 +4014,7 @@ function renderSession(){
   +'<div class="mt">'+t.hot+'/'+t.cel+' sérií'+(t.obj?' · '+fmt(t.obj)+' kg objem':'')
   +(duo?' · zapisuješ za '+esc(sessJmeno(kdo)):'')+'</div></div>'
   +'<div class="clock" id="sessClock">'+dvoj(Math.floor(t.min/60))+":"+dvoj(t.min%60)+'</div>'
+  +'<button class="mini" data-sess="mini" type="button" title="Minimalizovat">▾ Skrýt</button>'
   +'<button class="ghost" data-sess="zrus" type="button">Zrušit</button></div>'
   +'<div class="sess-bar"><i style="width:'+Math.round(t.hot/Math.max(1,t.cel)*100)+'%"></i></div>'
   + prepinac
@@ -4003,7 +4090,8 @@ function finishSession(){
  osobaky.forEach((o,i)=> pushMsg("pr-"+who+"-"+new Date().toISOString().slice(0,10)+"-"+i, "🏆",
    "Osobní rekord — "+BASE_T[who].name, o+". Tohle je ten důkaz, že to funguje."));
 
- state.sess = null; store.set("session", null);
+ state.sess = null; state.sessMin = false; store.set("session", null);
+ renderMini();
  const el = document.getElementById("sessOverlay");
  el.hidden = true; el.innerHTML = "";
  document.body.style.overflow = "";
@@ -4260,7 +4348,7 @@ function renderTrenink(){
   ? '<div class="card" style="border-color:var(--s3)"><div class="rhead"><h3>▶︎ Trénink běží</h3>'
     +'<span class="rmeta">'+sessSoucty().hot+'/'+sessSoucty().cel+' sérií · '+sessSoucty().min+' min</span></div>'
     +'<p class="who">'+esc((ROUTINES[who].find(x=>x.id===state.sess.rid)||{title:""}).title)+'</p>'
-    +'<div class="wrow" style="margin:0"><button class="act small" data-sess="pokrac" type="button">Pokračovat</button>'
+    +'<div class="wrow" style="margin:0"><button class="act small" data-sess="pokrac" type="button">Pokračovat v tréninku</button>'
     +'<button class="ghost" data-sess="zrus" type="button">Zahodit</button></div></div>'
   : "";
  const eq = (state.exQ || "").trim().toLowerCase();
@@ -5760,7 +5848,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">22</td></tr>'
+  +'<tr><td>Verze</td><td class="num">23</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
   +'<tr><td>Receptů na večeře</td><td class="num">'+pc.rec+'</td></tr>'
   +'<tr><td>Tréninkových variant</td><td class="num">'+pc.tr+'</td></tr>'
@@ -5957,6 +6045,7 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
+ if (e.target.closest("#miniBar")){ sessObnov(); return; }
  if (e.target.closest("[data-notif]")){ otevriNotif(); return; }
  const gt = e.target.closest("[data-goto]");
  if (gt){ showTab(gt.dataset.goto); return; }
@@ -6375,7 +6464,8 @@ document.addEventListener("click", e=>{
   const a = sx.dataset.sess;
   if (a === "konec") finishSession();
   else if (a === "zrus") cancelSession();
-  else if (a === "pokrac") renderSession();
+  else if (a === "mini") sessMinimalizuj();
+  else if (a === "pokrac") sessObnov();
   else if (a === "pauza"){ const p0 = sessPauza(); startTimer(parseMin(p0), p0); }
   return;
  }
@@ -6568,7 +6658,7 @@ document.addEventListener("keydown", e=>{
  if (e.key !== "Escape") return;
  if (state.notif) zavriNotif();
  else if (state.cook) closeCook();
- else if (state.sess){ const o = document.getElementById("sessOverlay"); o.hidden = true; document.body.style.overflow=""; renderTrenink(); }
+ else if (state.sess && !state.sessMin) sessMinimalizuj();
  else if (state.onb !== null) closeOnb();
 });
 
@@ -6599,6 +6689,7 @@ document.getElementById("todayLine").textContent = "Dnes je "+DAYFULL[todayIdx]+
 nactiMoje();
 renderAll();
 if (state.sess) renderSession();
+renderMini();
 (function deepLink(){
  try {
   const q = new URLSearchParams(location.search);
