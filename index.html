@@ -229,7 +229,11 @@
   .sheet{position:fixed;inset:0;z-index:130;background:var(--page);overflow-y:auto;
          padding:0 12px calc(28px + env(safe-area-inset-bottom))}
   .sheet[hidden]{display:none}
-  .duoswitch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
+  .livetr{margin-top:10px;padding:10px 11px;border-radius:12px;border:1px solid var(--border);
+   background:var(--surface-1)}
+ .livetr.on{border-color:var(--s2)}
+ .livetr .lt-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:14px}
+ .duoswitch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
  .duoswitch button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:9px 11px;
    border-radius:12px;border:1px solid var(--border);background:var(--surface-1);color:var(--text-secondary);
    font:inherit;font-size:14px;font-weight:700;cursor:pointer;text-align:left;min-width:0}
@@ -1020,20 +1024,37 @@ function maly(d){
   return w;
 }
 
+function cerstve(d){
+  if (!d || !d.kdy) return false;
+  return (Date.now() - new Date(d.kdy).getTime()) < 12 * 60000;
+}
+
 function sloupecOsoba(st, d, barva, sirka){
   const s = st.addStack();
   s.layoutVertically();
   s.size = new Size(sirka, 0);
-  const n = s.addText(d.jm || "—");
+  const hl = s.addStack();
+  hl.layoutHorizontally();
+  hl.centerAlignContent();
+  const n = hl.addText(d.jm || "—");
   n.font = Font.boldSystemFont(12);
   n.lineLimit = 1;
+  if (d.sess && cerstve(d)){
+    hl.addSpacer(4);
+    const z = hl.addText("🔴");
+    z.font = Font.systemFont(9);
+  }
+  hl.addSpacer();
   s.addSpacer(5);
   radek(s, "kalorie", d.kcal, d.cil, "", barva, sirka);
   radek(s, "bílkoviny", d.prot, d.cilP, " g", BARVA.ok, sirka);
-  if (d.sess) odstavec(s, "🏋️", "trénink " + d.sess.rid + " · " + d.sess.hot + "/" + d.sess.cel, BARVA.ok);
+  if (d.sess) odstavec(s, cerstve(d) ? "🏋️" : "⏸",
+      d.sess.rid + " · " + d.sess.hot + "/" + d.sess.cel + " sérií",
+      cerstve(d) ? BARVA.ok : BARVA.dim);
   else if (d.tr) odstavec(s, d.tr.hot ? "✅" : "🏋️", d.tr.co, d.tr.hot ? BARVA.ok : BARVA.dim);
   else odstavec(s, "🛋", "dnes volno");
-  odstavec(s, "🔥", (d.serie || 0) + " dní   💧 " + (d.voda || 0) + "/" + (d.vodaCil || 0));
+  odstavec(s, "🔥", (d.serie || 0) + " dní   💧 " + (d.voda || 0) + "/" + (d.vodaCil || 0)
+    + (cerstve(d) ? "" : "   " + stari(d)));
   s.addSpacer();
   return s;
 }
@@ -3557,6 +3578,10 @@ function nextUpList(){
   out.push({ ic:"▶︎", tx:"<b>Trénink běží</b> — "+t.hot+"/"+t.cel+" sérií", kdy:t.min+" min", tab:"trenink", cls:"bezi" });
  }
 
+ const pt = peerTrenink();
+ if (pt && pt.cerstve) out.push({ ic:"🔴", tx:'<b>'+esc(pt.jm)+' trénuje</b> — '+esc(pt.s.rid),
+   kdy: pt.s.hot+"/"+pt.s.cel+" sérií", tab:"trenink" });
+
  const ted = new Date(), nyni = ted.getHours()*60 + ted.getMinutes();
  const dow = todayIdx + 1, iso = dateOfWeekday(todayIdx);
  const fronta = [];
@@ -4265,7 +4290,7 @@ function renderTrenink(){
  const tip = who==="p"
   ? '<div class="note"><b>Dvojitá progrese:</b> stejná váha, přidávej opakování. Horní hranice ve všech sériích → +2,5 kg (horní tělo) / +5 kg (dolní) a znovu. U každého cviku jde vybrat varianta — když je nářadí obsazené nebo něco nesedí. Deload každý 7. týden: poloviční série.</div>'
   : '<div class="note"><b>Neboj se činek:</b> silový trénink u ženy = pevné tvary, ne „chlapské svaly" — na ty nejsou hormony, nestane se to omylem. U každého cviku jde vybrat varianta. Váhy zapisuj do Hevy: síla nahoru = postava se mění, i když váha stojí.</div>';
- document.getElementById("tab-trenink").innerHTML = tgl + bezi + head + trReco(who) + sparingCard(who) + hledejEx + nalez + filtry + list + histCard(who) + rekordy(who) + tip
+ document.getElementById("tab-trenink").innerHTML = tgl + bezi + peerTreninkBox() + head + trReco(who) + sparingCard(who) + hledejEx + nalez + filtry + list + histCard(who) + rekordy(who) + tip
   + '<div class="note"><b>Deník máš přímo tady.</b> Rozklikni cvik, zapiš kg a opakování — appka si pamatuje, '
   + 'co jsi zvedal(a) minule, a sama řekne, kdy přidat. Tlačítko s časem spustí odpočinek mezi sériemi.</div>';
 }
@@ -4894,6 +4919,7 @@ const FB = window.PEVE_FIREBASE || null;   // config se doplní v firebase-confi
 
 const sync = {
   on: false, db: null, uid: null, fam: null, me: null,
+  peerW: null,            // živý balíček druhého (trénink, jídlo, voda)
   status: "off",            // off | connecting | live | error
   peer: null,               // živý přehled druhého
   _mine: {},                // co jsem naposled odeslal (proti smyčkám)
@@ -5018,6 +5044,13 @@ const sync = {
       this.peer = snap.val();
       if (state.tab === "dnes") renderDnes();
       if (state.tab === "progres") renderProgres();
+    });
+    // živý trénink druhého (stejný balíček, co čte widget)
+    onValue(this._ref("widget/"+other), snap => {
+      this.peerW = snap.val();
+      renderNext();
+      if (state.tab === "dnes") renderDnes();
+      if (state.tab === "trenink") renderTrenink();
     });
   },
 
@@ -5168,6 +5201,36 @@ function pairCard(){
    +'přehled „kolik má dneska snědeno". Odškrtávání jídel, váhy a míry zůstávají jen v tvém telefonu.</div></div>';
 }
 
+/* Trénuje zrovna ten druhý? Vrací null, když ne nebo když jsou data stará. */
+function peerTrenink(){
+ const w = window.sync ? sync.peerW : null;
+ if (!w || !w.sess) return null;
+ const stari = w.kdy ? Math.round((Date.now() - new Date(w.kdy).getTime())/60000) : 999;
+ return { s: w.sess, jm: w.jm || "Druhý", stari: stari, cerstve: stari <= 12 };
+}
+function peerTreninkRadek(){
+ const t = peerTrenink();
+ if (!t) return "";
+ const pct = Math.round(t.s.hot * 100 / Math.max(1, t.s.cel));
+ return '<div class="livetr'+(t.cerstve ? " on" : "")+'">'
+  +'<div class="lt-head"><b>'+(t.cerstve ? "🔴 " : "⏸ ")+esc(t.jm)+' '+(t.cerstve ? "právě trénuje" : "trénovala")+'</b>'
+  +'<span class="rmeta">'+esc(t.s.rid)+' · '+t.s.min+' min'+(t.s.bud ? ' · s '+esc(t.s.bud) : '')+'</span></div>'
+  +'<div class="sbar" style="margin:7px 0 4px"><i style="width:'+pct+'%"></i><span>'
+  + t.s.hot+' / '+t.s.cel+' sérií</span></div>'
+  +'<div class="dim" style="font-size:12px">'
+  +(t.cerstve
+    ? (pct >= 80 ? "Už to dojíždí. Ty máš alibi jaké? 👀"
+       : (pct >= 40 ? "Půlka za ní. Teď je ta chvíle nasadit si boty."
+          : "Právě začala. Můžeš se přidat, nebo se pak dívat na statistiky."))
+    : "Naposledy se ozvala před "+t.stari+" min — nejspíš už dotrénovala.")
+  +'</div></div>';
+}
+
+function peerTreninkBox(){
+ const r = peerTreninkRadek();
+ return r ? '<div class="card" style="border-color:var(--s2)">'+r+'</div>' : "";
+}
+
 function peerCard(){
   const p = window.sync ? sync.peer : null;
   if (!p || !store.get("meId", null)) return "";
@@ -5186,7 +5249,9 @@ function peerCard(){
    +'<div class="meter-row"><span class="lab">Bílkoviny</span><span class="val">'+(p.prot||0)+' / '+(p.cilProt||0)+' g</span></div>'
    +'<div class="meter m-prot"><i style="width:'+pp+'%"></i></div>'
    +'<p class="who" style="margin:6px 0 0">Série: <b>'+(p.serie||0)+' dní</b>'
-   +(p.vaha ? ' · poslední váha <b>'+String(p.vaha).replace(".",",")+' kg</b>' : '')+'</p></div>';
+   +(p.vaha ? ' · poslední váha <b>'+String(p.vaha).replace(".",",")+' kg</b>' : '')+'</p>'
+   + peerTreninkRadek()
+   +'</div>';
 }
 
 /* ---- denní kruh, oslava, šťouchnutí ---- */
@@ -5695,7 +5760,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">21</td></tr>'
+  +'<tr><td>Verze</td><td class="num">22</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
   +'<tr><td>Receptů na večeře</td><td class="num">'+pc.rec+'</td></tr>'
   +'<tr><td>Tréninkových variant</td><td class="num">'+pc.tr+'</td></tr>'
