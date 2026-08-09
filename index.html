@@ -202,6 +202,28 @@
   .mine:last-child{border-bottom:none}
   .mine .x{background:none;border:0;color:var(--muted);cursor:pointer;font-size:17px;padding:0 4px;line-height:1}
 
+  .jr{display:grid;grid-template-columns:52px 1fr auto;gap:9px;align-items:start;
+      padding:10px 0;border-bottom:1px solid var(--grid)}
+  .jr:last-child{border-bottom:none}
+  .jr.minule{opacity:.5}
+  .jr.dnesek{background:var(--accent-soft);border-radius:10px;padding:10px 8px;margin:0 -8px}
+  .jr .dt{font-size:12.5px;line-height:1.3}
+  .jr .dt b{display:block;font-size:13.5px}
+  .jr .dt span{color:var(--muted);font-variant-numeric:tabular-nums}
+  .jr .bd{min-width:0}
+  .jr .kc{font-size:12px;color:var(--text-secondary);font-variant-numeric:tabular-nums;
+          white-space:nowrap;padding-top:8px}
+  .jr .rada{display:flex;gap:6px;align-items:center;margin-top:5px;flex-wrap:wrap}
+  .jr .rada select{width:auto;max-width:100%;font-size:12.5px;padding:5px 7px;margin:0}
+  .jr .mini{background:none;border:1px solid var(--border);border-radius:8px;color:var(--text-secondary);
+            font:inherit;font-size:12px;padding:5px 9px;cursor:pointer}
+  .jr .mini:hover{border-color:var(--s1);color:var(--text-primary)}
+  .kdovari{font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 9px}
+  .kv-p{background:var(--s1-track);color:var(--s1)}
+  .kv-v{background:var(--s3-track);color:var(--s3)}
+  .kv-s{background:var(--accent-soft);color:var(--text-primary)}
+  .kv-o{background:var(--grid);color:var(--text-secondary)}
+
   .kal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:8px}
   .kal .dl{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);
            text-align:center;padding-bottom:2px}
@@ -1583,6 +1605,8 @@ const state = {
  sess: store.get("session", null),
  hist: store.get("hist", []),
  plan: store.get("plan", {}),
+ jidlo: store.get("jidlo", {}),
+ dayIso: null,
  planDen: null,
  recOpen: false,
  fotoP: store.get("fotoP", []),
@@ -1613,7 +1637,7 @@ function buildSelect(key, day, opts, idx){
   const html = '<option value="'+i+'"'+(i===idx?" selected":"")+'>'+esc(o.name)+'</option>';
   (o.g==="venku" ? out : home).push(html);
  });
- let s = '<select data-pick="'+key+'" data-day="'+day+'">';
+ let s = '<select data-pick="'+key+'" data-day="'+esc(day)+'">';
  s += '<optgroup label="Doma / z plánu">'+home.join("")+'</optgroup>';
  if (out.length) s += '<optgroup label="Venku 🌯">'+out.join("")+'</optgroup>';
  return s+'</select>';
@@ -1628,10 +1652,44 @@ const dinnerById = id => DINNERS.find(d=>d.id===id) || DINNERS[0];
 const fmt = n => n.toLocaleString("cs-CZ");
 const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
+/* ============ Jídelní plán podle dnů ============ */
+const KDO = { p:["💪","Pepule","kv-p"], v:["✨","Verune","kv-v"], s:["👫","Spolu","kv-s"], o:["🌯","Venku / koupené","kv-o"] };
+function isoDnes(){ const d = new Date(); return d.getFullYear()+"-"+dvoj(d.getMonth()+1)+"-"+dvoj(d.getDate()); }
+function isoPlus(n){ const d = new Date(); d.setDate(d.getDate()+n); return d.getFullYear()+"-"+dvoj(d.getMonth()+1)+"-"+dvoj(d.getDate()); }
+function wdOf(iso){ const d = new Date(iso+"T12:00:00"); return (d.getDay()+6)%7; }
+function jidloDne(iso){ return state.jidlo[iso] || {}; }
+function dinIso(iso){
+ const j = jidloDne(iso);
+ return dinnerById(j.d || state.week[wdOf(iso)]);
+}
+function kdoVari(iso){ return jidloDne(iso).k || "s"; }
+function pickIso(iso){
+ const j = jidloDne(iso);
+ return j.p || state.pick[wdOf(iso)] || { vb:0, vl:0, vs1:0, vs2:2, pb:0, pl:0 };
+}
+function jidloSet(iso, pole, hod){
+ const j = Object.assign({}, state.jidlo[iso] || {});
+ if (hod === null || hod === undefined) delete j[pole]; else j[pole] = hod;
+ if (Object.keys(j).length) state.jidlo[iso] = j; else delete state.jidlo[iso];
+ store.set("jidlo", state.jidlo);
+ if (window.sync && sync.on) sync.pushJidlo();
+}
+function pickSet(iso, key, idx){
+ const p = Object.assign({}, pickIso(iso));
+ p[key] = idx;
+ jidloSet(iso, "p", p);
+}
+function uklidJidlo(){
+ const h = isoPlus(-70);
+ let n = 0;
+ Object.keys(state.jidlo).forEach(k => { if (k < h){ delete state.jidlo[k]; n++; } });
+ if (n) store.set("jidlo", state.jidlo);
+}
+
 /* ============ Dnes ============ */
-function planFor(who, dayIdx){
- const pk = state.pick[dayIdx];
- const din = dinnerById(state.week[dayIdx]);
+function planForIso(who, iso){
+ const pk = pickIso(iso);
+ const din = dinIso(iso);
  if (who==="p") return [
   {slot:"p0",time:"7:00",name:"Velký shake — půlka",kcal:555,prot:41},
   {slot:"p1",time:"9:00",name:"Velký shake — druhá půlka",kcal:555,prot:41},
@@ -1647,6 +1705,7 @@ function planFor(who, dayIdx){
   {slot:"v4",time:"19:30",name:din.name+" — "+din.v.por,kcal:din.v.kcal,prot:din.v.prot}
  ];
 }
+function planFor(who, dayIdx){ return planForIso(who, dateOfWeekday(dayIdx)); }
 
 /* ---- našeptávač: co dojíst do cíle ---- */
 const FILLERS = [
@@ -1698,10 +1757,9 @@ function sugHtml(needK, needP){
   + '</ul><div class="dim">Dohromady '+fmt(sk)+' kcal a '+sp+' g bílkovin — chybělo '+fmt(needK)+' kcal a '+needP+' g.</div></div>';
 }
 
-function personCard(who, dayIdx){
- const meals = planFor(who, dayIdx);
+function personCard(who, iso){
+ const meals = planForIso(who, iso);
  const tgt = target(who);
- const iso = dateOfWeekday(dayIdx);
  const planK = meals.reduce((a,m)=>a+m.kcal,0), planP = meals.reduce((a,m)=>a+m.prot,0);
  let doneK=0, doneP=0;
  meals.forEach(m=>{ if (state.checks[iso+"|"+who+"|"+m.slot]) { doneK+=m.kcal; doneP+=m.prot; } });
@@ -1711,7 +1769,7 @@ function personCard(who, dayIdx){
  const rows = meals.map(m=>{
   const id = iso+"|"+who+"|"+m.slot;
   const on = !!state.checks[id];
-  const sel = m.opts ? buildSelect(m.key, dayIdx, m.opts, m.idx) : "";
+  const sel = m.opts ? buildSelect(m.key, iso, m.opts, m.idx) : "";
   return '<div class="meal'+(on?" checked":"")+'">'
    +'<input type="checkbox" data-check="'+id+'"'+(on?" checked":"")+' aria-label="Snědeno">'
    +'<div class="body"><div class="time">'+m.time+'</div><div class="name">'+esc(m.name)+'</div>'+sel+'</div>'
@@ -1731,8 +1789,8 @@ function personCard(who, dayIdx){
     : '<span class="done">Cíl splněn ✓</span> — snědeno '+fmt(doneK)+' kcal a '+doneP+' g')
   +'<br><span style="color:var(--muted)">Plán dne dává '+fmt(planK)+' kcal a '+planP+' g</span></p>'
   + (restK > 150 || restP > 10
-      ? '<div class="sugbox"><button class="ghost sug" data-sug="'+who+'|'+dayIdx+'" type="button">🍽️ Co si dát, ať to dojedu?</button>'
-        + (state.sugOpen === who+"|"+dayIdx ? sugHtml(restK, restP) : '') + '</div>'
+      ? '<div class="sugbox"><button class="ghost sug" data-sug="'+who+'|'+iso+'" type="button">🍽️ Co si dát, ať to dojedu?</button>'
+        + (state.sugOpen === who+"|"+iso ? sugHtml(restK, restP) : '') + '</div>'
       : '')
   + rows
   +'<div style="margin-top:10px;padding-top:9px;border-top:1px solid var(--baseline)">'
@@ -1749,44 +1807,83 @@ function personCard(who, dayIdx){
   +'</div>';
 }
 
+function popisDne(iso, i){
+ const d = new Date(iso+"T12:00:00");
+ const dn = DAYS[wdOf(iso)]+" "+d.getDate()+". "+(d.getMonth()+1)+".";
+ return i === 0 ? "Dnes · "+dn : (i === -1 ? "Včera · "+dn : (i === 1 ? "Zítra · "+dn : dn));
+}
 function renderDnes(){
- const d = state.day;
- const opts = DAYS.map((n,i)=>'<option value="'+i+'"'+(i===d?" selected":"")+'>'+n+(i===todayIdx?" (dnes)":"")+'</option>').join("");
- const din = dinnerById(state.week[d]);
+ const iso = state.dayIso || isoDnes();
+ const opts = [];
+ for (let i = -1; i <= 6; i++){
+  const x = isoPlus(i);
+  opts.push('<option value="'+x+'"'+(x===iso?" selected":"")+'>'+esc(popisDne(x,i))+'</option>');
+ }
+ const din = dinIso(iso);
+ const kv = KDO[kdoVari(iso)] || KDO.s;
+ const kdoSel = '<select data-kdo="'+iso+'" style="width:auto;margin-top:4px">'
+  + Object.keys(KDO).map(k=>'<option value="'+k+'"'+(k===kdoVari(iso)?" selected":"")+'>'+KDO[k][0]+' '+esc(KDO[k][1])+'</option>').join("")
+  + '</select>';
  document.getElementById("tab-dnes").innerHTML =
-  ringCard(d)
-  +'<div class="card" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'
-  +'<div><div class="time" style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px">Den</div><select id="daySel">'+opts+'</select></div>'
+  ringCard(iso)
+  +'<div class="card" style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">'
+  +'<div><div class="time" style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px">Den</div>'
+  +'<select id="daySel" style="min-width:150px">'+opts.join("")+'</select></div>'
   +'<div style="flex:1;min-width:190px"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px">Večeře — vaří se jednou</div>'
   +'<div style="font-size:14.5px;font-weight:600">'+esc(din.name)+'</div>'
-  +'<div style="font-size:12.5px;color:var(--text-secondary)">'+esc(DAYNOTE[d])+'</div></div></div>'
-  +'<div class="grid2">'+personCard("p",d)+personCard("v",d)+'</div>'
+  +'<div style="font-size:12.5px;color:var(--text-secondary)">Vaří: '+kdoSel+'</div></div></div>'
+  +'<div class="grid2">'+personCard("p",iso)+personCard("v",iso)+'</div>'
   + odznakStrip()
   + tydenTreninkCard()
   + peerCard()
-  +'<div class="note"><b>Odškrtávej, co sníš.</b> Každé jídlo jde vyměnit v rozbalovacím menu — a je tam i sekce <b>Venku 🌯</b> pro durum, mekáč, gyros nebo bagetu z pumpy. '
+  +'<div class="note"><b>Přepínačem nahoře se dá skočit na kterýkoli den</b> — od včerejška po týden dopředu. '
+  +'Co tam nastavíš (večeři, svačiny, kdo vaří), platí pro ten konkrétní den a vidí to i ten druhý. '
+  +'<b>Odškrtávej, co sníš.</b> Každé jídlo jde vyměnit v rozbalovacím menu — a je tam i sekce <b>Venku 🌯</b> pro durum, mekáč, gyros nebo bagetu z pumpy. '
   +'Když sníš něco venku, přepni to tam a čísla sedí dál. <b>Žádné výčitky, jen ať to víme.</b></div>';
 }
 
 /* ============ Týden ============ */
 function renderTyden(){
- const rows = DAYS.map((dn,i)=>{
-  const din = dinnerById(state.week[i]);
+ const dnes = isoDnes();
+ const zac = pondeli(0);
+ const rows = [];
+ for (let i = 0; i < 14; i++){
+  const d = new Date(zac); d.setDate(zac.getDate()+i);
+  const iso = isoZ(d);
+  const din = dinIso(iso), kdo = kdoVari(iso), kv = KDO[kdo] || KDO.s;
+  const minule = iso < dnes, dnesek = iso === dnes;
+  const snedeno = state.checks[iso+"|v|v4"] || state.checks[iso+"|p|p4"];
   const opt = o => '<option value="'+o.id+'"'+(o.id===din.id?" selected":"")+'>'+esc(o.name)+'</option>';
-  const sel = '<select data-week="'+i+'">'
+  const sel = '<select data-din="'+iso+'">'
    + '<optgroup label="Vaří se doma">'+DINNERS.filter(o=>!o.out).map(opt).join("")+'</optgroup>'
    + '<optgroup label="Koupené venku 🌯">'+DINNERS.filter(o=>o.out).map(opt).join("")+'</optgroup>'
    + '</select>';
-  return '<tr'+(i===todayIdx?' class="today-row"':'')+'><td class="day">'+dn+'</td><td>'+sel
-   +'<div class="dim" style="font-size:12px;margin-top:2px">V: '+esc(din.v.por)+' · P: '+esc(din.p.por)+'</div></td>'
-   +'<td class="num dim">'+din.v.kcal+' / '+din.p.kcal+'</td></tr>';
- }).join("");
+  const kdoSel = '<select data-kdo="'+iso+'">'
+   + Object.keys(KDO).map(k=>'<option value="'+k+'"'+(k===kdo?" selected":"")+'>'+KDO[k][0]+' '+esc(KDO[k][1])+'</option>').join("")
+   + '</select>';
+  rows.push('<div class="jr'+(minule?" minule":"")+(dnesek?" dnesek":"")+'">'
+   +'<div class="dt"><b>'+DAYS[wdOf(iso)]+'</b><span>'+d.getDate()+". "+(d.getMonth()+1)+'.</span>'
+   + (snedeno ? '<span style="color:var(--good)">✓ snědeno</span>' : '')+'</div>'
+   +'<div class="bd">'+sel
+   +'<div class="rada">'+kdoSel
+   +'<button class="mini" data-jidladen="'+iso+'" type="button">🍽️ Jídla dne</button></div></div>'
+   +'<div class="kc">'+din.v.kcal+' / '+din.p.kcal+'</div></div>');
+ }
+ const budouci = [];
+ for (let i = 0; i < 7; i++) budouci.push(dinIso(isoPlus(i)).name);
  document.getElementById("tab-tyden").innerHTML =
-  '<div class="card"><h3>Týden večeří</h3><p class="who">'+DINNERS.filter(o=>!o.out).length+' večeří na výběr — vyměň cokoli, nákupní seznam se přepočítá. Číslo = kcal Verune / Pepule.</p>'
-  +'<div style="margin-bottom:10px"><button class="act small" id="shuffleBtn" type="button">🎲 Zamíchat týden</button> '
-  +'<span class="dim" style="font-size:12.5px">— vylosuje 7 různých ze všech</span></div>'
-  +'<table><thead><tr><th>Den</th><th>Večeře</th><th class="num">kcal</th></tr></thead><tbody>'+rows+'</tbody></table>'
-  +'<div class="note"><b>Pravidlo porce:</b> Pepule 1,7× víc masa i přílohy + lžíce oleje. Vař o porci navíc — Verunin zítřejší oběd.</div></div>';
+  '<div class="card"><div class="rhead"><h3>Jídelníček podle dnů</h3>'
+  +'<span class="rmeta">dva týdny</span></div>'
+  +'<p class="who">'+DINNERS.filter(o=>!o.out).length+' večeří na výběr. Uplynulé dny zůstávají vidět zesvětlené, '
+  +'nové přibývají zezdola — <b>okno se posouvá samo</b>. U každého dne jde vybrat, <b>kdo vaří</b>, '
+  +'a tlačítkem „Jídla dne" naplánovat i snídani, obědy a svačiny.</p>'
+  +'<div class="wrow" style="margin:0 0 6px"><button class="act small" id="shuffleBtn" type="button">🎲 Zamíchat 14 dní</button>'
+  +'<span class="dim" style="font-size:12.5px">— vylosuje různé večeře na dva týdny dopředu</span></div>'
+  + rows.join("")
+  +'<div class="note"><b>Nákup počítá s dalšími sedmi dny od dneška</b>, ne s kalendářním týdnem — '
+  +'takže je jedno, jestli nakupuješ v neděli nebo ve středu.</div>'
+  +'<div class="note reco"><b>Pravidlo porce:</b> Pepule 1,7× víc masa i přílohy + lžíce oleje. '
+  +'Vař o porci navíc — Verunin zítřejší oběd.</div></div>';
 }
 
 /* ============ Recepty ============ */
@@ -2136,10 +2233,10 @@ function outKatalog(){
 /* ============ Nákup ============ */
 function renderNakup(){
  const agg = {};
- state.week.forEach(id => dinnerById(id).ing.forEach(x=>{
+ for (let i = 0; i < 7; i++) dinIso(isoPlus(i)).ing.forEach(x=>{
   const k = x[0]+"|"+x[2];
   agg[k] = (agg[k]||0) + x[1];
- }));
+ });
  const item = (key,label)=>{
   const on = !!state.shop[key];
   return '<li class="'+(on?"on":"")+'"><input type="checkbox" data-shop="'+esc(key)+'"'+(on?" checked":"")+'><span>'+esc(label)+'</span></li>';
@@ -2156,7 +2253,7 @@ function renderNakup(){
   +'<span style="display:flex;gap:6px"><button class="ghost" id="shareShop" type="button">📤 Poslat</button>'
   +'<button class="ghost" id="clearShop" type="button">Vyčistit</button></span></div>'
   +'<p class="who">Spočítaný z večeří v Týdnu + týdenní zásoby pro dva. Odškrtávej rovnou v obchodě.</p>'
-  +'<ul class="shop"><div class="shop-head">Na večeře (podle vybraného týdne)</div>'+dinList+staples+'</ul>'
+  +'<ul class="shop"><div class="shop-head">Na večeře (příštích 7 dní)</div>'+dinList+staples+'</ul>'
   +'<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--baseline)">'
   +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Co ještě potřebujeme</div>'
   + (state.shopX.length
@@ -2182,7 +2279,7 @@ function nedeleIso(){
  return d.toISOString().slice(0,10);
 }
 function prepKroky(){
- const tyden = state.week.map(dinnerById);
+ const tyden = Array.from({length:7}, (_,i)=>dinIso(isoPlus(i)));
  const dopredu = tyden.filter(r => !r.out && (tagOf(r) === "trouba" || tagOf(r) === "klasika")).slice(0,2);
  const kroky = [
   ["Nákup podle seznamu výše", "Celý týden na jeden zátah. Co není doma, to se večer nesní.", 45],
@@ -3588,6 +3685,16 @@ const sync = {
         if (state.tab === "nakup") renderNakup();
       }
     });
+    // jídelníček podle dnů
+    onValue(this._ref("jidlo"), snap => {
+      const v = snap.val();
+      if (v && typeof v === "object"){
+        state.jidlo = v; store.set("jidlo", v);
+        if (state.tab === "tyden") renderTyden();
+        if (state.tab === "dnes") renderDnes();
+        if (state.tab === "nakup") renderNakup();
+      }
+    });
     // plán tréninků
     onValue(this._ref("plan"), snap => {
       const v = snap.val();
@@ -3638,6 +3745,7 @@ const sync = {
   pushShop(){ this._set("shop", state.shop); },
   pushRec(){ this._set("recepty", store.get("myRecipes", [])); },
   pushPlan(){ this._set("plan", state.plan); },
+  pushJidlo(){ this._set("jidlo", state.jidlo); },
   pushShopX(){ this._set("shopx", state.shopX); },
 
   pushStatus(){
@@ -3753,12 +3861,12 @@ function ringSvg(pk, pp){
    +'<text class="sm" x="56" y="69" text-anchor="middle">z cíle</text></svg>';
 }
 
-function ringCard(dayIdx){
+function ringCard(iso){
   const who = store.get("meId", null);
   if (!who || !BASE_T[who]) return "";
-  const tgt = target(who), iso = dateOfWeekday(dayIdx);
+  const tgt = target(who);
   let dk = 0, dp = 0;
-  planFor(who, dayIdx).forEach(m => { if (state.checks[iso+"|"+who+"|"+m.slot]){ dk += m.kcal; dp += m.prot; } });
+  planForIso(who, iso).forEach(m => { if (state.checks[iso+"|"+who+"|"+m.slot]){ dk += m.kcal; dp += m.prot; } });
   const pk = Math.min(100, Math.round(dk/tgt.kcal*100));
   const pp = Math.min(100, Math.round(dp/tgt.prot*100));
   const st = streak(who);
@@ -3770,7 +3878,9 @@ function ringCard(dayIdx){
   else                        vzkaz = "Rozjeto! Hlavně nezapomeň na bílkoviny.";
   return '<div class="card ring-card">' + ringSvg(pk, pp)
    +'<div style="flex:1;min-width:168px">'
-   +'<h3 style="margin-bottom:7px">'+pozdrav()+', '+esc(tgt.name)+' '+(who==="v"?"✨":"💪")+'</h3>'
+   +'<h3 style="margin-bottom:7px">'+(iso === isoDnes()
+       ? pozdrav()+', '+esc(tgt.name)+' '+(who==="v"?"✨":"💪")
+       : esc(popisDne(iso, 9))+' — plán')+'</h3>'
    +'<div class="rkey"><s style="background:var(--s1)"></s>Kalorie <b>'+fmt(dk)+' / '+fmt(tgt.kcal)+'</b></div>'
    +'<div class="rkey"><s style="background:var(--s3)"></s>Bílkoviny <b>'+dp+' / '+tgt.prot+' g</b></div>'
    +'<p class="who" style="margin:9px 0 0">'+vzkaz+(st > 1 ? ' · série <b>'+st+' dní</b> 🔥' : '')+'</p>'
@@ -3960,8 +4070,7 @@ function isoDaysAgo(n){ const d = new Date(); d.setDate(d.getDate()-n); return d
 function dayTotals(who, iso){
  // kolik bylo ten den odškrtáno (jen z uložených checků, plán se bere z aktuálního nastavení)
  let k=0, p=0;
- const wd = new Date(iso).getDay(); const idx = (wd+6)%7;
- planFor(who, idx).forEach(m=>{ if (state.checks[iso+"|"+who+"|"+m.slot]) { k+=m.kcal; p+=m.prot; } });
+ planForIso(who, iso).forEach(m=>{ if (state.checks[iso+"|"+who+"|"+m.slot]) { k+=m.kcal; p+=m.prot; } });
  return {k,p};
 }
 function streak(who){
@@ -4088,7 +4197,7 @@ function renderCile(){
 }
 
 /* ============ wiring ============ */
-function renderAll(){ uklidPlan(); planPripominka(); kontrolaOdznaku(); renderNext(); buildMsgs(); renderDnes(); renderTyden(); renderRecepty(); renderNakup(); renderTrenink(); renderPlan(); renderProgres(); renderZpravy(); renderCile(); syncDot(); }
+function renderAll(){ uklidPlan(); uklidJidlo(); planPripominka(); kontrolaOdznaku(); renderNext(); buildMsgs(); renderDnes(); renderTyden(); renderRecepty(); renderNakup(); renderTrenink(); renderPlan(); renderProgres(); renderZpravy(); renderCile(); syncDot(); }
 const TABS = ["dnes","tyden","recepty","nakup","trenink","plan","progres","zpravy","cile"];
 const GROUPS = {
  dnes:    { tabs:[["dnes","Dnes"]] },
@@ -4171,10 +4280,11 @@ document.addEventListener("change", e=>{
  else if (t.dataset.shop !== undefined){ state.shop[t.dataset.shop] = t.checked; store.set("shop", state.shop);
    if (window.sync && sync.on) sync.pushShop();
    renderNakup(); }
- else if (t.dataset.pick !== undefined){ state.pick[+t.dataset.day][t.dataset.pick] = +t.value; store.set("pick", state.pick); renderDnes(); }
- else if (t.dataset.week !== undefined){ state.week[+t.dataset.week] = t.value; store.set("week", state.week);
-   if (window.sync && sync.on) sync.pushWeek();
-   renderDnes(); renderTyden(); renderNakup(); }
+ else if (t.dataset.pick !== undefined){ pickSet(t.dataset.day, t.dataset.pick, +t.value); renderDnes(); renderNext(); }
+ else if (t.dataset.din !== undefined){ jidloSet(t.dataset.din, "d", t.value);
+   renderDnes(); renderTyden(); renderNakup(); renderNext(); }
+ else if (t.dataset.kdo !== undefined){ jidloSet(t.dataset.kdo, "k", t.value);
+   renderDnes(); renderTyden(); }
  else if (t.dataset.exsel !== undefined){ state.exsel[t.dataset.exsel] = t.value; store.set("exsel", state.exsel); renderTrenink(); }
  else if (t.dataset.planset !== undefined){
    const p = t.dataset.planset.split("|");
@@ -4185,7 +4295,7 @@ document.addEventListener("change", e=>{
    const sel = remSel(); sel[t.dataset.rem] = t.checked;
    state.rem = sel; store.set("rem", sel); renderCile();
  }
- else if (t.id === "daySel"){ state.day = +t.value; renderDnes(); }
+ else if (t.id === "daySel"){ state.dayIso = t.value; renderDnes(); }
  else if (t.dataset.foto !== undefined && t.files && t.files[0]){
    const who = t.dataset.foto, f = t.files[0];
    const rd = new FileReader();
@@ -4275,9 +4385,12 @@ document.addEventListener("click", e=>{
  if (dr){
   const id = dr.dataset.delrec;
   ulozMoje(mojeRecepty().filter(r => r.id !== id));
-  state.week = state.week.map(w => w === id ? DINNERS.filter(d=>!d.out)[0].id : w);
+  const nahrada = DINNERS.filter(d=>!d.out)[0].id;
+  state.week = state.week.map(w => w === id ? nahrada : w);
   store.set("week", state.week);
-  if (window.sync && sync.on) sync.pushWeek();
+  Object.keys(state.jidlo).forEach(k => { if (state.jidlo[k].d === id) state.jidlo[k].d = nahrada; });
+  store.set("jidlo", state.jidlo);
+  if (window.sync && sync.on){ sync.pushWeek(); sync.pushJidlo(); }
   renderRecepty(); renderTyden(); renderNakup(); return;
  }
  const co = e.target.closest("[data-cookopen]");
@@ -4424,6 +4537,8 @@ document.addEventListener("click", e=>{
   store.set("msgs", msgs); renderZpravy(); return;
  }
  if (e.target.id === "clearMsgs"){ store.set("msgs", []); renderZpravy(); return; }
+ const jd = e.target.closest("[data-jidladen]");
+ if (jd){ state.dayIso = jd.dataset.jidladen; renderDnes(); showTab("dnes"); return; }
  const pd = e.target.closest("[data-planday]");
  if (pd){
   const v = pd.dataset.planday;
@@ -4552,17 +4667,22 @@ document.addEventListener("click", e=>{
  if (e.target.id === "shuffleBtn"){
   const pool = DINNERS.filter(d=>!d.out).map(d=>d.id);
   for (let i=pool.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); const t=pool[i]; pool[i]=pool[j]; pool[j]=t; }
-  state.week = pool.slice(0,7);
-  store.set("week", state.week);
-  if (window.sync && sync.on) sync.pushWeek();
-  renderDnes(); renderTyden(); renderNakup(); return;
+  const zac = pondeli(0), dnes = isoDnes();
+  let n = 0;
+  for (let i = 0; i < 14; i++){
+   const d = new Date(zac); d.setDate(zac.getDate()+i);
+   const iso = isoZ(d);
+   if (iso < dnes) continue;                 // minulost neměníme
+   jidloSet(iso, "d", pool[n % pool.length]); n++;
+  }
+  renderDnes(); renderTyden(); renderNakup(); renderNext(); return;
  }
  if (e.target.id === "checkinBtn"){ state.lastCheckin = new Date().toISOString().slice(0,10); store.set("lastCheckin", state.lastCheckin); renderProgres(); return; }
  if (e.target.id === "onbBtn"){ openOnb(); return; }
  if (e.target.id === "icsGet"){ stahniIcs(); return; }
  if (e.target.id === "expBtn"){
   const keys = ["week","pick","checks","shop","queue","fb","exsel","wtP","wtV","mrP","mrV","lastCheckin",
-                "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist","plan"];
+                "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist","plan","jidlo"];
   const dump = {};
   keys.forEach(k=>{ const v = store.get(k, null); if (v !== null) dump[k] = v; });
   const box = document.getElementById("dataBox");
