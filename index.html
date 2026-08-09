@@ -2528,6 +2528,28 @@ function tydenPocty(posun){
  });
  return { p:p, v:v, cp:cil.p, cv:cil.v };
 }
+/* okno se posouvá samo: každý týden odpadne ten starý a přibude nový prázdný */
+function uklidPlan(){
+ const hranice = new Date(); hranice.setDate(hranice.getDate() - 70);
+ const h = isoZ(hranice);
+ let smazano = 0;
+ Object.keys(state.plan).forEach(k => { if (k < h){ delete state.plan[k]; smazano++; } });
+ if (smazano) store.set("plan", state.plan);
+}
+function planChybi(){
+ let celkem = 0, potreba = 0;
+ for (let w = 0; w < 4; w++){ const t = tydenPocty(w); celkem += t.p + t.v; potreba += t.cp + t.cv; }
+ return Math.max(0, potreba - celkem);
+}
+function planPripominka(){
+ const chybi = planChybi();
+ if (!chybi) return;
+ // jednou týdně, klíč je pondělí aktuálního týdne
+ pushMsg("plan-"+isoZ(pondeli(0)), "📅", "Plán tréninků dojíždí",
+   "Ve čtyřtýdenním okně chybí "+chybi+" "+(chybi===1?"trénink":(chybi<5?"tréninky":"tréninků"))
+   +". Otevři Trénink → Plán a dej „Doplnit podle rozvrhu\" — je to na jedno kliknutí.");
+}
+
 function doplnPlan(){
  for (let w = 0; w < 4; w++){
   const zac = pondeli(w);
@@ -2614,7 +2636,10 @@ function renderPlan(){
   +'<span><i style="background:var(--s3)"></i>odtrénováno</span></div></div>'
   + panel + tydny
   +'<div class="note">Rozvrh v tlačítku „Doplnit": Pepule Po–Út–Čt–So (A→B→C→D), Verune Po–Út–Čt (FB1→FB2→FB4). '
-  +'Dny v minulosti se nepřepisují a co si zadáš ručně, to zůstane.</div>';
+  +'Dny v minulosti se nepřepisují a co si zadáš ručně, to zůstane.</div>'
+  +'<div class="note reco"><b>Okno se posouvá samo.</b> Jakmile týden skončí, spadne dolů a zezdola přibude nový — '
+  +'takže tu pořád vidíš čtyři týdny dopředu. Ten nově přibylý je prázdný, takže jednou týdně sem zajdi '
+  +'a dej „Doplnit podle rozvrhu" (vyplní jen díry, nic nepřepíše). Appka ti to sama připomene v Zprávách.</div>';
 }
 
 /* pruh týdne na hlavní stránce */
@@ -3962,7 +3987,7 @@ function renderCile(){
 }
 
 /* ============ wiring ============ */
-function renderAll(){ kontrolaOdznaku(); renderNext(); buildMsgs(); renderDnes(); renderTyden(); renderRecepty(); renderNakup(); renderTrenink(); renderPlan(); renderProgres(); renderZpravy(); renderCile(); syncDot(); }
+function renderAll(){ uklidPlan(); planPripominka(); kontrolaOdznaku(); renderNext(); buildMsgs(); renderDnes(); renderTyden(); renderRecepty(); renderNakup(); renderTrenink(); renderPlan(); renderProgres(); renderZpravy(); renderCile(); syncDot(); }
 const TABS = ["dnes","tyden","recepty","nakup","trenink","plan","progres","zpravy","cile"];
 const GROUPS = {
  dnes:    { tabs:[["dnes","Dnes"]] },
