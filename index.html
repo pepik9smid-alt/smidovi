@@ -196,6 +196,40 @@
   .mine:last-child{border-bottom:none}
   .mine .x{background:none;border:0;color:var(--muted);cursor:pointer;font-size:17px;padding:0 4px;line-height:1}
 
+  .kal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:8px}
+  .kal .dl{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);
+           text-align:center;padding-bottom:2px}
+  .den{background:var(--surface-1);border:1px solid var(--border);border-radius:10px;padding:5px 2px 6px;
+       cursor:pointer;font:inherit;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:62px}
+  .den:hover{border-color:var(--s1)}
+  .den.dnes{border-color:var(--s1);background:var(--accent-soft)}
+  .den.vybran{outline:2px solid var(--s1);outline-offset:1px}
+  .den .cd{font-size:11.5px;color:var(--text-secondary);font-variant-numeric:tabular-nums;line-height:1}
+  .den.dnes .cd{color:var(--text-primary);font-weight:700}
+  .den .chip2{font-size:9.5px;font-weight:700;border-radius:5px;padding:2px 3px;width:100%;
+              text-align:center;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .den .cp{background:var(--s1-track);color:var(--s1)}
+  .den .cv{background:var(--s3-track);color:var(--s3)}
+  .den .chip2.ok{background:var(--s3);color:#fff}
+  .den .prazdno{font-size:11px;color:var(--muted);line-height:1}
+  .wk-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  .wk-head .lb{font-size:13px;font-weight:600}
+  .wk-head .st{font-size:11.5px;font-variant-numeric:tabular-nums}
+  .st .ok{color:var(--good);font-weight:600}
+  .st .no{color:var(--s2);font-weight:600}
+  .legend2{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--text-secondary);margin-top:9px}
+  .legend2 i{width:11px;height:11px;border-radius:3px;display:inline-block;margin-right:5px;vertical-align:-1px}
+
+  .tyden-tr{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:9px}
+  .tyden-tr div{text-align:center;font-size:11px;color:var(--text-secondary)}
+  .tyden-tr .dd{font-weight:600;color:var(--text-primary);font-size:11.5px}
+  .tyden-tr .tag{border-radius:5px;padding:2px 1px;font-size:9.5px;font-weight:700;margin-top:2px;
+                 overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tyden-tr .tp{background:var(--s1-track);color:var(--s1)}
+  .tyden-tr .tv{background:var(--s3-track);color:var(--s3)}
+  .tyden-tr .tn{color:var(--muted)}
+  .tyden-tr .now{outline:2px solid var(--s1);outline-offset:2px;border-radius:7px}
+
   .prep{list-style:none;padding:0;margin:8px 0 0}
   .prep li{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--grid)}
   .prep li:last-child{border-bottom:none}
@@ -626,6 +660,7 @@
 <section id="tab-recepty" hidden></section>
 <section id="tab-nakup" hidden></section>
 <section id="tab-trenink" hidden></section>
+<section id="tab-plan" hidden></section>
 <section id="tab-progres" hidden></section>
 <section id="tab-zpravy" hidden></section>
 <section id="tab-cile" hidden></section>
@@ -1537,6 +1572,8 @@ const state = {
  rem: store.get("rem", null),
  sess: store.get("session", null),
  hist: store.get("hist", []),
+ plan: store.get("plan", {}),
+ planDen: null,
  recOpen: false,
  fotoP: store.get("fotoP", []),
  fotoV: store.get("fotoV", [])
@@ -1714,6 +1751,7 @@ function renderDnes(){
   +'<div style="font-size:14.5px;font-weight:600">'+esc(din.name)+'</div>'
   +'<div style="font-size:12.5px;color:var(--text-secondary)">'+esc(DAYNOTE[d])+'</div></div></div>'
   +'<div class="grid2">'+personCard("p",d)+personCard("v",d)+'</div>'
+  + tydenTreninkCard()
   + peerCard()
   +'<div class="note"><b>Odškrtávej, co sníš.</b> Každé jídlo jde vyměnit v rozbalovacím menu — a je tam i sekce <b>Venku 🌯</b> pro durum, mekáč, gyros nebo bagetu z pumpy. '
   +'Když sníš něco venku, přepni to tam a čísla sedí dál. <b>Žádné výčitky, jen ať to víme.</b></div>';
@@ -2445,6 +2483,173 @@ function rekordy(who){
    +'</tbody></table></div>';
 }
 
+/* ============ Plán tréninků ============ */
+const MIN_TR = { p: 4, v: 3 };
+const ROZVRH = { p: [[1,"A"],[2,"B"],[4,"C"],[6,"D"]], v: [[1,"FB1"],[2,"FB2"],[4,"FB4"]] };
+
+function pondeli(posun){
+ const d = new Date();
+ const cur = d.getDay() === 0 ? 7 : d.getDay();
+ d.setDate(d.getDate() - (cur - 1) + (posun||0)*7);
+ d.setHours(12,0,0,0);
+ return d;
+}
+function isoZ(d){ return d.getFullYear()+"-"+dvoj(d.getMonth()+1)+"-"+dvoj(d.getDate()); }
+function planDne(iso){ return state.plan[iso] || {}; }
+function planSet(iso, who, rid){
+ const d = Object.assign({}, state.plan[iso] || {});
+ if (rid) d[who] = rid; else delete d[who];
+ if (Object.keys(d).length) state.plan[iso] = d; else delete state.plan[iso];
+ store.set("plan", state.plan);
+ if (window.sync && sync.on) sync.pushPlan();
+}
+function odtrenovano(iso, who){
+ return (state.hist || []).some(h => h.d === iso && h.who === who);
+}
+function tydenPocty(posun){
+ const zac = pondeli(posun), dnes = isoZ(new Date());
+ let p = 0, v = 0;
+ for (let i = 0; i < 7; i++){
+  const d = new Date(zac); d.setDate(zac.getDate()+i);
+  const x = planDne(isoZ(d));
+  if (x.p) p++;
+  if (x.v) v++;
+ }
+ // u probíhajícího týdne se cíl krátí podle toho, kolik tréninkových dnů ještě zbývá
+ const cil = {};
+ ["p","v"].forEach(who=>{
+  if (posun > 0){ cil[who] = MIN_TR[who]; return; }
+  let zbyva = 0;
+  ROZVRH[who].forEach(r=>{
+   const d = new Date(zac); d.setDate(zac.getDate() + (r[0]-1));
+   if (isoZ(d) >= dnes) zbyva++;
+  });
+  cil[who] = Math.min(MIN_TR[who], Math.max(zbyva, (who==="p"?p:v)));
+ });
+ return { p:p, v:v, cp:cil.p, cv:cil.v };
+}
+function doplnPlan(){
+ for (let w = 0; w < 4; w++){
+  const zac = pondeli(w);
+  ["p","v"].forEach(who => {
+   ROZVRH[who].forEach(r => {
+    const d = new Date(zac); d.setDate(zac.getDate() + (r[0]-1));
+    const iso = isoZ(d);
+    if (isoZ(d) < isoZ(new Date())) return;            // minulost neplánujeme
+    const dnes = planDne(iso);
+    if (dnes[who]) return;                              // co je zadané, neměníme
+    planSet(iso, who, r[1]);
+   });
+  });
+ }
+}
+function vycistitPlan(){
+ const dnes = isoZ(new Date());
+ Object.keys(state.plan).forEach(k => { if (k >= dnes) delete state.plan[k]; });
+ store.set("plan", state.plan);
+ if (window.sync && sync.on) sync.pushPlan();
+}
+function selRutin(who, iso, vybrano){
+ const opts = ROUTINES[who].map(r =>
+   '<option value="'+r.id+'"'+(r.id===vybrano?" selected":"")+'>'+esc(r.id+" — "+r.title.split(" — ").slice(1).join(" — ")||r.title)+'</option>').join("");
+ return '<select data-planset="'+who+'|'+iso+'">'
+  +'<option value=""'+(!vybrano?" selected":"")+'>— volno —</option>'+opts+'</select>';
+}
+
+function renderPlan(){
+ const dnesIso = isoZ(new Date());
+ const DL = ["Po","Út","St","Čt","Pá","So","Ne"];
+ let celkem = 0, potreba = 0;
+ for (let w = 0; w < 4; w++){ const t = tydenPocty(w); celkem += t.p + t.v; potreba += t.cp + t.cv; }
+
+ const tydny = [0,1,2,3].map(w => {
+  const zac = pondeli(w), t = tydenPocty(w);
+  const kon = new Date(zac); kon.setDate(zac.getDate()+6);
+  const lb = w === 0 ? "Tento týden" : (w === 1 ? "Příští týden" : "Za "+w+" týdny");
+  const dny = Array.from({length:7}, (_,i) => {
+   const d = new Date(zac); d.setDate(zac.getDate()+i);
+   const iso = isoZ(d), x = planDne(iso);
+   const je = iso === dnesIso;
+   const chip = (who,cls) => x[who]
+     ? '<span class="chip2 '+cls+(odtrenovano(iso,who)?" ok":"")+'">'+(odtrenovano(iso,who)?"✓ ":"")+esc(x[who])+'</span>'
+     : '';
+   return '<button class="den'+(je?" dnes":"")+(state.planDen===iso?" vybran":"")+'" data-planday="'+iso+'" type="button">'
+    +'<span class="cd">'+d.getDate()+'.</span>'
+    + (x.p||x.v ? chip("p","cp")+chip("v","cv") : '<span class="prazdno">+</span>')
+    +'</button>';
+  }).join("");
+  return '<div class="card"><div class="wk-head"><span class="lb">'+lb+'</span>'
+   +'<span class="st">Pepule <span class="'+(t.p>=t.cp?"ok":"no")+'">'+t.p+'/'+t.cp+'</span>'
+   +' · Verune <span class="'+(t.v>=t.cv?"ok":"no")+'">'+t.v+'/'+t.cv+'</span></span></div>'
+   +'<div class="dim" style="font-size:12px">'+zac.getDate()+". "+(zac.getMonth()+1)+". – "+kon.getDate()+". "+(kon.getMonth()+1)+".</div>"
+   +'<div class="kal">'+DL.map(x=>'<span class="dl">'+x+'</span>').join("")+dny+'</div></div>';
+ }).join("");
+
+ const vyb = state.planDen;
+ const panel = vyb
+  ? (()=>{ const d = new Date(vyb+"T12:00:00"); const x = planDne(vyb);
+      return '<div class="card" style="border-color:var(--s1)"><div class="rhead">'
+      +'<h3>'+DL[(d.getDay()+6)%7]+' '+d.getDate()+". "+(d.getMonth()+1)+'.</h3>'
+      +'<button class="ghost" data-planday="" type="button">Zavřít</button></div>'
+      +'<div class="form-row"><div class="f"><label>💪 Pepule</label>'+selRutin("p", vyb, x.p||"")+'</div></div>'
+      +'<div class="form-row"><div class="f"><label>✨ Verune</label>'+selRutin("v", vyb, x.v||"")+'</div></div>'
+      +'<div class="hint">Naplánovaný trénink se ukáže oběma a v Tréninku ho appka nabídne jako „Co dneska".</div></div>';
+    })()
+  : '';
+
+ const chybi = potreba - Math.min(celkem, potreba);
+ document.getElementById("tab-plan").innerHTML =
+  '<div class="card"><div class="rhead"><h3>📅 Plán na čtyři týdny</h3>'
+  +'<span class="rmeta">'+celkem+'/'+potreba+' tréninků</span></div>'
+  +'<p class="who">Minimum je <b>'+MIN_TR.p+' tréninky týdně pro Pepuleho</b> a <b>'+MIN_TR.v+' pro Verunku</b>. '
+  +'Klepni na den a vyber, co se ten den dělá. Plán vidíte oba a mění se oběma.</p>'
+  + (chybi > 0
+     ? '<div class="note"><b>Do minima chybí '+chybi+' '+(chybi===1?"trénink":(chybi<5?"tréninky":"tréninků"))+'.</b> '
+       +'Naplánovaný trénink je dvakrát pravděpodobnější než ten, co se „nějak udělá".</div>'
+     : '<div class="note reco"><b>Čtyři týdny máte pokryté.</b> Tohle je ta nudná část, která rozhoduje.</div>')
+  +'<div class="wrow" style="margin:10px 0 0"><button class="act small" id="planFill" type="button">🪄 Doplnit podle rozvrhu</button>'
+  +'<button class="ghost" id="planClear" type="button">Vyčistit</button></div>'
+  +'<div class="legend2"><span><i style="background:var(--s1-track)"></i>Pepule</span>'
+  +'<span><i style="background:var(--s3-track)"></i>Verune</span>'
+  +'<span><i style="background:var(--s3)"></i>odtrénováno</span></div></div>'
+  + panel + tydny
+  +'<div class="note">Rozvrh v tlačítku „Doplnit": Pepule Po–Út–Čt–So (A→B→C→D), Verune Po–Út–Čt (FB1→FB2→FB4). '
+  +'Dny v minulosti se nepřepisují a co si zadáš ručně, to zůstane.</div>';
+}
+
+/* pruh týdne na hlavní stránce */
+function maPlan(posun){
+ const zac = pondeli(posun);
+ for (let i = 0; i < 7; i++){ const d = new Date(zac); d.setDate(zac.getDate()+i);
+  const x = planDne(isoZ(d)); if (x.p || x.v) return true; }
+ return false;
+}
+function tydenTreninkCard(){
+ const DL = ["Po","Út","St","Čt","Pá","So","Ne"];
+ const posun = (!maPlan(0) && maPlan(1)) ? 1 : 0;
+ const zac = pondeli(posun), dnesIso = isoZ(new Date());
+ let neco = false;
+ const bunky = Array.from({length:7}, (_,i)=>{
+  const d = new Date(zac); d.setDate(zac.getDate()+i);
+  const iso = isoZ(d), x = planDne(iso);
+  if (x.p || x.v) neco = true;
+  const tag = (who,cls)=> x[who]
+    ? '<div class="tag '+cls+'">'+(odtrenovano(iso,who)?"✓ ":"")+esc(x[who])+'</div>' : '';
+  return '<div'+(iso===dnesIso?' class="now"':'')+'><span class="dd">'+DL[i]+'</span>'
+   + (x.p||x.v ? tag("p","tp")+tag("v","tv") : '<div class="tag tn">–</div>')+'</div>';
+ }).join("");
+ const t = tydenPocty(posun);
+ return '<div class="card"><div class="rhead"><h3>'+(posun?"Příští týden":"Tento týden")+' v posilovně</h3>'
+  +'<span class="rmeta">💪 '+t.p+'/'+t.cp+' · ✨ '+t.v+'/'+t.cv+'</span></div>'
+  + (neco
+     ? '<div class="tyden-tr">'+bunky+'</div>'
+       +'<div class="legend2"><span><i style="background:var(--s1-track)"></i>Pepule</span>'
+       +'<span><i style="background:var(--s3-track)"></i>Verune</span></div>'
+     : '<p class="who" style="margin:0">Zatím nic naplánovaného. Otevři <b>Trénink → Plán</b> a rozvrhni si čtyři týdny dopředu — '
+       +'trvá to minutu a je to ta nejúčinnější věc, co jde pro pravidelnost udělat.</p>')
+  +'<button class="ghost" data-goto="plan" type="button" style="margin-top:10px">📅 Otevřít plán</button></div>';
+}
+
 /* ============ Co je na řadě (hlavička) ============ */
 function minutyZ(hhmm){ const p = String(hhmm).split(":"); return (+p[0])*60 + (+p[1]); }
 function zaText(m){
@@ -2468,11 +2673,13 @@ function nextUpList(){
  const dow = todayIdx + 1, iso = dateOfWeekday(todayIdx);
  const fronta = [];
 
+ const dnesPlan = planDne(iso)[me];
  if (!out.length) (TRENINKY[me] || []).forEach(t => {
   if (t[0] !== dow) return;
+  if (dnesPlan && odtrenovano(iso, me)) return;
   const m = minutyZ(t[1]);
   if (m + 120 < nyni) return;
-  const co = me === "p" ? QUEUE[state.queue] : V_QUEUE[state.fb % V_QUEUE.length];
+  const co = dnesPlan || (me === "p" ? QUEUE[state.queue] : V_QUEUE[state.fb % V_QUEUE.length]);
   fronta.push({ m:m, ic:"🏋️", tx:"<b>Trénink "+t[1]+"</b> — "+co, tab:"trenink" });
  });
 
@@ -2780,11 +2987,15 @@ function trList(who){
 function trReco(who){
  const t = state.trTime;
  const vse = ROUTINES[who];
- const hlavni = who === "p" ? vse.find(r => r.id === QUEUE[state.queue])
-                            : vse.find(r => r.id === V_QUEUE[state.fb % V_QUEUE.length]);
+ const naplan = planDne(isoZ(new Date()))[who];
+ const hlavni = (naplan && vse.find(r => r.id === naplan))
+   || (who === "p" ? vse.find(r => r.id === QUEUE[state.queue])
+                   : vse.find(r => r.id === V_QUEUE[state.fb % V_QUEUE.length]));
  let pick = hlavni, proc;
  if (t === "all" || hlavni.min <= t){
-  proc = "Jsi na řadě s <b>"+esc(hlavni.title.split(" — ")[0])+"</b> a čas na to máš. Nic nevymýšlej, jdi to udělat.";
+  proc = (naplan === hlavni.id
+    ? "Na dnešek máš naplánovaný <b>"+esc(hlavni.title.split(" — ")[0])+"</b>"
+    : "Jsi na řadě s <b>"+esc(hlavni.title.split(" — ")[0])+"</b>")+" a čas na to máš. Nic nevymýšlej, jdi to udělat.";
  } else {
   const kandidati = vse.filter(r => r.min <= t && r.typ !== "mobilita");
   pick = kandidati.sort((a,b)=> (a.typ === hlavni.typ ? -1 : 1) - (b.typ === hlavni.typ ? -1 : 1) || b.min - a.min)[0] || vse[vse.length-1];
@@ -3251,6 +3462,15 @@ const sync = {
         if (state.tab === "nakup") renderNakup();
       }
     });
+    // plán tréninků
+    onValue(this._ref("plan"), snap => {
+      const v = snap.val();
+      if (v && typeof v === "object"){
+        state.plan = v; store.set("plan", v);
+        if (state.tab === "plan") renderPlan();
+        if (state.tab === "dnes") renderDnes();
+      }
+    });
     // vlastní recepty
     onValue(this._ref("recepty"), snap => {
       const v = snap.val();
@@ -3291,6 +3511,7 @@ const sync = {
   pushWeek(){ this._set("week", state.week); },
   pushShop(){ this._set("shop", state.shop); },
   pushRec(){ this._set("recepty", store.get("myRecipes", [])); },
+  pushPlan(){ this._set("plan", state.plan); },
   pushShopX(){ this._set("shopx", state.shopX); },
 
   pushStatus(){
@@ -3741,21 +3962,21 @@ function renderCile(){
 }
 
 /* ============ wiring ============ */
-function renderAll(){ kontrolaOdznaku(); renderNext(); buildMsgs(); renderDnes(); renderTyden(); renderRecepty(); renderNakup(); renderTrenink(); renderProgres(); renderZpravy(); renderCile(); syncDot(); }
-const TABS = ["dnes","tyden","recepty","nakup","trenink","progres","zpravy","cile"];
+function renderAll(){ kontrolaOdznaku(); renderNext(); buildMsgs(); renderDnes(); renderTyden(); renderRecepty(); renderNakup(); renderTrenink(); renderPlan(); renderProgres(); renderZpravy(); renderCile(); syncDot(); }
+const TABS = ["dnes","tyden","recepty","nakup","trenink","plan","progres","zpravy","cile"];
 const GROUPS = {
  dnes:    { tabs:[["dnes","Dnes"]] },
  jidlo:   { tabs:[["tyden","Týden"],["recepty","Recepty"],["nakup","Nákup"]] },
- trenink: { tabs:[["trenink","Trénink"]] },
+ trenink: { tabs:[["trenink","Tréninky"],["plan","Plán"]] },
  progres: { tabs:[["progres","Průběh"],["zpravy","_"],["cile","Cíle"]] },
  zpravy:  { tabs:[["zpravy","Zprávy"]] }
 };
 GROUPS.progres.tabs = [["progres","Průběh"],["cile","Cíle"]];
 const GRP_OF = {};
 Object.keys(GROUPS).forEach(g => GROUPS[g].tabs.forEach(t => GRP_OF[t[0]] = g));
-const lastSub = { jidlo:"tyden", progres:"progres" };
+const lastSub = { jidlo:"tyden", progres:"progres", trenink:"trenink" };
 const RENDER = { dnes:renderDnes, tyden:renderTyden, recepty:renderRecepty, nakup:renderNakup,
-                 trenink:renderTrenink, progres:renderProgres, zpravy:renderZpravy, cile:renderCile };
+                 trenink:renderTrenink, plan:renderPlan, progres:renderProgres, zpravy:renderZpravy, cile:renderCile };
 function showTab(t){
  state.tab = t;
  state.pairConfirm = false;
@@ -3829,6 +4050,11 @@ document.addEventListener("change", e=>{
    if (window.sync && sync.on) sync.pushWeek();
    renderDnes(); renderTyden(); renderNakup(); }
  else if (t.dataset.exsel !== undefined){ state.exsel[t.dataset.exsel] = t.value; store.set("exsel", state.exsel); renderTrenink(); }
+ else if (t.dataset.planset !== undefined){
+   const p = t.dataset.planset.split("|");
+   planSet(p[1], p[0], t.value || null);
+   renderPlan(); renderDnes(); renderNext();
+ }
  else if (t.dataset.rem !== undefined){
    const sel = remSel(); sel[t.dataset.rem] = t.checked;
    state.rem = sel; store.set("rem", sel); renderCile();
@@ -4072,6 +4298,20 @@ document.addEventListener("click", e=>{
   store.set("msgs", msgs); renderZpravy(); return;
  }
  if (e.target.id === "clearMsgs"){ store.set("msgs", []); renderZpravy(); return; }
+ const pd = e.target.closest("[data-planday]");
+ if (pd){
+  const v = pd.dataset.planday;
+  state.planDen = (v && state.planDen !== v) ? v : null;
+  renderPlan();
+  if (state.planDen){
+   const el = document.querySelector('[data-planset]');
+   if (el) el.closest(".card").scrollIntoView({ block:"center", behavior:"smooth" });
+  }
+  return;
+ }
+ if (e.target.id === "planFill"){ doplnPlan(); renderPlan(); renderDnes(); renderNext(); celebrate("📅"); return; }
+ if (e.target.id === "planClear"){ vycistitPlan(); state.planDen = null; renderPlan(); renderDnes(); renderNext(); return; }
+
  const st0 = e.target.closest("[data-start]");
  if (st0){
   const rozdelany = state.sess && state.sess.ex.some(x => x.sets.some(p => p.done));
@@ -4196,7 +4436,7 @@ document.addEventListener("click", e=>{
  if (e.target.id === "icsGet"){ stahniIcs(); return; }
  if (e.target.id === "expBtn"){
   const keys = ["week","pick","checks","shop","queue","fb","exsel","wtP","wtV","mrP","mrV","lastCheckin",
-                "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist"];
+                "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist","plan"];
   const dump = {};
   keys.forEach(k=>{ const v = store.get(k, null); if (v !== null) dump[k] = v; });
   const box = document.getElementById("dataBox");
