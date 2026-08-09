@@ -179,6 +179,12 @@
   .odz .o.on .e{filter:none;opacity:1}
   .odz .t{font-size:11.5px;font-weight:600;margin-top:4px;line-height:1.25}
   .odz .s{font-size:10.5px;color:var(--muted);margin-top:2px;line-height:1.3}
+  .odz-next{display:flex;align-items:center;gap:11px;margin-top:10px;background:var(--accent-soft);
+            border:1px solid var(--border);border-radius:12px;padding:9px 12px}
+  .odz-next .e{font-size:24px;flex:none;line-height:1;filter:grayscale(.55);opacity:.75}
+  .odz-next .b{flex:1;min-width:0;font-size:13px;line-height:1.35}
+  .odz-next .kdy{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;
+                 background:var(--surface-1);border:1px solid var(--border);border-radius:999px;padding:4px 10px}
   .rep-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:10px 0 4px}
   .rep-grid div{background:var(--accent-soft);border-radius:11px;padding:10px}
   .rep-grid .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
@@ -1420,6 +1426,9 @@ const ROUTINES = {
   { id:"D", title:"D — Dolní tělo (hamstringy)", min:60, typ:"sila",
     tip:"Mrtvý tah jen tolik, kolik unese technika. Radši o 10 kg míň a rovná záda.",
     ex:[["deadlift","3 × 4–6",8,"4:00"],["bulg","3 × 8–10 / noha",9,"2:00"],["seatcurl","3 × 12–15",10,"1:30"],["hipthrust","3 × 12",9,"1:30"],["backext","3 × 12–15",9,"1:30"],["calf","4 × 12–15",10,"1:30"],["cablecrunch","3 × 12–15",10,"1:00"]] },
+  { id:"N", title:"N — Nohy komplet (jednou týdně)", min:65, typ:"sila",
+    tip:"Jediný den na nohy v týdnu — proto je v něm všechno: kvadricepsy, hamstringy, hýždě i lýtka. Dřep jede první, dokud máš sílu.",
+    ex:[["squat","4 × 5–8",8,"3:00"],["rdl","3 × 8–10",8,"2:30"],["legpress","3 × 12–15",9,"2:00"],["lyingcurl","3 × 12–15",9,"1:30"],["hipthrust","3 × 12",9,"1:30"],["calf","4 × 12–15",10,"1:30"],["hangraise","3 × 12–15",9,"1:00"]] },
   { id:"E", title:"E — Prsa a triceps", min:55, typ:"sila",
     tip:"Když máš chuť si zamakat na hrudník. Nahrazuje A, když je posilovna narvaná a nedostaneš se ke stojanům.",
     ex:[["bench","4 × 6–8",8,"3:00"],["inclinedb","3 × 10–12",9,"2:00"],["pecdeck","3 × 12–15",10,"1:30"],["dip","3 × 10–12",9,"2:00"],["tripush","3 × 12–15",10,"1:30"],["ohtri","3 × 12–15",10,"1:30"]] },
@@ -1458,15 +1467,15 @@ const ROUTINES = {
     ex:[["catcow","10 kol","—","0:00"],["thoracic","10 / strana","—","0:00"],["chestdoor","2 × 40 s","—","0:00"],["hipflex","2 × 40 s / strana","—","0:00"],["hamstretch","2 × 40 s / strana","—","0:00"],["childpose","1 × 60 s","—","0:00"]] }
  ],
  v: [
-  { id:"FB1", title:"FB1 — celé tělo", min:50, typ:"sila",
-    tip:"Základní varianta. První tři týdny lehké váhy — teď se učí technika, ne zvedají rekordy.",
-    ex:[["goblet","3 × 8–10",7,"2:00"],["hipthrust","3 × 10–12",8,"2:00"],["latpd","3 × 10–12",8,"2:00"],["chestpressm","3 × 10–12",8,"2:00"],["rdldb","3 × 10–12",8,"1:30"],["latraise","2 × 12–15",9,"1:00"],["plank","3 × 30–45 s","—","1:00"]] },
-  { id:"FB2", title:"FB2 — celé tělo", min:50, typ:"sila",
-    tip:"Druhá varianta do rotace — jiné cviky, stejné svaly. Střídání drží hlavu i tělo svěží.",
-    ex:[["legpress","3 × 10–12",8,"2:00"],["bulg","3 × 8–10 / noha",8,"2:00"],["cablerow","3 × 10–12",8,"2:00"],["shpressdb","3 × 10–12",8,"2:00"],["seatcurl","3 × 12–15",9,"1:30"],["curldb","2 × 12–15",9,"1:00"],["cablecrunch","3 × 12–15",9,"1:00"]] },
-  { id:"FB4", title:"FB4 — celé tělo (třetí varianta)", min:50, typ:"sila",
-    tip:"Třetí do rotace, ať to není pořád dokola. Začíná hýžděmi, dokud je na ně síla.",
-    ex:[["hipthrust","4 × 10–12",8,"2:00"],["hacksquat","3 × 10–12",8,"2:00"],["csrow","3 × 10–12",8,"2:00"],["pecdeck","3 × 12–15",9,"1:30"],["lyingcurl","3 × 12–15",9,"1:30"],["cablelat","3 × 15",9,"1:00"],["deadbug","3 × 10 / strana","—","1:00"]] },
+  { id:"FB1", title:"FB1 — celé tělo, důraz nohy a hýždě", min:50, typ:"sila",
+    tip:"Celé tělo, ale pět ze sedmi cviků jde na nohy a zadek — tam se u tebe nejvíc pozná změna. Horní tělo drží držení těla a ten úzký pas.",
+    ex:[["hipthrust","4 × 10–12",8,"2:00"],["goblet","3 × 8–10",7,"2:00"],["rdldb","3 × 10–12",8,"1:30"],["kickback","3 × 15 / noha",9,"1:00"],["monster","2 × 12 kroků","—","1:00"],["latpd","3 × 10–12",8,"2:00"],["plank","3 × 30–45 s","—","1:00"]] },
+  { id:"FB2", title:"FB2 — celé tělo, důraz nohy a hýždě", min:50, typ:"sila",
+    tip:"Druhá varianta do rotace — jiné cviky, stejný poměr. Bulharský dřep je peklo, ale na zadek nejlepší věc, co existuje.",
+    ex:[["legpress","4 × 10–12",8,"2:00"],["bulg","3 × 8–10 / noha",8,"2:00"],["seatcurl","3 × 12–15",9,"1:30"],["sumodb","3 × 12",8,"1:30"],["glbridge","2 × 15",9,"1:00"],["cablerow","3 × 10–12",8,"2:00"],["cablecrunch","3 × 12–15",9,"1:00"]] },
+  { id:"FB4", title:"FB4 — celé tělo, důraz nohy a hýždě", min:50, typ:"sila",
+    tip:"Třetí do rotace. Začíná hýžděmi, dokud je na ně síla — hip thrust je jediný cvik, na kterém můžeš přidávat skoro pořád.",
+    ex:[["hipthrust","4 × 10–12",8,"2:00"],["hacksquat","3 × 10–12",8,"2:00"],["lyingcurl","3 × 12–15",9,"1:30"],["kickback","3 × 15 / noha",9,"1:00"],["stepup","2 × 10 / noha",8,"1:30"],["csrow","3 × 10–12",8,"2:00"],["cablelat","2 × 15",9,"1:00"]] },
   { id:"FB3", title:"FB3 — doma s jednoručkou", min:35, typ:"doma",
     tip:"Záloha, když se nestihne posilovna. Nic se neruší, jen se to udělá doma.",
     ex:[["goblet","3 × 12–15",8,"1:30"],["lungedb","3 × 10 / noha",8,"1:30"],["glbridge","3 × 15",9,"1:00"],["pushup","3 × co dáš",9,"1:30"],["rdldb","3 × 12",8,"1:30"],["plank","3 × 30–45 s","—","1:00"]] },
@@ -1502,9 +1511,10 @@ const ROUTINES = {
     ex:[["catcow","10 kol","—","0:00"],["hipflex","2 × 40 s / strana","—","0:00"],["hamstretch","2 × 40 s / strana","—","0:00"],["thoracic","10 / strana","—","0:00"],["childpose","1 × 60 s","—","0:00"]] }
  ]
 };
-const QUEUE = ["A","B","C","D"];
+const QUEUE = ["A","N","C","G"];
 const V_QUEUE = ["FB1","FB2","FB4"];
-const QUEUE_T = {A:"Horní tělo — tlaky",B:"Dolní tělo — kvadricepsy",C:"Horní tělo — tahy",D:"Dolní tělo — hamstringy"};
+const QUEUE_T = {A:"Horní tělo — tlaky",N:"Nohy komplet",C:"Horní tělo — tahy",G:"Ramena, paže a břicho",
+                 B:"Dolní tělo — kvadricepsy",D:"Dolní tělo — hamstringy"};
 const DAYNOTE = {
  0:"🏋️ Pepule 7:30 ráno · Verune FB večer",
  1:"🏋️ 18:00 spolu (Pepule s Radkem)",
@@ -1751,6 +1761,7 @@ function renderDnes(){
   +'<div style="font-size:14.5px;font-weight:600">'+esc(din.name)+'</div>'
   +'<div style="font-size:12.5px;color:var(--text-secondary)">'+esc(DAYNOTE[d])+'</div></div></div>'
   +'<div class="grid2">'+personCard("p",d)+personCard("v",d)+'</div>'
+  + odznakStrip()
   + tydenTreninkCard()
   + peerCard()
   +'<div class="note"><b>Odškrtávej, co sníš.</b> Každé jídlo jde vyměnit v rozbalovacím menu — a je tam i sekce <b>Venku 🌯</b> pro durum, mekáč, gyros nebo bagetu z pumpy. '
@@ -2485,7 +2496,7 @@ function rekordy(who){
 
 /* ============ Plán tréninků ============ */
 const MIN_TR = { p: 4, v: 3 };
-const ROZVRH = { p: [[1,"A"],[2,"B"],[4,"C"],[6,"D"]], v: [[1,"FB1"],[2,"FB2"],[4,"FB4"]] };
+const ROZVRH = { p: [[1,"A"],[2,"N"],[4,"C"],[6,"G"]], v: [[1,"FB1"],[2,"FB2"],[4,"FB4"]] };
 
 function pondeli(posun){
  const d = new Date();
@@ -2635,7 +2646,7 @@ function renderPlan(){
   +'<span><i style="background:var(--s3-track)"></i>Verune</span>'
   +'<span><i style="background:var(--s3)"></i>odtrénováno</span></div></div>'
   + panel + tydny
-  +'<div class="note">Rozvrh v tlačítku „Doplnit": Pepule Po–Út–Čt–So (A→B→C→D), Verune Po–Út–Čt (FB1→FB2→FB4). '
+  +'<div class="note">Rozvrh v tlačítku „Doplnit": Pepule Po–Út–Čt–So (A → N nohy → C → G), Verune Po–Út–Čt (FB1→FB2→FB4). '
   +'Dny v minulosti se nepřepisují a co si zadáš ručně, to zůstane.</div>'
   +'<div class="note reco"><b>Okno se posouvá samo.</b> Jakmile týden skončí, spadne dolů a zezdola přibude nový — '
   +'takže tu pořád vidíš čtyři týdny dopředu. Ten nově přibylý je prázdný, takže jednou týdně sem zajdi '
@@ -3043,13 +3054,14 @@ function renderTrenink(){
  let head = "";
  if (who==="p") {
   const q = QUEUE[state.queue];
-  head = '<div class="card"><h3>Další ve frontě</h3><p class="who">A → B → C → D — jdeš do posilovny, uděláš další v pořadí. Krize frontu posune taky.</p>'
+  head = '<div class="card"><h3>Další ve frontě</h3><p class="who">A → N → C → G — jdeš do posilovny, uděláš další v pořadí. '
+   +'<b>Nohy jsou jen jednou týdně</b> (N), zbytek je horní tělo. Krize frontu posune taky.</p>'
    +'<div class="qbox"><div class="qletter">'+q+'</div>'
    +'<div style="flex:1;min-width:150px"><div style="font-size:15px;font-weight:600">'+QUEUE_T[q]+'</div>'
    +'<div class="dim" style="font-size:12.5px">Po 7:30 · Út 18:00 s Radkem · Čt 18:00 · So 9:00</div></div>'
    +'<button class="act" id="doneBtn" type="button">Odtrénováno →</button></div></div>';
  } else {
-  head = '<div class="card"><h3>Další na řadě</h3><p class="who">FB1 → FB2 → FB4 se střídají, 3× týdně. Když se nestihne posilovna, počítá se i FB3 nebo cokoli z domácích. První 3 týdny lehké váhy — učí se technika.</p>'
+  head = '<div class="card"><h3>Další na řadě</h3><p class="who">FB1 → FB2 → FB4 se střídají, 3× týdně — všechny jsou celé tělo, ale <b>tři čtvrtiny objemu jdou na nohy a zadek</b>. Když se nestihne posilovna, počítá se i FB3 nebo cokoli z domácích. První 3 týdny lehké váhy — učí se technika.</p>'
    +'<div class="qbox"><div class="qletter">'+V_QUEUE[state.fb % V_QUEUE.length]+'</div>'
    +'<div style="flex:1;min-width:150px"><div style="font-size:15px;font-weight:600">Celé tělo</div>'
    +'<div class="dim" style="font-size:12.5px">Chodí s Pepulem: Po / Út / Čt · FB1 → FB2 → FB4</div></div>'
@@ -3222,48 +3234,136 @@ function cyklusCard(){
 
 /* ---- odznaky ---- */
 function wtArr(w){ return w === "p" ? state.wtP : state.wtV; }
+function mrArr(w){ return w === "p" ? state.mrP : state.mrV; }
 function trDny(w){
  const all = logAll(), dny = {};
  Object.keys(all).filter(k => k.indexOf(w+"|") === 0).forEach(k => all[k].forEach(x => dny[x.d] = 1));
  return Object.keys(dny).length;
 }
-function maPokrok(w){
+function trCviku(w){ return Object.keys(logAll()).filter(k => k.indexOf(w+"|") === 0).length; }
+function pokroky(w){
  const all = logAll();
- return Object.keys(all).filter(k => k.indexOf(w+"|") === 0).some(k => {
-  const s = all[k]; if (s.length < 2) return false;
-  return topSet(s[s.length-1].s)[0] > topSet(s[0].s)[0];
- });
+ return Object.keys(all).filter(k => k.indexOf(w+"|") === 0).filter(k => {
+  const x = all[k]; if (x.length < 2) return false;
+  return topSet(x[x.length-1].s)[0] > topSet(x[0].s)[0];
+ }).length;
 }
+function maPokrok(w){ return pokroky(w) > 0; }
 function vodaDny(w){
  const cil = Math.round(WATER_T[w]/GLASS);
  return Object.keys(state.water).filter(k => k.slice(-2) === "|"+w && state.water[k] >= cil).length;
 }
+function suplDny(w){
+ return Object.keys(state.checks).filter(k => state.checks[k] && k.indexOf("|"+w+"|sup-cr") > 0).length;
+}
+function histW(w){ return (state.hist || []).filter(x => x.who === w); }
+function objemCelkem(w){ return histW(w).reduce((a,x)=>a+(x.obj||0), 0); }
+function nejdelsi(w){ return histW(w).reduce((a,x)=>Math.max(a, x.min||0), 0); }
+function stouchnuti(w){
+ const jm = (BASE_T[w]||{}).name;
+ return store.get("msgs", []).filter(m => String(m.id).indexOf("re-") === 0 && m.od === jm).length;
+}
+
 const ODZNAKY = [
- { id:"vaha1",  ic:"⚖️", n:"První vážení",     s:"zapiš první váhu",            f:w => wtArr(w).length >= 1 },
- { id:"vaha8",  ic:"📊", n:"Osm vážení",       s:"dva měsíce poctivě",          f:w => wtArr(w).length >= 8 },
- { id:"denik1", ic:"📓", n:"První zápis",      s:"zapiš sérii do deníku",       f:w => trDny(w) >= 1 },
- { id:"tr10",   ic:"💪", n:"10 tréninků",      s:"deset dní v deníku",          f:w => trDny(w) >= 10 },
- { id:"tr25",   ic:"🥇", n:"25 tréninků",      s:"tady už to je zvyk",          f:w => trDny(w) >= 25 },
- { id:"rekord", ic:"📈", n:"Osobní rekord",    s:"zvedni víc než napoprvé",     f:w => maPokrok(w) },
- { id:"serie7", ic:"🔥", n:"Týden v kuse",     s:"7 dní nad minimem",           f:w => streak(w) >= 7 },
- { id:"serie30",ic:"🏆", n:"Měsíc bez výpadku",s:"30 dní v řadě",               f:w => streak(w) >= 30 },
- { id:"voda5",  ic:"💧", n:"Pitný režim",      s:"5 dní splněná voda",          f:w => vodaDny(w) >= 5 },
- { id:"foto1",  ic:"📸", n:"První fotka",      s:"start je zdokumentovaný",     f:w => fotoArr(w).length >= 1 },
- { id:"foto3",  ic:"🖼️", n:"Tři kontroly",     s:"tři měsíce v obraze",         f:w => fotoArr(w).length >= 3 },
- { id:"favs5",  ic:"⭐", n:"Pět oblíbených",   s:"označ 5 receptů hvězdičkou",  f:() => store.get("favs", []).length >= 5 },
- { id:"kuchar", ic:"👨‍🍳", n:"Kuchař",          s:"dovař 5× v kuchařském režimu", f:() => store.get("cooked", 0) >= 5 }
+ { id:"vaha1",   ic:"⚖️", n:"První vážení",      s:"zapiš první váhu",              p:w=>[wtArr(w).length,1] },
+ { id:"vaha8",   ic:"📊", n:"Osm vážení",        s:"dva měsíce poctivě",            p:w=>[wtArr(w).length,8] },
+ { id:"vaha25",  ic:"📈", n:"Pětadvacet vážení", s:"půl roku bez vynechání",        p:w=>[wtArr(w).length,25] },
+
+ { id:"denik1",  ic:"📓", n:"První zápis",       s:"zapiš sérii do deníku",         p:w=>[trDny(w),1] },
+ { id:"tr10",    ic:"💪", n:"10 tréninků",       s:"deset dní v deníku",            p:w=>[trDny(w),10] },
+ { id:"tr25",    ic:"🥇", n:"25 tréninků",       s:"tady už to je zvyk",            p:w=>[trDny(w),25] },
+ { id:"tr50",    ic:"🏆", n:"50 tréninků",       s:"půl roku dřiny",                p:w=>[trDny(w),50] },
+ { id:"sez1",    ic:"▶︎", n:"První jednotka",    s:"dokonči trénink v appce",       p:w=>[histW(w).length,1] },
+ { id:"sez10",   ic:"🔟", n:"10 jednotek",       s:"deset tréninků od začátku do konce", p:w=>[histW(w).length,10] },
+ { id:"cviky15", ic:"🎯", n:"15 různých cviků",  s:"pestrost se počítá",            p:w=>[trCviku(w),15] },
+
+ { id:"rekord",  ic:"🚀", n:"Osobní rekord",     s:"zvedni víc než napoprvé",       p:w=>[pokroky(w),1] },
+ { id:"rekord5", ic:"⚡", n:"Pět rekordů",       s:"pět cviků nahoru",              p:w=>[pokroky(w),5] },
+ { id:"objem10", ic:"🏋️", n:"10 tun",            s:"nazvedáno celkem",              p:w=>[objemCelkem(w),10000] },
+ { id:"objem50", ic:"🐘", n:"50 tun",            s:"to je deset slonů",             p:w=>[objemCelkem(w),50000] },
+ { id:"dlouhy",  ic:"⏱️", n:"Hodina v posilovně", s:"trénink přes 60 minut",        p:w=>[nejdelsi(w),60] },
+
+ { id:"serie7",  ic:"🔥", n:"Týden v kuse",      s:"7 dní nad minimem",             p:w=>[streak(w),7] },
+ { id:"serie14", ic:"🔥", n:"Čtrnáct dní",       s:"dva týdny v řadě",              p:w=>[streak(w),14] },
+ { id:"serie30", ic:"👑", n:"Měsíc bez výpadku", s:"30 dní v řadě",                 p:w=>[streak(w),30] },
+
+ { id:"voda5",   ic:"💧", n:"Pitný režim",       s:"5 dní splněná voda",            p:w=>[vodaDny(w),5] },
+ { id:"voda20",  ic:"🌊", n:"Vodní tvor",        s:"20 dní splněná voda",           p:w=>[vodaDny(w),20] },
+ { id:"supl30",  ic:"💊", n:"Kreatin 30 dní",    s:"denně, i ve dnech volna",       p:w=>[suplDny(w),30] },
+
+ { id:"foto1",   ic:"📸", n:"První fotka",       s:"start je zdokumentovaný",       p:w=>[fotoArr(w).length,1] },
+ { id:"foto3",   ic:"🖼️", n:"Tři kontroly",      s:"tři měsíce v obraze",           p:w=>[fotoArr(w).length,3] },
+ { id:"foto6",   ic:"🎞️", n:"Půl roku v obraze", s:"šest měsíčních fotek",          p:w=>[fotoArr(w).length,6] },
+ { id:"mira1",   ic:"📏", n:"První míry",        s:"pas, boky, paže",               p:w=>[mrArr(w).length,1] },
+ { id:"mira6",   ic:"📐", n:"Šest měření",       s:"tady už je vidět trend",        p:w=>[mrArr(w).length,6] },
+
+ { id:"favs5",   ic:"⭐", n:"Pět oblíbených",    s:"označ 5 receptů hvězdičkou",    p:()=>[store.get("favs",[]).length,5] },
+ { id:"favs15",  ic:"🌟", n:"Patnáct oblíbených",s:"máte z čeho vybírat",           p:()=>[store.get("favs",[]).length,15] },
+ { id:"kuchar",  ic:"👨‍🍳", n:"Kuchař",           s:"dovař 5× v kuchařském režimu",  p:()=>[store.get("cooked",0),5] },
+ { id:"kuchar20",ic:"🍳", n:"Šéfkuchař",         s:"dovař 20× krok za krokem",      p:()=>[store.get("cooked",0),20] },
+ { id:"vlastni", ic:"✍️", n:"Vlastní recept",    s:"přidej svůj recept",            p:()=>[store.get("myRecipes",[]).length,1] },
+ { id:"plan4",   ic:"📅", n:"Čtyři týdny",       s:"naplánuj celé okno dopředu",    p:()=>[planChybi()===0?1:0,1] },
+ { id:"stouch",  ic:"❤️", n:"Deset šťouchnutí",  s:"posílej si to navzájem",        p:w=>[stouchnuti(w),10] }
 ];
-function ziskane(w){ return ODZNAKY.filter(o => { try { return o.f(w); } catch(e){ return false; } }).map(o => o.id); }
+
+function odzStav(o, w){
+ try { const r = o.p(w); return [r[0]||0, r[1]||1]; } catch(e){ return [0,1]; }
+}
+function ziskane(w){ return ODZNAKY.filter(o => { const r = odzStav(o,w); return r[0] >= r[1]; }).map(o => o.id); }
+function nejblizsi(w){
+ let best = null;
+ ODZNAKY.forEach(o => {
+  const r = odzStav(o,w);
+  if (r[0] >= r[1]) return;
+  const pom = r[0] / r[1];
+  if (!best || pom > best.pom) best = { o:o, cur:r[0], cil:r[1], pom:pom };
+ });
+ return best;
+}
+
+const MOTIV_ODZ = [
+ "Odznaky nejsou o parádě — jsou o tom, že to děláš pořád dokola.",
+ "Každý odznak je den, kdy se ti nechtělo a stejně jsi šel(šla).",
+ "Sbírej je pomalu. Ty rychlé nikoho nedrží.",
+ "Kdo má víc odznaků, ten vaří příští neděli. 😏",
+ "Za půl roku ti tahle mřížka řekne víc než váha.",
+ "Jeden odznak = jeden zvyk, který už nemusíš řešit.",
+ "Verunka je napřed? Tak s tím něco udělej. 💪"
+];
+
+function odznakStrip(){
+ const w = store.get("meId", null);
+ if (!w || !BASE_T[w]) return "";
+ const mam = ziskane(w).length, cel = ODZNAKY.length;
+ const nb = nejblizsi(w);
+ const druhy = w === "p" ? "v" : "p";
+ const mamDruhy = ziskane(druhy).length;
+ return '<div class="card"><div class="rhead"><h3>🏅 Odznaky</h3>'
+  +'<span class="rmeta">'+mam+' / '+cel+'</span></div>'
+  +'<div class="meter m-prot" style="margin-top:2px"><i style="width:'+Math.round(mam/cel*100)+'%"></i></div>'
+  + (nb
+     ? '<div class="odz-next"><span class="e">'+nb.o.ic+'</span>'
+       +'<span class="b"><b>'+esc(nb.o.n)+'</b><br><span class="dim">'+esc(nb.o.s)+'</span></span>'
+       +'<span class="kdy">'+fmt(nb.cur)+' / '+fmt(nb.cil)+'</span></div>'
+     : '<p class="who" style="margin:8px 0 0"><b>Máš všechny.</b> To je fakt něco.</p>')
+  +'<p class="who" style="margin:9px 0 0">'+esc(MOTIV_ODZ[todayIdx % MOTIV_ODZ.length])
+  +' · '+esc((BASE_T[druhy]||{}).name)+' má <b>'+mamDruhy+'</b>.</p>'
+  +'<button class="ghost" data-goto="progres" type="button" style="margin-top:10px">Zobrazit všechny</button></div>';
+}
+
 function odznakCard(w){
  const mam = ziskane(w);
  return '<div class="card"><div class="rhead"><h3>'+BASE_T[w].name+' — odznaky</h3>'
   +'<span class="rmeta">'+mam.length+'/'+ODZNAKY.length+'</span></div>'
   +'<div class="odz">'+ODZNAKY.map(o=>{
-    const on = mam.indexOf(o.id) >= 0;
+    const on = mam.indexOf(o.id) >= 0, r = odzStav(o,w);
     return '<div class="o'+(on?" on":"")+'"><div class="e">'+o.ic+'</div>'
-     +'<div class="t">'+esc(o.n)+'</div><div class="s">'+esc(on ? "máš ✓" : o.s)+'</div></div>';
-  }).join("")+'</div></div>';
+     +'<div class="t">'+esc(o.n)+'</div>'
+     +'<div class="s">'+(on ? "máš ✓" : (r[1] > 1 ? fmt(r[0])+" / "+fmt(r[1]) : esc(o.s)))+'</div></div>';
+  }).join("")+'</div>'
+  +'<div class="hint">Zamčené odznaky ukazují, jak daleko k nim máš. Nic se za ně neplatí — jsou to jen důkazy.</div></div>';
 }
+
 function kontrolaOdznaku(){
  const drive = store.get("odznaky", []);
  const ted = [];
@@ -3271,7 +3371,8 @@ function kontrolaOdznaku(){
  ted.filter(k => drive.indexOf(k) < 0).forEach(k => {
   const p = k.split("|"), o = ODZNAKY.find(x => x.id === p[1]);
   if (o) pushMsg("odz-"+k, o.ic, "Nový odznak: "+o.n,
-    BASE_T[p[0]].name+" si právě odemkl(a) odznak „"+o.n+"\". Malá věc, ale znamená, že to fakt jede.");
+    BASE_T[p[0]].name+" si právě odemkl(a) odznak „"+o.n+"\". "
+    + (ziskane(p[0]).length >= ODZNAKY.length ? "A to byl poslední — všechny!" : "Zbývá jich ještě "+(ODZNAKY.length - ziskane(p[0]).length)+"."));
  });
  store.set("odznaky", ted);
 }
