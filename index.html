@@ -1346,8 +1346,8 @@ Script.complete();
 <section id="tab-nastaveni" hidden></section>
 
 <footer>
-  Odškrtnutí, váhy a míry zůstávají v tomhle telefonu. Zprávy, oblíbené recepty, jídelníček a nákup
-  se po propojení drží stejné u obou. Doporučení v Progresu upravuje kalorie podle vývoje váhy.
+  Po propojení se oba telefony drží stejně — deník cviků, tréninky, vážení, míry, voda i odškrtnutá
+  jídla. Fotky zůstávají jen v telefonu, kde vznikly. Doporučení v Progresu upravuje kalorie podle vývoje váhy.
 </footer>
 </div>
 
@@ -6211,7 +6211,7 @@ function cyklusCard(){
  if (!start){
   return '<div class="card"><h3>🌙 Cyklus — jen pro Verune</h3>'
    +'<p class="who">Zapiš první den poslední menstruace a appka pak sama pozná, kdy váha nic neznamená, '
-   +'kdy jsou nejlepší dny na těžký trénink a kdy jsou chutě hormonální. Zůstává to jen v tomhle telefonu.</p>'+inp+'</div>';
+   +'kdy jsou nejlepší dny na těžký trénink a kdy jsou chutě hormonální.</p>'+inp+'</div>';
  }
  const den = ((daysBetween(start, new Date().toISOString().slice(0,10)) % 28) + 28) % 28 + 1;
  const f = FAZE.find(x => den >= x[0] && den <= x[1]) || FAZE[3];
@@ -6720,8 +6720,9 @@ function mrCard(who){
   +'<table class="mlist wlist"><thead><tr><th>Datum</th>'+fields.map(f=>'<th class="num">'+f[1]+'</th>').join("")+'<th></th></tr></thead><tbody>'+list+'</tbody></table></div>';
 }
 /* ================= SYNC (Firebase Realtime Database) ================= */
-/* Sdílené: zprávy, oblíbené, týden, nákup, živý přehled druhého.
-   Soukromé (zůstává v telefonu): denní odškrtávání, váhy, míry.       */
+/* Sdílené: úplně všechno kromě fotek a nastavení telefonu —
+   zprávy, oblíbené, týden, nákup, živý přehled druhého a od verze 33
+   i deník cviků, historie tréninků, vážení, míry, voda a odškrtnutí. */
 
 const FB = window.PEVE_FIREBASE || null;   // config se doplní v firebase-config.js
 
@@ -6754,6 +6755,7 @@ const sync = {
       this._m = dbmod;
       this.on = true; this.status = "live";
       this._listen();
+      sdilPosliVse();
       this.pushStatus();
       this.pushWidget();
       syncDot();
@@ -6763,6 +6765,7 @@ const sync = {
     renderNastaveni && renderNastaveni();
   },
 
+  _sdilPos: {},
   _ref(path){ return this._m.ref(this.db, "rodiny/"+this.fam+"/"+path); },
 
   _listen(){
@@ -6791,6 +6794,25 @@ const sync = {
       if (state.tab === "trenink") renderTrenink();
       if (state.tab === "dnes") renderDnes();
       renderNext();
+    });
+    // společná data — deník, tréninky, vážení, míry, voda, odškrtnutí…
+    onValue(this._ref("sdil"), snap => {
+      const v = snap.val() || {};
+      let zmena = false;
+      Object.keys(SDIL).forEach(k => {
+        const balik = v[SDIL[k].c] || {};
+        this._sdilPos[k] = { v: balik.v || {}, t: balik.t || {} };   // co je teď na serveru
+        if (sdilSluc(k, balik)) zmena = true;
+      });
+      if (zmena){ renderAll(); syncDot(); }
+      Object.keys(SDIL).forEach(k => sdilPosli(k));
+    });
+    onValue(this._ref("sdil1"), snap => {
+      const v = snap.val() || {};
+      let zmena = false;
+      SDIL1.forEach(k => { if (sdil1Sluc(k, v[k])) zmena = true; });
+      if (zmena) renderAll();
+      SDIL1.forEach(k => sdil1Posli(k));
     });
     onValue(this._ref("profil"), snap => {
       const v = snap.val() || {};
@@ -6894,6 +6916,10 @@ const sync = {
     if (!this.on) return;
     try { this._m.set(this._ref(path), val); } catch(e){}
   },
+  _upd(path, obj){
+    if (!this.on) return;
+    try { this._m.update(this._ref(path), obj); } catch(e){}
+  },
 
   pushFeed(m){ if (this.on) this._set("feed/"+m.id.replace(/[.#$/\[\]]/g,"_"), m); },
   pushFavs(){ this._set("favs", store.get("favs", [])); },
@@ -6989,6 +7015,205 @@ const sync = {
 };
 
 window.sync = sync;   // ať na něj vidí i zbytek appky
+
+/* ================= SPOLEČNÁ DATA OBOU TELEFONŮ =================
+   Dřív si každý telefon nechával deník cviků, historii tréninků,
+   vážení, míry, vodu i odškrtnutá jídla jenom pro sebe — přes server
+   chodil jen malinký souhrn do karty „živě". Proto se u druhého
+   nikdy nic nerozepsalo dál do statistik, rekordů ani odznaků.
+
+   Teď se sdílí všechno. Každá položka má razítko, kdy se naposled
+   změnila; při slučování vyhrává novější. Smazání je taky změna,
+   takže se propíše i to, co jeden telefon zahodil.                */
+
+const SDIL = {
+ hist:    { c:"hist",   t:"pole",  id:x=>x.d+"|"+x.who+"|"+x.rid,                st:"hist"   },
+ tlog:    { c:"tlog",   t:"denik", dnu:600, dat:id=>id.slice(-10) },
+ tlogB:   { c:"tlogb",  t:"denik", dnu:600, dat:id=>id.slice(-10) },
+ wtP:     { c:"wtp",    t:"pole",  id:x=>x.d,                                    st:"wtP"    },
+ wtV:     { c:"wtv",    t:"pole",  id:x=>x.d,                                    st:"wtV"    },
+ mrP:     { c:"mrp",    t:"pole",  id:x=>x.d,                                    st:"mrP"    },
+ mrV:     { c:"mrv",    t:"pole",  id:x=>x.d,                                    st:"mrV"    },
+ spar:    { c:"spar",   t:"pole",  id:x=>x.d+"|"+(x.who||"")+"|"+(x.bud||"")+"|"+(x.rid||""), st:"spar" },
+ checks:  { c:"checks", t:"mapa",  st:"checks", dnu:200, dat:id=>id.slice(0,10) },
+ water:   { c:"water",  t:"mapa",  st:"water",   dnu:200, dat:id=>id.slice(0,10) },
+ odznaky: { c:"odz",    t:"pole",  id:x=>String(x) },
+ parti:   { c:"parti",  t:"pole",  id:x=>String(x) },
+ pantry:  { c:"spiz",   t:"pole",  id:x=>String(x),                              st:"pantry" }
+};
+/* jednoduché hodnoty — sdílí se celé, vyhrává novější zápis */
+const SDIL1 = ["queue","fb","cooked","lastCheckin","cyklus","shopHist","shopCasto","nakupDni"];
+const SDIL1_ST = { queue:"queue", fb:"fb", lastCheckin:"lastCheckin", cyklus:"cyklus", nakupDni:"nakupDni" };
+
+let sdilTicho = false;          // při slučování se nerazítkuje
+const sdilFronta = {};
+
+function fbKlic(id){ return String(id).replace(/[.#$/\[\]]/g, "~"); }
+function kopie(v){ try { return JSON.parse(JSON.stringify(v === undefined ? null : v)); } catch(e){ return null; } }
+
+/* hodnota → plochá mapa id → položka */
+function sdilNaMapu(k, v){
+ const d = SDIL[k], out = {};
+ if (!d) return out;
+ if (d.t === "pole"){
+  (Array.isArray(v) ? v : []).forEach(x => { const id = fbKlic(d.id(x)); if (id) out[id] = x; });
+ } else if (d.t === "mapa"){
+  Object.keys(v || {}).forEach(kk => { out[fbKlic(kk)] = { k: kk, v: (v||{})[kk] }; });
+ } else if (d.t === "denik"){
+  Object.keys(v || {}).forEach(kk => (v[kk] || []).forEach(z => {
+   out[fbKlic(kk + "|" + z.d)] = { k: kk, z: z };
+  }));
+ }
+ return out;
+}
+/* plochá mapa → původní tvar */
+function sdilZMapy(k, m){
+ const d = SDIL[k];
+ if (d.t === "pole"){
+  const a = Object.keys(m).map(id => m[id]);
+  if (a.length && a[0] && a[0].d) a.sort((x,y)=> String(x.d).localeCompare(String(y.d)));
+  return a;
+ }
+ if (d.t === "mapa"){
+  const o = {};
+  Object.keys(m).forEach(id => { const it = m[id]; if (it && it.k !== undefined) o[it.k] = it.v; });
+  return o;
+ }
+ const o = {};
+ Object.keys(m).forEach(id => {
+  const it = m[id]; if (!it || it.k === undefined) return;
+  (o[it.k] = o[it.k] || []).push(it.z);
+ });
+ Object.keys(o).forEach(kk => o[kk].sort((x,y)=> String(x.d).localeCompare(String(y.d))));
+ return o;
+}
+
+/* razítka: co se od minule změnilo nebo zmizelo */
+function sdilRazitka(k, novy){
+ if (sdilTicho) return;
+ const stary = sdilNaMapu(k, store.get(k, SDIL[k].t === "pole" ? [] : {}));
+ const cerstvy = sdilNaMapu(k, novy);
+ const ts = store.get("ts_" + k, {}) || {};
+ const ted = Date.now();
+ let zmena = false;
+ Object.keys(cerstvy).forEach(id => {
+  if (!(id in stary) || JSON.stringify(stary[id]) !== JSON.stringify(cerstvy[id])){ ts[id] = ted; zmena = true; }
+ });
+ Object.keys(stary).forEach(id => { if (!(id in cerstvy)){ ts[id] = ted; zmena = true; } });
+ if (zmena) store.set("ts_" + k, ts);
+}
+
+/* co poslat na server */
+function sdilBalik(k){
+ const d = SDIL[k];
+ const m = sdilNaMapu(k, store.get(k, d.t === "pole" ? [] : {}));
+ const ts = store.get("ts_" + k, {}) || {};
+ const mez = d.dnu ? new Date(Date.now() - d.dnu * 86400000).toISOString().slice(0,10) : null;
+ const stary = id => { if (!mez || !d.dat) return false; const x = d.dat(id); return x && x < mez; };
+ const v = {}, t = {};
+ Object.keys(m).forEach(id => { if (!stary(id)) v[id] = { i: kopie(m[id]) }; });
+ Object.keys(ts).forEach(id => { if (!stary(id)) t[id] = ts[id]; });
+ return { v: v, t: t };
+}
+
+function sdilNaplanuj(k){
+ if (!(window.sync && sync.on)) return;
+ clearTimeout(sdilFronta[k]);
+ sdilFronta[k] = setTimeout(()=>{ sdilPosli(k); }, 500);
+}
+function sdilPosli(k){
+ if (!(window.sync && sync.on)) return;
+ const b = sdilBalik(k);
+ const bylo = sync._sdilPos[k] || { v:{}, t:{} };
+ const zm = {};
+ Object.keys(b.v).forEach(id => {
+  if (JSON.stringify(bylo.v[id]) !== JSON.stringify(b.v[id])) zm["v/" + id] = b.v[id];
+ });
+ Object.keys(bylo.v).forEach(id => { if (!(id in b.v)) zm["v/" + id] = null; });
+ Object.keys(b.t).forEach(id => { if (bylo.t[id] !== b.t[id]) zm["t/" + id] = b.t[id]; });
+ Object.keys(bylo.t).forEach(id => { if (!(id in b.t)) zm["t/" + id] = null; });
+ if (!Object.keys(zm).length) return;
+ sync._sdilPos[k] = b;
+ sync._upd("sdil/" + SDIL[k].c, zm);
+}
+function sdil1Posli(k){
+ if (!(window.sync && sync.on)) return;
+ const b = { v: kopie(store.get(k, null)), t: (store.get("ts1", {}) || {})[k] || 0 };
+ const otisk = JSON.stringify(b);
+ if (sync._sdilPos["1:" + k] === otisk) return;
+ sync._sdilPos["1:" + k] = otisk;
+ sync._set("sdil1/" + k, b);
+}
+
+/* sloučení jednoho balíku od druhého telefonu */
+function sdilSluc(k, vzdal){
+ const d = SDIL[k];
+ const prazdno = d.t === "pole" ? [] : {};
+ const lok = sdilNaMapu(k, store.get(k, prazdno));
+ const tsL = store.get("ts_" + k, {}) || {};
+ const rv = (vzdal && vzdal.v) || {}, rt = (vzdal && vzdal.t) || {};
+ const ids = {};
+ [lok, tsL, rv, rt].forEach(o => Object.keys(o).forEach(id => ids[id] = 1));
+ const out = {}, tsN = {};
+ const hranice = Date.now() - 120 * 86400000;        // staré náhrobky zahodíme
+ Object.keys(ids).forEach(id => {
+  const maL = id in lok, maR = id in rv;
+  const tl = tsL[id] || (maL ? 1 : 0);
+  const tr = rt[id]  || (maR ? 1 : 0);
+  const vyhraL = tl >= tr;
+  const ma = vyhraL ? maL : maR;
+  const cas = Math.max(tl, tr);
+  if (ma) { out[id] = vyhraL ? lok[id] : (rv[id] && rv[id].i); if (cas > 1) tsN[id] = cas; }
+  else if (cas > 1 && cas > hranice) tsN[id] = cas;   // náhrobek — smazáno
+ });
+ Object.keys(out).forEach(id => { if (out[id] === undefined || out[id] === null) delete out[id]; });
+ const nova = sdilZMapy(k, out);
+ const zmena = JSON.stringify(nova) !== JSON.stringify(store.get(k, prazdno));
+ sdilTicho = true;
+ store.set(k, nova);
+ store.set("ts_" + k, tsN);
+ sdilTicho = false;
+ if (d.st) state[d.st] = nova;
+ return zmena;
+}
+function sdil1Sluc(k, vzdal){
+ if (!vzdal) return false;
+ const tsAll = store.get("ts1", {}) || {};
+ const tl = tsAll[k] || 0, tr = vzdal.t || 0;
+ if (tr <= tl) return false;
+ const nova = vzdal.v === undefined ? null : vzdal.v;
+ if (JSON.stringify(nova) === JSON.stringify(store.get(k, null))) { tsAll[k] = tr; store.set("ts1", tsAll); return false; }
+ sdilTicho = true;
+ store.set(k, nova);
+ sdilTicho = false;
+ tsAll[k] = tr; store.set("ts1", tsAll);
+ if (SDIL1_ST[k]) state[SDIL1_ST[k]] = nova;
+ return true;
+}
+
+/* první rozjezd po propojení — pošli všechno, co mám */
+function sdilPosliVse(){
+ Object.keys(SDIL).forEach(k => sdilPosli(k));
+ SDIL1.forEach(k => sdil1Posli(k));
+}
+
+/* store.set se stará o razítka i o odeslání — nemusí se to psát u každé změny */
+(function(){
+ const puvodni = store.set.bind(store);
+ store.set = function(k, v){
+  const sdilena = !!SDIL[k];
+  if (sdilena && !sdilTicho) sdilRazitka(k, v);
+  if (SDIL1.indexOf(k) >= 0 && !sdilTicho){
+   const t = store.get("ts1", {}) || {};
+   if (JSON.stringify(v) !== JSON.stringify(store.get(k, null))){ t[k] = Date.now(); puvodni("ts1", t); }
+  }
+  const r = puvodni(k, v);
+  if (sdilena) sdilNaplanuj(k);
+  else if (SDIL1.indexOf(k) >= 0) sdil1Posli(k);
+  return r;
+ };
+})();
+
 
 /* ---- párovací obrazovka ---- */
 function syncLabel(){
@@ -7661,8 +7886,10 @@ function renderNastaveniTab(){
 
   /* --- data --- */
   +'<div class="card"><h3>💾 Data a přenos</h3>'
-  +'<p class="who">Odškrtnutí, váhy, míry, tréninkový deník i fotky jsou uložené jen v tomhle telefonu. '
-  +'Když měníš mobil, vyexportuj je sem a v novém vlož zpátky. Pozor, fotky zálohu hodně nafouknou.</p>'
+  +'<p class="who">Když jsou telefony propojené, deník cviků, tréninky, vážení, míry, voda i odškrtnutá '
+  +'jídla se drží stejné u obou — každá změna doletí k druhému během vteřiny. '
+  +'<b>Fotky a nastavení tohohle telefonu</b> se neposílají nikam. '
+  +'Když měníš mobil, vyexportuj data sem a v novém je vlož zpátky. Pozor, fotky zálohu hodně nafouknou.</p>'
   +'<div class="wrow"><button class="act small" id="expBtn" type="button">Zkopírovat moje data</button>'
   +'<button class="ghost" id="impBtn" type="button">Vložit data</button></div>'
   +'<textarea id="dataBox" placeholder="Sem se vypíšou data k zkopírování — nebo je sem vlož a dej Vložit data" '
@@ -7676,7 +7903,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">32</td></tr>'
+  +'<tr><td>Verze</td><td class="num">33</td></tr>'
   +'<tr><td>Tréninků k výběru</td><td class="num">'+(ROUTINES.p.length+ROUTINES.v.length)+'</td></tr>'
   +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
@@ -8495,7 +8722,8 @@ document.addEventListener("click", e=>{
                 "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist","plan","jidlo","shopHist","shopCasto","nakupDni","navrhy","schval","spizOdecist",
                 "n_prot_p","n_prot_v","n_water_p","n_water_v","n_casy","n_mintr_p","n_mintr_v",
                 "n_rozvrh_p","n_rozvrh_v","n_tren_p","n_tren_v","n_hlasky","n_zpravyAuto","n_konfety","n_stouch",
-                "favJ","parti","tlogB","spar","n_zkus_p","n_zkus_v","favR","profil_p","profil_v"];
+                "favJ","parti","tlogB","spar","n_zkus_p","n_zkus_v","favR","profil_p","profil_v","ts1"]
+   .concat(Object.keys(SDIL).map(k => "ts_" + k));
   const dump = {};
   keys.forEach(k=>{ const v = store.get(k, null); if (v !== null) dump[k] = v; });
   const box = document.getElementById("dataBox");
