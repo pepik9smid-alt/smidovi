@@ -77,8 +77,10 @@
 
   .subnav[hidden]{display:none}
   .subnav{display:flex;gap:3px;background:var(--surface-1);border:1px solid var(--border);
-          border-radius:12px;padding:4px;margin:0 0 16px}
-  .subnav button{flex:1;background:none;border:0;border-radius:9px;padding:8px 4px;font:inherit;
+          border-radius:12px;padding:4px;margin:0 0 16px;overflow-x:auto;scrollbar-width:none}
+  .subnav::-webkit-scrollbar{display:none}
+  .subnav button{flex:1 1 auto;min-width:0;white-space:nowrap;background:none;border:0;border-radius:9px;
+          padding:8px 9px;font:inherit;
           font-size:13.5px;color:var(--text-secondary);cursor:pointer;line-height:1.2;
           transition:background .14s ease,color .14s ease}
   .subnav button[aria-selected="true"]{background:var(--accent-soft);color:var(--text-primary);font-weight:600}
@@ -1335,7 +1337,11 @@ Script.complete();
 <section id="tab-nakup" hidden></section>
 <section id="tab-trenink" hidden></section>
 <section id="tab-plan" hidden></section>
+<section id="tab-cisla" hidden></section>
 <section id="tab-progres" hidden></section>
+<section id="tab-telo" hidden></section>
+<section id="tab-staty" hidden></section>
+<section id="tab-odznaky" hidden></section>
 <section id="tab-cile" hidden></section>
 <section id="tab-nastaveni" hidden></section>
 
@@ -5897,8 +5903,7 @@ function cislaCard(who){
  const top = topCviky(who);
 
 
- return '<h2>Moje čísla</h2>'
-  +'<div class="card"><div class="rhead"><h3>📊 Souhrn</h3>'
+ return '<div class="card"><div class="rhead"><h3>📊 Souhrn</h3>'
   +'<span class="rmeta">'+esc(obdLab)+'</span></div>'
   +'<div class="chips" style="margin-bottom:10px">'
   + [[30,"30 dní"],[90,"90 dní"],[365,"rok"],[0,"vše"]].map(x=>
@@ -6012,8 +6017,8 @@ function trReco(who){
 function renderTrenink(){
  const who = state.trWho;
  const tgl = '<div class="seg-toggle" style="margin-bottom:14px">'
-  +'<button data-trwho="p" class="'+(who==="p"?"on":"")+'">Pepulus</button>'
-  +'<button data-trwho="v" class="'+(who==="v"?"on":"")+'">Verune</button></div>';
+  +'<button data-trwho="p" class="'+(who==="p"?"on":"")+'">'+esc(jmeno("p"))+'</button>'
+  +'<button data-trwho="v" class="'+(who==="v"?"on":"")+'">'+esc(jmeno("v"))+'</button></div>';
  let head = "";
  if (who==="p") {
   const q = QUEUE[state.queue];
@@ -6079,9 +6084,23 @@ function renderTrenink(){
  const tip = who==="p"
   ? '<div class="note"><b>Dvojitá progrese:</b> stejná váha, přidávej opakování. Horní hranice ve všech sériích → +2,5 kg (horní tělo) / +5 kg (dolní) a znovu. U každého cviku jde vybrat varianta — když je nářadí obsazené nebo něco nesedí. Deload každý 7. týden: poloviční série.</div>'
   : '<div class="note"><b>Neboj se činek:</b> silový trénink u ženy = pevné tvary, ne „chlapské svaly" — na ty nejsou hormony, nestane se to omylem. U každého cviku jde vybrat varianta. Váhy zapisuj do Hevy: síla nahoru = postava se mění, i když váha stojí.</div>';
- document.getElementById("tab-trenink").innerHTML = tgl + spoluPozvankaKarta() + bezi + peerTreninkBox() + head + trReco(who) + sparingCard(who) + hledejEx + nalez + filtry + strecTip + list + cislaCard(who) + tip
+ document.getElementById("tab-trenink").innerHTML = tgl + spoluPozvankaKarta() + bezi + peerTreninkBox() + head + trReco(who) + sparingCard(who) + hledejEx + nalez + filtry + strecTip + list + tip
   + '<div class="note"><b>Deník máš přímo tady.</b> Rozklikni cvik, zapiš kg a opakování — appka si pamatuje, '
-  + 'co jsi zvedal(a) minule, a sama řekne, kdy přidat. Tlačítko s časem spustí odpočinek mezi sériemi.</div>';
+  + 'co jsi zvedal(a) minule, a sama řekne, kdy přidat. Tlačítko s časem spustí odpočinek mezi sériemi.</div>'
+  + '<div class="note" style="border-color:var(--s1)"><b>Rekordy, objem a statistiky</b> mají vlastní záložku '
+  + '<b>Moje čísla</b> nahoře — ať se sem nemusíš prokousávat přes celý seznam tréninků.</div>';
+ renderCisla();
+}
+
+/* ---- záložka Moje čísla ---- */
+function renderCisla(){
+ const el = document.getElementById("tab-cisla");
+ if (!el) return;
+ const who = state.trWho;
+ el.innerHTML = '<div class="seg-toggle" style="margin-bottom:14px">'
+  +'<button data-trwho="p" class="'+(who==="p"?"on":"")+'">'+esc(jmeno("p"))+'</button>'
+  +'<button data-trwho="v" class="'+(who==="v"?"on":"")+'">'+esc(jmeno("v"))+'</button></div>'
+  + cislaCard(who);
 }
 
 /* ============ Progres ============ */
@@ -6860,7 +6879,7 @@ const sync = {
     onValue(this._ref("stav/"+other), snap => {
       this.peer = snap.val();
       if (state.tab === "dnes") renderDnes();
-      if (state.tab === "progres") renderProgres();
+      if (GRP_OF[state.tab] === "progres") renderProgres();
     });
     // živý trénink druhého (stejný balíček, co čte widget)
     onValue(this._ref("widget/"+other), snap => {
@@ -7415,47 +7434,87 @@ function weekCard(who){
   +'</div></div>';
 }
 
-function renderProgres(){
- const lc = state.lastCheckin;
- let due = "";
- if (lc){
-  const d = daysBetween(lc, new Date().toISOString().slice(0,10));
-  due = d >= 28 ? ' <b style="color:var(--s2)">Už je to '+d+' dní — je čas na další.</b>' : ' Další zhruba za '+(28-d)+' dní.';
- }
+function progHlava(){
  const wkNo = Math.floor(daysBetween("2026-08-08", new Date().toISOString().slice(0,10)) / 7) + 1;
  const deload = (wkNo % 7 === 0);
- document.getElementById("tab-progres").innerHTML =
-  '<div class="card" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'
+ return '<div class="card" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">'
   +'<div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px">Týden projektu</div>'
   +'<div style="font-size:24px;font-weight:700;line-height:1.1">'+wkNo+'.</div></div>'
   +'<div style="flex:1;min-width:180px;font-size:13px" class="'+(deload?"":"dim")+'">'
   +(deload ? '<b style="color:var(--s2)">Deload týden!</b> Stejné cviky a váhy, ale poloviční počet sérií. Nevynechávejte to — po deloadu čísla skočí nahoru.'
            : 'Deload (poloviční série) přijde v '+((Math.floor((wkNo-1)/7)+1)*7)+'. týdnu, tedy za '+(((Math.floor((wkNo-1)/7)+1)*7)-wkNo)+' týdny.')
-  +'</div></div>'
+  +'</div></div>';
+}
+function checkinStav(){
+ const lc = state.lastCheckin;
+ if (!lc) return { dni: null, dluh: true, text: "Zatím žádná měsíční kontrola — udělejte první hned na startu." };
+ const d = daysBetween(lc, new Date().toISOString().slice(0,10));
+ return { dni: d, dluh: d >= 28,
+   text: d >= 28 ? "Od poslední kontroly uběhlo " + d + " dní — je čas na fotky a míry."
+                 : "Poslední kontrola před " + d + " dny. Další zhruba za " + (28-d) + " dní." };
+}
+
+/* --- 1/4 Přehled --- */
+function progPrehled(){
+ const ch = checkinStav();
+ return progHlava()
   +'<div class="grid2">'+weekCard("p")+weekCard("v")+'</div>'
   +'<div class="grid2">'+report("p")+report("v")+'</div>'
-  +'<div class="grid2">'+wtCard("p")+wtCard("v")+'</div>'
-  +'<div class="card"><h3>Kolik toho fakt sníte — po týdnech</h3>'
-  +'<p class="who">Osm týdnů zpátky. Počítá se jen to, co je odškrtnuté v Dnes, takže je to poctivé zrcadlo, ne přání.</p>'
-  +'<div class="grid2" style="gap:8px"><div><div class="who" style="margin:0 0 2px">Pepulus</div>'+(tydnyChart("p")||'<div class="dim" style="font-size:12.5px">Zatím není co kreslit — odškrtávej jídla a graf naskočí.</div>')+'</div>'
-  +'<div><div class="who" style="margin:0 0 2px">Verune</div>'+(tydnyChart("v")||'<div class="dim" style="font-size:12.5px">Zatím není co kreslit — odškrtávej jídla a graf naskočí.</div>')+'</div></div></div>'
+  + (ch.dluh ? '<div class="note" style="border-color:var(--s2)"><b>📸 '+esc(ch.text)+'</b> '
+      +'Najdeš to v záložce <b>Tělo</b> hned vedle.</div>' : '')
+  +'<div class="note"><b>Jak je Progres poskládaný:</b> tady nahoře je souhrn týdne a doporučení. '
+  +'<b>Tělo</b> = váha, míry, fotky a cyklus. <b>Statistiky</b> = kolik toho fakt sníte a odtrénujete. '
+  +'<b>Odznaky</b> = co jste už ulovili.</div>';
+}
+
+/* --- 2/4 Tělo --- */
+function progTelo(){
+ const ch = checkinStav();
+ return '<div class="grid2">'+wtCard("p")+wtCard("v")+'</div>'
   + cyklusCard()
-  +'<div class="card"><h3>Měsíční vizuální kontrola</h3>'
-  +'<p class="who">Jednou za ~4 týdny: fotky (zepředu, z boku, zezadu — stejné světlo a místo), míry níže a pohled zpět: sedí oblečení jinak? Rostou váhy v Hevy?'
-  +(lc ? ' Naposledy: <b>'+lc.split("-").reverse().join(". ")+'</b>.'+due : ' Zatím neproběhla — udělejte první hned na startu, budete si děkovat.')+'</p>'
+  +'<div class="card"><h3>📸 Měsíční vizuální kontrola</h3>'
+  +'<p class="who">Jednou za ~4 týdny: fotky (zepředu, z boku, zezadu — stejné světlo a místo), míry níže a pohled zpět: '
+  +'sedí oblečení jinak? Rostou váhy v tréninku? '+esc(ch.text)+'</p>'
   +'<button class="act small" id="checkinBtn" type="button">Označit dnešní kontrolu ✓</button></div>'
+  +'<h2>Míry</h2>'
   +'<div class="grid2">'+mrCard("p")+mrCard("v")+'</div>'
+  +'<h2>Fotky</h2>'
   +'<div class="grid2">'+fotoCard("p")+fotoCard("v")+'</div>'
+  +'<div class="note"><b>Váží se v neděli ráno</b> — nalačno, po WC. Denní výkyvy jsou voda. '
+  +'U ženy hýbe cyklus váhou o 1–2 kg, proto tam rozhodují fotky, míry a síla — ne váha. '
+  +'<b>Doporučení v Přehledu samo přepočítá kalorie</b>, když se váha 2+ týdny nehýbe správným směrem.</div>';
+}
+
+/* --- 3/4 Statistiky --- */
+function progStaty(){
+ return '<div class="card"><h3>🍽️ Kolik toho fakt sníte — po týdnech</h3>'
+  +'<p class="who">Osm týdnů zpátky. Počítá se jen to, co je odškrtnuté v Dnes, takže je to poctivé zrcadlo, ne přání.</p>'
+  +'<div class="grid2" style="gap:8px"><div><div class="who" style="margin:0 0 2px">'+esc(jmeno("p"))+'</div>'
+  +(tydnyChart("p")||'<div class="dim" style="font-size:12.5px">Zatím není co kreslit — odškrtávej jídla a graf naskočí.</div>')+'</div>'
+  +'<div><div class="who" style="margin:0 0 2px">'+esc(jmeno("v"))+'</div>'
+  +(tydnyChart("v")||'<div class="dim" style="font-size:12.5px">Zatím není co kreslit — odškrtávej jídla a graf naskočí.</div>')+'</div></div></div>'
   +'<h2>Statistiky</h2>'
   +'<div class="grid2">'+statyCard("p")+statyCard("v")+'</div>'
   + statyDomacnost()
-  +'<h2>Odznaky</h2>'
-  +'<div class="grid2">'+odznakCard("p")+odznakCard("v")+'</div>'
   +'<h2>Sparing</h2>'
   + sparStatyCard()
-  +'<div class="note"><b>Váží se v neděli ráno</b> — nalačno, po WC. Denní výkyvy jsou voda. '
-  +'Verune: cyklus hýbe váhou o 1–2 kg, proto u ní rozhodují fotky, míry a síla — ne váha. '
-  +'<b>Doporučení výše samo přepočítá kalorie</b>, když se váha 2+ týdny nehýbe správným směrem — stačí kliknout.</div>';
+  +'<div class="note">Tréninkové rekordy, objem a rozložení partií jsou vedle v <b>Trénink → Moje čísla</b> — '
+  +'tady jsou čísla za domácnost, jídlo a docházku.</div>';
+}
+
+/* --- 4/4 Odznaky --- */
+function progOdznaky(){
+ return '<div class="grid2">'+odznakCard("p")+odznakCard("v")+'</div>'
+  +'<div class="note">Odznaky se kontrolují automaticky pokaždé, když něco odškrtnete nebo dotrénujete. '
+  +'Zamčené vidíte taky — ať víte, na co se chytit.</div>';
+}
+
+function renderProgres(){
+ const t = { progres: progPrehled, telo: progTelo, staty: progStaty, odznaky: progOdznaky };
+ Object.keys(t).forEach(k => {
+  const el = document.getElementById("tab-" + k);
+  if (el) el.innerHTML = t[k]();
+ });
 }
 
 /* ============ Cíle ============ */
@@ -7617,7 +7676,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">31</td></tr>'
+  +'<tr><td>Verze</td><td class="num">32</td></tr>'
   +'<tr><td>Tréninků k výběru</td><td class="num">'+(ROUTINES.p.length+ROUTINES.v.length)+'</td></tr>'
   +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
@@ -7669,21 +7728,21 @@ function renderCile(){
 function renderAll(){ uklidPlan(); uklidJidlo(); planPripominka(); kontrolaOdznaku(); renderNext(); buildMsgs(); renderDnes(); renderTyden(); renderRecepty(); renderNakup(); renderTrenink(); renderPlan(); renderProgres(); renderCile(); renderNastaveniTab();
  if (state.notif) renderZpravy();
  syncDot(); }
-const TABS = ["dnes","tyden","recepty","nakup","trenink","plan","progres","cile","nastaveni"];
+const TABS = ["dnes","tyden","recepty","nakup","trenink","plan","cisla","progres","telo","staty","odznaky","cile","nastaveni"];
 const GROUPS = {
  dnes:    { tabs:[["dnes","Dnes"]] },
  jidlo:   { tabs:[["tyden","Týden"],["recepty","Recepty"],["nakup","Nákup"]] },
- trenink: { tabs:[["trenink","Tréninky"],["plan","Plán"]] },
- progres: { tabs:[["progres","Průběh"]] },
+ trenink: { tabs:[["trenink","Tréninky"],["plan","Plán"],["cisla","Moje čísla"]] },
+ progres: { tabs:[["progres","Přehled"],["telo","Tělo"],["staty","Statistiky"],["odznaky","Odznaky"]] },
  nastaveni: { tabs:[["nastaveni","Nastavení"],["cile","Cíle"]] }
 };
-GROUPS.progres.tabs = [["progres","Průběh"]];
 const GRP_OF = {};
 Object.keys(GROUPS).forEach(g => GROUPS[g].tabs.forEach(t => GRP_OF[t[0]] = g));
 const lastSub = { jidlo:"tyden", progres:"progres", trenink:"trenink", nastaveni:"nastaveni" };
 const RENDER = { dnes:renderDnes, tyden:renderTyden, recepty:renderRecepty, nakup:renderNakup,
-                 trenink:renderTrenink, plan:renderPlan, progres:renderProgres, cile:renderCile,
-                 nastaveni:renderNastaveniTab };
+                 trenink:renderTrenink, plan:renderPlan, cisla:renderCisla,
+                 progres:renderProgres, telo:renderProgres, staty:renderProgres, odznaky:renderProgres,
+                 cile:renderCile, nastaveni:renderNastaveniTab };
 function showTab(t){
  state.tab = t;
  state.pairConfirm = false;
@@ -8234,7 +8293,7 @@ document.addEventListener("click", e=>{
  if (e.target.id === "planClear"){ vycistitPlan(); state.planDen = null; renderPlan(); renderDnes(); renderNext(); return; }
 
  const so = e.target.closest("[data-statobd]");
- if (so){ nastSet("statObd", +so.dataset.statobd); renderTrenink(); return; }
+ if (so){ nastSet("statObd", +so.dataset.statobd); renderCisla(); return; }
  const fr = e.target.closest("[data-favr]");
  if (fr){
   const nova = favRTgl(fr.dataset.favr);
@@ -8369,7 +8428,7 @@ document.addEventListener("click", e=>{
  if (ty){ state.trTyp = ty.dataset.trtyp; renderTrenink(); return; }
 
  const tw = e.target.closest("[data-trwho]");
- if (tw){ state.trWho = tw.dataset.trwho; renderTrenink(); return; }
+ if (tw){ state.trWho = tw.dataset.trwho; renderTrenink(); renderCisla(); return; }
  if (e.target.id === "doneBtn"){
   const hotovo = QUEUE[state.queue];
   state.queue = (state.queue+1)%4; store.set("queue", state.queue);
