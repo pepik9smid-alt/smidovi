@@ -451,6 +451,42 @@
   .porce{display:inline-block;font-size:10.5px;font-weight:700;background:var(--accent-soft);
         color:var(--text-primary);border-radius:99px;padding:1px 7px;margin-left:5px;vertical-align:1px;
         white-space:nowrap}
+  .pk-top{position:sticky;top:0;z-index:4;background:var(--page);padding:12px 0 8px;
+        margin:0 -12px;padding-left:12px;padding-right:12px;border-bottom:1px solid var(--grid)}
+  .pk-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .pk-head h2{margin:0;font-size:19px;letter-spacing:-.35px;text-transform:none;color:var(--text-primary);
+        font-weight:700;display:block}
+  .pk-head h2::before{display:none}
+  .pk-head .sub{font-size:12.5px;color:var(--text-secondary);margin-top:2px}
+  .pk-search{width:100%;margin:9px 0 8px;padding:11px 12px;font-size:16px;border-radius:11px;
+        border:1px solid var(--border);background:var(--surface-1);color:var(--text-primary);font-family:inherit}
+  .pk-chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch;
+        scrollbar-width:none}
+  .pk-chips::-webkit-scrollbar{display:none}
+  .pk-chips button{flex:none;padding:6px 11px;border-radius:99px;border:1px solid var(--border);
+        background:var(--surface-1);color:var(--text-secondary);font:inherit;font-size:12.5px;
+        font-weight:600;cursor:pointer;white-space:nowrap}
+  .pk-chips button.on{background:var(--s1);border-color:var(--s1);color:#fff}
+  .pk-count{font-size:12px;color:var(--muted);margin:10px 0 4px}
+  .pk-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;
+        border:0;border-bottom:1px solid var(--grid);padding:11px 2px;font:inherit;cursor:pointer;color:inherit}
+  .pk-item:last-child{border-bottom:0}
+  .pk-item.on{background:var(--accent-soft);border-radius:10px;border-bottom-color:transparent;padding-left:8px;padding-right:8px}
+  .pk-item .pk-n{flex:1;min-width:0;font-size:14.5px;line-height:1.32}
+  .pk-item .pk-m{display:block;font-size:11.5px;color:var(--text-secondary);margin-top:2px;
+        font-variant-numeric:tabular-nums}
+  .pk-item .pk-k{flex:none;text-align:right;font-size:12.5px;font-variant-numeric:tabular-nums;
+        color:var(--text-secondary);line-height:1.3}
+  .pk-item .pk-k b{display:block;font-size:14px;color:var(--text-primary)}
+  .pk-star{flex:none;background:none;border:0;font-size:19px;line-height:1;cursor:pointer;
+        color:var(--muted);padding:2px 4px}
+  .pk-star.on{color:#f0a500}
+  .pk-tick{flex:none;color:var(--s3);font-weight:700;font-size:16px}
+  .pk-none{padding:22px 4px;color:var(--text-secondary);font-size:14px}
+  .mealbtn{display:flex;align-items:center;gap:8px;width:100%;margin-top:6px;padding:8px 10px;
+        border-radius:10px;border:1px solid var(--border);background:var(--surface-1);
+        color:var(--text-secondary);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-align:left}
+  .mealbtn .arr{margin-left:auto;opacity:.7}
   .logbox{border-top:1px solid var(--grid);margin-top:9px;padding-top:9px}
   .logline{font-size:12.5px;color:var(--text-secondary);margin-bottom:6px}
   .logline b{color:var(--text-primary);font-variant-numeric:tabular-nums}
@@ -824,6 +860,7 @@
   <div class="nextwrap" id="nextUp"></div>
 </header>
 
+<div class="sheet" id="pickSheet" hidden></div>
 <div class="sheet" id="notifSheet" hidden>
   <div class="sheet-head"><h2>🔔 Oznamovací centrum</h2>
     <button class="ghost" id="notifClose" type="button">Zavřít</button></div>
@@ -2148,6 +2185,7 @@ const state = {
  resetPtl: false,
  budName: "",
  sessMin: !!(store.get("session", null) || {}).min,
+ pick0: null,
  spar: store.get("spar", []),
  fotoP: store.get("fotoP", []),
  fotoV: store.get("fotoV", [])
@@ -2431,6 +2469,104 @@ function posunCas(t){
  m = ((m % 1440) + 1440) % 1440;
  return Math.floor(m/60) + ":" + String(m%60).padStart(2,"0");
 }
+/* ================= VÝBĚR JÍDLA ================= */
+function favJ(){ return store.get("favJ", []); }
+function favJTgl(n){
+ const a = favJ().slice();
+ const i = a.indexOf(n);
+ if (i >= 0) a.splice(i,1); else a.push(n);
+ store.set("favJ", a);
+ if (window.sync && sync.on) sync.pushFavJ();
+ return i < 0;
+}
+/* Škatulky se hádají z názvu — žádné ruční značkování stovky položek. */
+const PK_FILTRY = [
+ ["all",  "Vše",            null],
+ ["fav",  "⭐ Oblíbené",     null],
+ ["prot", "💪 Bílkoviny",    o => (o.prot*4) / Math.max(1,o.kcal) >= 0.28],
+ ["rychle","⚡ Bez vaření",  o => /natvrdo|skyr|jogurt|tvaroh|cottage|kefír|ořech|tyčink|nápoj|zbytek|chlebíč|baget|sendvič|puding|smoothie|hummus|sušené|mozzarell|pomazánk|müsli|granol/i.test(o.name)],
+ ["vejce","🥚 Vejce",        o => /vejc|omelet|šakšuk|frittat|muffin|benedikt|croque/i.test(o.name)],
+ ["mlecne","🥛 Mléčné",      o => /skyr|jogurt|tvaroh|cottage|kefír|mozzarell|sýr|puding|mléko|latte/i.test(o.name)],
+ ["maso", "🍗 Maso a ryby",  o => /kuř|maso|hověz|vepř|krůt|řízek|guláš|tuňák|šunk|losos|strips|kebab|gyros|burrito|tatarák|klobás|burger|steak|ryb|sushi|poke/i.test(o.name)],
+ ["sladke","🍫 Sladké",      o => /med|granola|ovoc|banán|palačink|lívanc|kaše|oats|zmrzlin|donut|koláč|čoko|džem|malin|borůvk|jablk|croissant|sušenk|kulič|chia/i.test(o.name)],
+ ["venku","🌯 Venku",        o => o.g === "venku"]
+];
+function pkFiltr(o, f){
+ if (f === "all") return true;
+ if (f === "fav") return favJ().indexOf(o.name) >= 0;
+ const x = PK_FILTRY.find(t => t[0] === f);
+ return x && x[2] ? !!x[2](o) : true;
+}
+
+function otevriPick(who, iso, key){
+ const sl = JIDLA_SLOTY.find(x => x.key === key);
+ if (!sl) return;
+ state.pick0 = { who: who, iso: iso, key: key, q: "", f: "all" };
+ document.body.style.overflow = "hidden";
+ renderPick();
+}
+function zavriPick(){
+ state.pick0 = null;
+ const el = document.getElementById("pickSheet");
+ if (el){ el.hidden = true; el.innerHTML = ""; }
+ document.body.style.overflow = "";
+}
+function renderPick(){
+ const el = document.getElementById("pickSheet");
+ if (!el) return;
+ const st = state.pick0;
+ if (!st){ el.hidden = true; el.innerHTML = ""; return; }
+ const sl = JIDLA_SLOTY.find(x => x.key === st.key);
+ const list = sl.list();
+ const akt = pickIso(st.iso)[st.key];
+ const din = dinIso(st.iso);
+ const dk = (st.who === "p" ? din.p : din.v).kcal;
+ const d = new Date(st.iso + "T12:00:00");
+ const den = st.iso === isoDnes() ? "dnes" : DAYS[wdOf(st.iso)] + " " + d.getDate() + ". " + (d.getMonth()+1) + ".";
+ const q = (st.q || "").trim().toLowerCase();
+ const fav = favJ();
+
+ const idx = list.map((o,i)=>({o:o,i:i}))
+   .filter(x => pkFiltr(x.o, st.f))
+   .filter(x => !q || x.o.name.toLowerCase().indexOf(q) >= 0);
+
+ const radky = idx.length ? idx.map(x => {
+   const m = porceMult(st.who, st.key, x.o.kcal, dk);
+   const por = porceText(m);
+   const je = fav.indexOf(x.o.name) >= 0;
+   return '<div class="pk-item'+(x.i === akt ? " on" : "")+'">'
+    +'<button class="pk-star'+(je?" on":"")+'" data-pkfav="'+esc(x.o.name)+'" type="button" aria-label="Oblíbené">'+(je?"★":"☆")+'</button>'
+    +'<button class="pk-n" style="background:none;border:0;padding:0;text-align:left;font:inherit;color:inherit;cursor:pointer" data-pksel="'+x.i+'" type="button">'
+    + esc(x.o.name)
+    +'<span class="pk-m">'+(por ? esc(por)+' · ' : '')+'základ '+fmt(x.o.kcal)+' kcal</span></button>'
+    +'<span class="pk-k"><b>'+fmt(Math.round(x.o.kcal*m))+'</b>kcal · '+Math.round(x.o.prot*m)+' g</span>'
+    +(x.i === akt ? '<span class="pk-tick">✓</span>' : '')
+    +'</div>';
+  }).join("")
+  : '<div class="pk-none">Nic takového tu není. Zkus kratší slovo — třeba „vejce", „skyr" nebo „kuř". '
+    +'Nebo si to <b>přidej jako vlastní recept</b> v Receptech.</div>';
+
+ el.hidden = false;
+ el.innerHTML =
+  '<div class="pk-top">'
+  +'<div class="pk-head"><div><h2>'+esc(sl.n)+'</h2>'
+  +'<div class="sub">'+esc(den)+' · '+esc(BASE_T[st.who].name)+' · jídlo je společné pro oba</div></div>'
+  +'<button class="ghost" id="pickClose" type="button">Zavřít</button></div>'
+  +'<input type="search" class="pk-search" id="pickQ" placeholder="🔍 Hledej — vejce, skyr, kuře, rychlé…" '
+  +'value="'+esc(st.q||"")+'" autocomplete="off">'
+  +'<div class="pk-chips">'
+  + PK_FILTRY.map(t=>{
+      const n = t[0]==="all" ? list.length : list.filter(o=>pkFiltr(o,t[0])).length;
+      return '<button class="'+(st.f===t[0]?"on":"")+'" data-pkf="'+t[0]+'" type="button">'+t[1]+' '+n+'</button>';
+    }).join("")
+  +'</div></div>'
+  +'<div class="pk-count">'+idx.length+' '+(idx.length===1?"možnost":(idx.length<5?"možnosti":"možností"))
+  +' · ťukni a je vybráno <button class="sh" id="pickRnd" type="button">🎲 náhodně</button></div>'
+  + radky;
+ const inp = document.getElementById("pickQ");
+ if (inp && st.qFocus){ inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+}
+
 /* ================= SPOLEČNÁ JÍDLA =================
    Jeden jídelníček pro oba. Uvedená čísla jsou za JEDNU základní porci;
    každému se pak porce dopočítá podle jeho denního cíle (viz porceMult).   */
@@ -2444,7 +2580,23 @@ const J_SNIDANE = V_BREAKFAST.concat([
  { name:"Tvaroh + ovoce + oříšky", kcal:420, prot:34 },
  { name:"🥖 Bageta z pumpy + čoko mléko", kcal:480, prot:21, g:"venku" },
  { name:"☕ Latte + croissant + jogurt", kcal:490, prot:16, g:"venku" },
- { name:"🍔 Snídaňové menu z fastfoodu", kcal:520, prot:22, g:"venku" }
+ { name:"🍔 Snídaňové menu z fastfoodu", kcal:520, prot:22, g:"venku" },
+ { name:"Krupicová kaše s proteinem a ovocem", kcal:440, prot:30 },
+ { name:"Chia pudink s jogurtem a ovocem", kcal:400, prot:24 },
+ { name:"Tousty s cottage a vejcem", kcal:450, prot:33 },
+ { name:"Omeleta se špenátem a fetou", kcal:430, prot:29 },
+ { name:"Banánové lívance z ovesných vloček", kcal:470, prot:26 },
+ { name:"Tuňáková pomazánka na chlebu + vejce", kcal:460, prot:35 },
+ { name:"Tvarohový krém s granolou a malinami", kcal:420, prot:35 },
+ { name:"Míchaná vejce s cottage a pažitkou", kcal:410, prot:34 },
+ { name:"Ovesná kaše s arašídovým máslem a banánem", kcal:480, prot:22 },
+ { name:"Chléb s avokádem, vejcem a rajčaty", kcal:460, prot:22 },
+ { name:"Proteinové palačinky s tvarohem a džemem", kcal:460, prot:38 },
+ { name:"Jáhlová kaše s jablkem a skořicí", kcal:420, prot:16 },
+ { name:"Rychlý smoothie: mléko, protein, ovesné vločky, banán", kcal:450, prot:36 },
+ { name:"Zapečený toast s vejcem a sýrem (croque)", kcal:490, prot:31 },
+ { name:"🥐 Vejce Benedikt v kavárně", kcal:520, prot:25, g:"venku" },
+ { name:"🥪 Toast s vejcem z bistra", kcal:430, prot:20, g:"venku" }
 ]);
 
 const J_SVACINA = V_SNACK.concat([
@@ -2456,7 +2608,25 @@ const J_SVACINA = V_SNACK.concat([
  { name:"Vaječné muffiny 3 ks + banán", kcal:310, prot:20 },
  { name:"Proteinová tyčinka + hrst ořechů", kcal:365, prot:20 },
  { name:"🍗 KFC — 3 stripsy samotné", kcal:480, prot:42, g:"venku" },
- { name:"🥤 Proteinový nápoj + banán", kcal:270, prot:27, g:"venku" }
+ { name:"🥤 Proteinový nápoj + banán", kcal:270, prot:27, g:"venku" },
+ { name:"Tvaroh s ovocem a lněným semínkem", kcal:240, prot:26 },
+ { name:"Proteinový puding", kcal:200, prot:22 },
+ { name:"Sýr + paprika a celer", kcal:190, prot:14 },
+ { name:"Ovesné sušenky (2 ks) + mléko", kcal:280, prot:12 },
+ { name:"Zbytek frittaty", kcal:220, prot:18 },
+ { name:"Toast s arašídovým máslem a banánem", kcal:300, prot:11 },
+ { name:"Jogurt + chia + med", kcal:230, prot:13 },
+ { name:"Mozzarella s rajčaty a bazalkou", kcal:250, prot:18 },
+ { name:"Hummus + zelenina + rýžové chlebíčky", kcal:260, prot:9 },
+ { name:"2 vejce natvrdo + rohlík", kcal:250, prot:16 },
+ { name:"Skyr s kakaem a banánem", kcal:260, prot:26 },
+ { name:"Tuňákový salát v misce", kcal:240, prot:28 },
+ { name:"Kefírové smoothie s ovocem a proteinem", kcal:280, prot:28 },
+ { name:"Sušené maso + jablko", kcal:220, prot:26 },
+ { name:"Zbytek oběda (malá porce)", kcal:280, prot:22 },
+ { name:"Domácí proteinová kulička (2 ks)", kcal:230, prot:14 },
+ { name:"🧊 Ledová káva s mlékem + tyčinka", kcal:320, prot:16, g:"venku" },
+ { name:"🥨 Preclík se sýrem", kcal:300, prot:11, g:"venku" }
 ]);
 
 const J_OBED = V_LUNCH.concat([
@@ -2470,7 +2640,23 @@ const J_OBED = V_LUNCH.concat([
  { name:"Kuřecí kebab talíř s rýží", kcal:560, prot:35 },
  { name:"🍔 Big Mac + malé hranolky", kcal:810, prot:34, g:"venku" },
  { name:"🌯 Durum velký s extra masem", kcal:900, prot:55, g:"venku" },
- { name:"🍕 Pizza + kuře navíc", kcal:760, prot:34, g:"venku" }
+ { name:"🍕 Pizza + kuře navíc", kcal:760, prot:34, g:"venku" },
+ { name:"Kuřecí steak s bramborovou kaší a zeleninou", kcal:550, prot:45 },
+ { name:"Domácí hovězí burger + pečené brambory", kcal:600, prot:40 },
+ { name:"Losos s bramborem a špenátem", kcal:560, prot:42 },
+ { name:"Krůtí nudličky se zeleninou a rýží", kcal:530, prot:44 },
+ { name:"Čočka na kyselo s vejcem a klobásou", kcal:540, prot:32 },
+ { name:"Rizoto s kuřetem a hráškem", kcal:550, prot:38 },
+ { name:"Kuřecí polévka s nudlemi + chléb se sýrem", kcal:500, prot:32 },
+ { name:"Zapečené brambory se šunkou a vejcem", kcal:570, prot:30 },
+ { name:"Tortilla s hovězím a zeleninou", kcal:540, prot:38 },
+ { name:"Těstoviny s tuňákem a rajčaty", kcal:520, prot:35 },
+ { name:"Bramborové knedlíky se zelím a masem", kcal:580, prot:30 },
+ { name:"Caesar salát s kuřetem a krutony", kcal:500, prot:40 },
+ { name:"Kuskus s kuřetem a grilovanou zeleninou", kcal:530, prot:40 },
+ { name:"Vaječná omeleta se šunkou + brambory", kcal:540, prot:38 },
+ { name:"🍛 Indické kari s rýží (rozvoz)", kcal:620, prot:28, g:"venku" },
+ { name:"🥡 Poke bowl s lososem", kcal:550, prot:34, g:"venku" }
 ]);
 
 /* Kolik z denního cíle připadá na které jídlo — počítá se z toho,
@@ -2584,7 +2770,11 @@ function personCard(who, iso){
  const rows = meals.map(m=>{
   const id = iso+"|"+who+"|"+m.slot;
   const on = !!state.checks[id];
-  const sel = m.opts ? buildSelect(m.key, iso, m.opts, m.idx) : "";
+  const sel = m.opts
+    ? '<button class="mealbtn" data-pkopen="'+who+'|'+iso+'|'+m.key+'" type="button">'
+      +'🔀 Vyměnit <span class="dim" style="font-weight:400">— '+m.opts.length+' možností</span>'
+      +'<span class="arr">›</span></button>'
+    : "";
   const por = porceText(m.mult || 1);
   return '<div class="meal'+(on?" checked":"")+'">'
    +'<input type="checkbox" data-check="'+id+'"'+(on?" checked":"")+' aria-label="Snědeno">'
@@ -5182,6 +5372,10 @@ const sync = {
       if (state.notif) renderZpravy();
     });
     // oblíbené
+    onValue(this._ref("favj"), snap => {
+      const v = snap.val();
+      if (Array.isArray(v)){ store.set("favJ", v); if (state.pick0) renderPick(); }
+    });
     onValue(this._ref("favs"), snap => {
       const v = snap.val();
       if (Array.isArray(v)) { store.set("favs", v); if (state.tab === "recepty") renderRecepty(); }
@@ -5269,6 +5463,7 @@ const sync = {
 
   pushFeed(m){ if (this.on) this._set("feed/"+m.id.replace(/[.#$/\[\]]/g,"_"), m); },
   pushFavs(){ this._set("favs", store.get("favs", [])); },
+  pushFavJ(){ this._set("favj", store.get("favJ", [])); },
   pushWeek(){ this._set("week", state.week); },
   pushShop(){ this._set("shop", state.shop); },
   pushRec(){ this._set("recepty", store.get("myRecipes", [])); },
@@ -5968,7 +6163,8 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">24</td></tr>'
+  +'<tr><td>Verze</td><td class="num">25</td></tr>'
+  +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
   +'<tr><td>Receptů na večeře</td><td class="num">'+pc.rec+'</td></tr>'
   +'<tr><td>Tréninkových variant</td><td class="num">'+pc.tr+'</td></tr>'
@@ -6068,6 +6264,9 @@ document.addEventListener("input", e=>{
   saveSess();
   return;
  }
+ if (e.target.id === "pickQ" && state.pick0){
+  state.pick0.q = e.target.value; state.pick0.qFocus = true; renderPick(); return;
+ }
  if (e.target.id === "budName"){ state.budName = e.target.value; return; }
  if (e.target.id === "recQ"){ state.recQ = e.target.value; renderRecepty(); keepFocus("recQ"); }
  else if (e.target.id === "exQ"){ state.exQ = e.target.value; renderTrenink(); keepFocus("exQ"); }
@@ -6165,6 +6364,34 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
+ const pko = e.target.closest("[data-pkopen]");
+ if (pko){
+  const q = pko.dataset.pkopen.split("|");
+  otevriPick(q[0], q[1], q[2]); return;
+ }
+ if (e.target.id === "pickClose"){ zavriPick(); return; }
+ const pkf = e.target.closest("[data-pkf]");
+ if (pkf && state.pick0){ state.pick0.f = pkf.dataset.pkf; state.pick0.qFocus = false; renderPick(); return; }
+ const pkfav = e.target.closest("[data-pkfav]");
+ if (pkfav && state.pick0){ favJTgl(pkfav.dataset.pkfav); state.pick0.qFocus = false; renderPick(); return; }
+ if (e.target.id === "pickRnd" && state.pick0){
+  const st = state.pick0, sl = JIDLA_SLOTY.find(x=>x.key===st.key), list = sl.list();
+  const kand = list.map((o,i)=>({o,i})).filter(x=>pkFiltr(x.o, st.f));
+  if (kand.length){
+   const v = kand[Math.floor(Math.random()*kand.length)];
+   pickSet(st.iso, st.key, v.i);
+   zavriPick(); renderDnes(); renderTyden(); renderNext(); celebrate("🎲");
+  }
+  return;
+ }
+ const pks = e.target.closest("[data-pksel]");
+ if (pks && state.pick0){
+  const st = state.pick0;
+  pickSet(st.iso, st.key, +pks.dataset.pksel);
+  zavriPick();
+  renderDnes(); renderTyden(); renderNakup(); renderNext(); syncDot();
+  return;
+ }
  if (e.target.closest("#miniBar")){ sessObnov(); return; }
  if (e.target.closest("[data-notif]")){ otevriNotif(); return; }
  const gt = e.target.closest("[data-goto]");
@@ -6679,7 +6906,8 @@ document.addEventListener("click", e=>{
   const keys = ["week","pick","checks","shop","queue","fb","exsel","wtP","wtV","mrP","mrV","lastCheckin",
                 "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist","plan","jidlo","shopHist","shopCasto","nakupDni","navrhy","schval","spizOdecist",
                 "n_prot_p","n_prot_v","n_water_p","n_water_v","n_casy","n_mintr_p","n_mintr_v",
-                "n_rozvrh_p","n_rozvrh_v","n_tren_p","n_tren_v","n_hlasky","n_zpravyAuto","n_konfety","n_stouch"];
+                "n_rozvrh_p","n_rozvrh_v","n_tren_p","n_tren_v","n_hlasky","n_zpravyAuto","n_konfety","n_stouch",
+                "favJ","parti","tlogB","spar"];
   const dump = {};
   keys.forEach(k=>{ const v = store.get(k, null); if (v !== null) dump[k] = v; });
   const box = document.getElementById("dataBox");
@@ -6776,7 +7004,8 @@ document.addEventListener("click", e=>{
 
 document.addEventListener("keydown", e=>{
  if (e.key !== "Escape") return;
- if (state.notif) zavriNotif();
+ if (state.pick0) zavriPick();
+ else if (state.notif) zavriNotif();
  else if (state.cook) closeCook();
  else if (state.sess && !state.sessMin) sessMinimalizuj();
  else if (state.onb !== null) closeOnb();
