@@ -498,6 +498,30 @@
         color:var(--muted);padding:0 2px 0 0;vertical-align:-1px}
   .rhead h3 .star:has(+*){}
   .card.oblib .rhead h3 .star{color:#f0a500}
+  details.roz{margin:0 0 12px;border:1px solid var(--s2);border-radius:12px;background:var(--surface-1);
+        overflow:hidden}
+  details.roz summary{cursor:pointer;list-style:none;padding:10px 12px;font-size:13.5px;font-weight:700}
+  details.roz summary::-webkit-details-marker{display:none}
+  details.roz summary span{font-weight:400;font-size:11.5px;color:var(--text-secondary);margin-left:4px}
+  details.roz[open] summary{border-bottom:1px solid var(--grid)}
+  details.roz .rp{padding:8px 12px;border-bottom:1px solid var(--grid)}
+  details.roz .rp b{display:block;font-size:13px;margin-bottom:2px}
+  details.roz .rp span{font-size:12.5px;color:var(--text-secondary);line-height:1.45}
+  .rozk{font-size:12px;color:var(--text-secondary);margin:0 0 8px}
+  details.tech{margin:0 0 8px;border:1px solid var(--border);border-radius:10px;background:var(--surface-1)}
+  details.tech summary{cursor:pointer;list-style:none;padding:8px 11px;font-size:12.5px;font-weight:600;
+        color:var(--text-secondary)}
+  details.tech summary::-webkit-details-marker{display:none}
+  details.tech[open] summary{border-bottom:1px solid var(--grid)}
+  details.tech .tr{display:flex;gap:9px;padding:7px 11px;font-size:12.5px;line-height:1.5;
+        border-bottom:1px solid var(--grid)}
+  details.tech .tr:last-child{border-bottom:0}
+  details.tech .tr b{flex:0 0 74px;color:var(--text-primary);font-size:11.5px;text-transform:uppercase;
+        letter-spacing:.4px;padding-top:1px}
+  details.tech .tr span{flex:1;color:var(--text-secondary)}
+  .setrow.bezkg{grid-template-columns:24px 1fr 66px 58px 40px}
+  .setrow .nokg{font-size:10.5px;color:var(--muted);text-align:center;line-height:1.2}
+
   .dopor{color:var(--s3);font-weight:600}
   .dopbox{margin:0 0 8px;padding:8px 10px;border-radius:9px;background:var(--accent-soft);
         font-size:12.5px;line-height:1.45;color:var(--text-secondary);border-left:3px solid var(--s1)}
@@ -2024,6 +2048,22 @@ const EX = {
  monster:    {n:"Chůze s gumou do strany", en:"Monster Walk", m:"Hýždě (střední)", i:"band", t:"Guma nad kolena, mírný podřep, deset kroků tam a zpět. Hoří to hned."},
 
  /* --- mobilita --- */
+ pirifo:     {n:"Protažení hýždí vleže (číslo 4)", en:"Figure-4 Glute Stretch", m:"Hýždě", i:"stretch", t:"Kotník na koleno, přitáhni spodní stehno k sobě. 40 s na stranu."},
+ quadstr:    {n:"Protažení předního stehna ve stoje", en:"Standing Quad Stretch", m:"Kvadricepsy", i:"stretch", t:"Pata k zadku, koleno směřuje dolů, podsaď pánev. 30 s na stranu."},
+ calfstr:    {n:"Protažení lýtka o stěnu", en:"Calf Stretch", m:"Lýtka", i:"stretch", t:"Špička o stěnu, koleno propnuté, tělo dopředu. 30 s na stranu."},
+ latstr:     {n:"Protažení zad ve visu / o rám", en:"Lat Stretch", m:"Široký sval zádový", i:"stretch", t:"Chyť se, zakloň pánev dozadu a nech záda vytáhnout. 40 s."},
+ spinal:     {n:"Rotace páteře vleže", en:"Supine Spinal Twist", m:"Páteř + hýždě", i:"stretch", t:"Koleno přes tělo, druhá ruka do strany, ramena na zemi. 40 s na stranu."},
+ butterfly:  {n:"Motýlek (protažení třísel)", en:"Butterfly Stretch", m:"Třísla", i:"stretch", t:"Chodidla k sobě, záda rovná, lokty jemně tlačí kolena dolů. 45 s."},
+ worlds:     {n:"Největší protažení světa", en:"World's Greatest Stretch", m:"Kyčle + hrudní páteř", i:"stretch", t:"Výpad, loket k zemi vedle nohy, pak rotace paží vzhůru. 5× na stranu."},
+ downdog:    {n:"Pes hlavou dolů", en:"Downward Dog", m:"Zadní řetězec", i:"stretch", t:"Zadek vzhůru, paty tlač k zemi, záda rovná. Střídavě pokrčuj kolena. 45 s."},
+ cobra:      {n:"Kobra (protažení břicha a beder)", en:"Cobra Stretch", m:"Břicho + bedra", i:"stretch", t:"Lehni na břicho, zvedni hrudník na rukou, ramena dolů. 30 s."},
+ deepsquat:  {n:"Hluboký dřep — výdrž", en:"Deep Squat Hold", m:"Kyčle + kotníky", i:"stretch", t:"Sedni si co nejhlouběji, lokty mezi kolena, paty na zemi. 60 s."},
+ sholdisl:   {n:"Kroužení rameny s tyčí / gumou", en:"Shoulder Dislocates", m:"Ramena", i:"band", t:"Široký úchop, tyč obloukem nad hlavu a za záda. 10 pomalých."},
+ ankle:      {n:"Mobilita kotníků u stěny", en:"Ankle Mobility Drill", m:"Kotníky", i:"stretch", t:"Koleno přes špičku ke stěně, pata na zemi. 10× na stranu."},
+ neck:       {n:"Protažení krku a trapézů", en:"Neck Stretch", m:"Krk + trapézy", i:"stretch", t:"Ucho k rameni, rukou jemně dotáhni. 30 s na stranu."},
+ armcircle:  {n:"Kroužení pažemi", en:"Arm Circles", m:"Rozehřátí ramen", i:"raise", t:"20 malých kruhů vpřed, 20 vzad, pak velké kruhy."},
+ legswing:   {n:"Švihy nohou", en:"Leg Swings", m:"Rozehřátí kyčlí", i:"lunge", t:"Přidrž se, švihej nohou vpřed–vzad 15×, pak do stran 15×. Bez švihu do bolesti."},
+ bandpull:   {n:"Rozpažování s gumou (band pull-apart)", en:"Band Pull Apart", m:"Zadní ramena", i:"band", t:"Guma před tělem, roztáhni do stran, lopatky k sobě. 15–20×."},
  catcow:     {n:"Kočka–kráva (rozhýbání páteře)", en:"Cat-Cow", m:"Páteř", i:"stretch", t:"Nádech prohnout, výdech vyhrbit. Deset kol pomalu."},
  hipflex:    {n:"Protažení ohybačů kyčle", en:"Hip Flexor Stretch", m:"Kyčle", i:"stretch", t:"Klek na jedno koleno, zadek stiskni a posuň boky dopředu. 40 s každá strana."},
  hamstretch: {n:"Protažení zadní strany stehen", en:"Hamstring Stretch", m:"Hamstringy", i:"stretch", t:"Vsedě, záda rovná, ohni se od boků — ne od zad."},
@@ -2121,7 +2161,19 @@ const ROUTINES = {
   { id:"O", title:"O — Metabolický okruh 25′", min:25, typ:"kardio",
     tip:"Pět kol za sebou s minimální pauzou. Když chceš mít za půl hodiny odpracováno a zpotit se.",
     ex:[["kbswing","4 × 15",8,"0:30"],["burpee","4 × 10",9,"0:30"],["jumpsquat","4 × 15",9,"0:30"],["mtnclimb","4 × 30 s",9,"0:30"],["rope","4 × 45 s",8,"1:00"]] },
-  { id:"P", title:"P — Mobilita a záda 15′", min:15, typ:"mobilita",
+  { id:"SP0", title:"SP0 — Rozehřívačka před tréninkem 6′", min:6, typ:"mobilita",
+    tip:"Univerzální rozehřátí, když se nechce přemýšlet. Pět minut na páse a pár kroužení — a jde se.",
+    ex:[["bike","5 min lehce",4,"0:00"],["armcircle","20 vpřed, 20 vzad",5,"0:10"],["legswing","15 na stranu",5,"0:10"],["worlds","5 na stranu",6,"0:15"],["bandpull","2 × 15",6,"0:15"]] },
+ { id:"SP1", title:"SP1 — Strečink po tréninku 12′", min:12, typ:"mobilita",
+    tip:"Hned po posilovně, dokud jsi teplý. Každá pozice 30–40 vteřin, dýchej a nepruž — sval povolí až po dvaceti vteřinách klidu.",
+    ex:[["quadstr","2 × 30 s na stranu",6,"0:15"],["hamstretch","2 × 40 s na stranu",6,"0:15"],["pirifo","2 × 40 s na stranu",6,"0:15"],["chestdoor","2 × 40 s",6,"0:15"],["latstr","2 × 40 s",6,"0:15"],["childpose","1 × 60 s",5,"0:15"]] },
+ { id:"SP2", title:"SP2 — Ranní rozhýbání 8′", min:8, typ:"mobilita",
+    tip:"Osm minut, které rozhodnou, jak se budeš celý den cítit v zádech. Dělá se pomalu, nikam se nespěchá.",
+    ex:[["catcow","10 pomalých",5,"0:10"],["cobra","2 × 30 s",5,"0:15"],["worlds","5 na stranu",6,"0:15"],["deepsquat","1 × 60 s",6,"0:15"],["sholdisl","10 pomalých",5,"0:15"],["neck","30 s na stranu",5,"0:10"]] },
+ { id:"SP3", title:"SP3 — Záda a kyčle 15′ (na sedavou práci)", min:15, typ:"mobilita",
+    tip:"Když tě po dni v kanceláři táhnou bedra. Zkrácené ohybače kyčle jsou nejčastější příčina — začneme u nich.",
+    ex:[["hipflex","2 × 45 s na stranu",6,"0:15"],["pirifo","2 × 45 s na stranu",6,"0:15"],["spinal","2 × 40 s na stranu",6,"0:15"],["thoracic","10 na stranu",6,"0:15"],["catcow","10 pomalých",5,"0:10"],["childpose","1 × 60 s",5,"0:15"],["downdog","2 × 45 s",6,"0:15"]] },
+ { id:"P", title:"P — Mobilita a záda 15′", min:15, typ:"mobilita",
     tip:"Po celém dni v autě a na stavbě. Není to trénink, je to údržba — a rozhoduje o tom, jestli tě za pět let budou bolet záda.",
     ex:[["catcow","10 kol","—","0:00"],["thoracic","10 / strana","—","0:00"],["chestdoor","2 × 40 s","—","0:00"],["hipflex","2 × 40 s / strana","—","0:00"],["hamstretch","2 × 40 s / strana","—","0:00"],["childpose","1 × 60 s","—","0:00"]] }
  ],
@@ -2177,7 +2229,19 @@ const ROUTINES = {
   { id:"CO", title:"CO — Břicho a záda 20′", min:20, typ:"sila",
     tip:"Pevný střed těla drží záda, když se zvedá. Dá se to přidat na konec jakéhokoli tréninku.",
     ex:[["deadbug","3 × 10 / strana","—","0:45"],["hollow","3 × 20 s","—","0:45"],["sideplank","3 × 30 s / strana","—","0:45"],["superman","3 × 12","—","0:45"],["plank","3 × 40 s","—","1:00"]] },
-  { id:"MO", title:"MO — Protažení a mobilita 15′", min:15, typ:"mobilita",
+  { id:"SV0", title:"SV0 — Rozhýbání před tréninkem 6′", min:6, typ:"mobilita",
+    tip:"Když nechceš přemýšlet, co si dát na rozehřátí. Projeď to a jdi cvičit.",
+    ex:[["legswing","15 na stranu",5,"0:10"],["armcircle","20 vpřed, 20 vzad",5,"0:10"],["worlds","5 na stranu",6,"0:15"],["deepsquat","1 × 45 s",6,"0:15"],["monster","2 × 15 kroků",6,"0:15"],["bandpull","2 × 15",6,"0:15"]] },
+ { id:"SV1", title:"SV1 — Strečink dolní tělo 12′", min:12, typ:"mobilita",
+    tip:"Po nohách a hýždích. Drž každou pozici 40 vteřin — kratší protažení sval nestihne pustit.",
+    ex:[["quadstr","2 × 30 s na stranu",6,"0:15"],["hamstretch","2 × 40 s na stranu",6,"0:15"],["pirifo","2 × 45 s na stranu",6,"0:15"],["butterfly","2 × 45 s",6,"0:15"],["calfstr","30 s na stranu",5,"0:10"],["childpose","1 × 60 s",5,"0:15"]] },
+ { id:"SV2", title:"SV2 — Strečink horní tělo 10′", min:10, typ:"mobilita",
+    tip:"Ramena, hrudník a krk. Ideální po horním tréninku nebo po dni u počítače.",
+    ex:[["chestdoor","2 × 40 s",6,"0:15"],["latstr","2 × 40 s",6,"0:15"],["thoracic","10 na stranu",6,"0:15"],["neck","30 s na stranu",5,"0:10"],["sholdisl","10 pomalých",5,"0:15"],["catcow","10 pomalých",5,"0:10"]] },
+ { id:"SV3", title:"SV3 — Večerní zklidnění 15′", min:15, typ:"mobilita",
+    tip:"Před spaním, tlumené světlo, dlouhé výdechy. Není to trénink — je to příprava na spánek, který ti postavu udělá stejně jako činky.",
+    ex:[["spinal","2 × 60 s na stranu",5,"0:15"],["butterfly","1 × 60 s",5,"0:15"],["pirifo","45 s na stranu",5,"0:15"],["childpose","2 × 60 s",5,"0:15"],["hamstretch","45 s na stranu",5,"0:15"],["cobra","2 × 30 s",5,"0:15"]] },
+ { id:"MO", title:"MO — Protažení a mobilita 15′", min:15, typ:"mobilita",
     tip:"Ideální večer po tréninku nebo v den volna. Uvolní kyčle po sezení a záda po celém dni.",
     ex:[["catcow","10 kol","—","0:00"],["hipflex","2 × 40 s / strana","—","0:00"],["hamstretch","2 × 40 s / strana","—","0:00"],["thoracic","10 / strana","—","0:00"],["childpose","1 × 60 s","—","0:00"]] }
  ]
@@ -3825,6 +3889,8 @@ function kgSpark(sessions){
 }
 
 function logBox(who, exId, presc, pauza){
+  const rz = rezim(exId, presc);
+  const ph = REZIM_POPIS[rz] || REZIM_POPIS.kg;
   const sessions = logGet(who, exId);
   const iso = new Date().toISOString().slice(0,10);
   const dnes = sessions.find(x => x.d === iso);
@@ -3834,10 +3900,18 @@ function logBox(who, exId, presc, pauza){
   let hist = '<div class="logline">Zatím sem nic nezapsáno — první série se stane měřítkem.</div>';
   if (minule){
     hist = '<div class="logline">Minule <b>'+czDate(minule.d)+'</b>: '
-      + minule.s.map(x => (x[0] ? fmt(x[0])+' kg × ' : '') + x[1]).join(' · ') + '</div>';
+      + minule.s.map(x => serieText(rz, x[0], x[1])).join(' · ') + '</div>';
   }
   let rada = "";
-  if (tg && minule){
+  if (rz !== "kg"){
+    rada = '<div class="logline">Tady se zapisují <b>'+ph.jed+'</b> — kila u tohohle cviku nedávají smysl.'
+      + (rz === "reps" ? ' Přidávej opakování, ne váhu.' : '')
+      + (rz === "cas" ? ' Výdrž prodlužuj po pěti vteřinách.' : '')
+      + (rz === "kardio" ? ' Zapiš, kolik minut jsi jel(a).' : '')
+      + (rz === "strec" ? ' Drž 30–45 vteřin a nepruž.' : '')
+      + '</div>';
+  }
+  else if (tg && minule){
     const ok = minule.s.length >= tg.sets && minule.s.every(x => x[1] >= tg.hi);
     const kg = topSet(minule.s)[0];
     if (ok && kg) rada = '<div class="logline tip-up">✓ Minule jsi dal(a) všechny série na horní hranici — '
@@ -3845,17 +3919,19 @@ function logBox(who, exId, presc, pauza){
     else if (kg) rada = '<div class="logline">Cíl: <b>'+tg.sets+' série po '+tg.hi+' opakováních</b> s '+fmt(kg)+' kg.</div>';
   }
   const chips = dnes && dnes.s.length
-    ? '<div class="setchips">'+dnes.s.map((x,i)=>'<span class="setchip">'+(x[0]?fmt(x[0])+' kg × ':'')+x[1]
+    ? '<div class="setchips">'+dnes.s.map((x,i)=>'<span class="setchip">'+serieText(rz, x[0], x[1])
         +'<button data-delset="'+who+'|'+exId+'|'+i+'" title="Smazat">×</button></span>').join("")+'</div>'
     : "";
-  const dopor = dalsiVaha(who, exId, presc);
-  const posl = dopor ? [dopor.kg] : (minule ? topSet(minule.s) : null);
-  return '<div class="logbox">' + hist + rada + kgSpark(sessions) + chips
-   +'<div class="logrow">'
-   +'<input type="number" step="0.5" min="0" max="500" inputmode="decimal" id="lg-'+who+'-'+exId+'-kg" '
-   +'placeholder="kg"'+(posl && posl[0] ? ' value="'+posl[0]+'"' : '')+'>'
-   +'<input type="number" step="1" min="1" max="100" inputmode="numeric" id="lg-'+who+'-'+exId+'-r" placeholder="opak.">'
-   +'<button class="act small" data-addset="'+who+'|'+exId+'" type="button">Zapsat sérii</button>'
+  const dopor = rz === "kg" ? dalsiVaha(who, exId, presc) : null;
+  const posl = dopor ? [dopor.kg] : (minule && rz === "kg" ? topSet(minule.s) : null);
+  return '<div class="logbox">' + hist + rada + (rz === "kg" ? kgSpark(sessions) : "") + chips
+   +'<div class="logrow'+(rz!=="kg"?" bezkg":"")+'">'
+   + (rz === "kg"
+      ? '<input type="number" step="0.5" min="0" max="500" inputmode="decimal" id="lg-'+who+'-'+exId+'-kg" '
+        +'placeholder="kg"'+(posl && posl[0] ? ' value="'+posl[0]+'"' : '')+'>'
+      : '')
+   +'<input type="number" step="1" min="1" max="600" inputmode="numeric" id="lg-'+who+'-'+exId+'-r" placeholder="'+ph.hlava[1]+'">'
+   +'<button class="act small" data-addset="'+who+'|'+exId+'|'+rz+'" type="button">Zapsat</button>'
    +'<button class="ghost" data-timer="'+esc(pauza)+'" type="button">⏱ '+esc(pauza)+'</button>'
    +'</div></div>';
 }
@@ -3868,7 +3944,7 @@ function rekordy(who){
     let best = null, bestD = null;
     sess.forEach(x => { const t = topSet(x.s); if (!best || t[0] > best[0]) { best = t; bestD = x.d; } });
     return { ex, best, d: bestD, n: sess.length };
-  }).filter(r => r.best && r.best[0] > 0).sort((a,b)=>b.best[0]-a.best[0]);
+  }).filter(r => r.best && r.best[0] > 0 && rezim(r.ex, "") === "kg").sort((a,b)=>b.best[0]-a.best[0]);
   if (!rows.length) return "";
   return '<div class="card"><h3>🏆 Osobní rekordy</h3>'
    +'<p class="who">Nejtěžší série, kterou máš u cviku zapsanou. Tohle je ten opravdový důkaz, že to funguje.</p>'
@@ -4453,6 +4529,288 @@ function doporucVeta(who, exId){
   + "přidej. Když poslední opakování nejde čistě, ubereš.";
 }
 
+/* ================= CO SE U KTERÉHO CVIKU VŮBEC ZAPISUJE =================
+   Ne všude dávají kila smysl. Prkno se měří na vteřiny, kliky na opakování,
+   rotoped na minuty a protahování se jen odškrtne.                        */
+const EX_KARDIO = ["bike","bikehiit","walkhill","run","rower","ellip","rope"];
+const EX_STREC = ["catcow","hipflex","hamstretch","chestdoor","thoracic","childpose","pirifo",
+ "quadstr","calfstr","latstr","spinal","butterfly","worlds","downdog","cobra","deepsquat",
+ "sholdisl","ankle","neck","armcircle","legswing","bandpull"];
+
+function rezim(exId, presc){
+ if (EX_KARDIO.indexOf(exId) >= 0) return "kardio";
+ if (EX_STREC.indexOf(exId) >= 0) return "strec";
+ const t = String(presc || "");
+ if (/\d\s*(s|sek|vteřin)\b/i.test(t)) return "cas";
+ if (/\d\s*min\b/i.test(t)) return "kardio";
+ if (VAHY_TELO.indexOf(exId) >= 0 || VAHY_GUMA.indexOf(exId) >= 0) return "reps";
+ return VAHY[exId] ? "kg" : "reps";
+}
+const REZIM_POPIS = {
+ kg:     { hlava:["kg","opak."], jed:"kg × opakování" },
+ reps:   { hlava:["","opak."],   jed:"opakování" },
+ cas:    { hlava:["","vteřin"],  jed:"vteřin výdrže" },
+ kardio: { hlava:["","minut"],   jed:"minut" },
+ strec:  { hlava:["","vteřin"],  jed:"vteřin protažení" }
+};
+/* jak se zapsaná série ukáže zpátky */
+function serieText(rz, kg, val){
+ if (rz === "kg") return (kg ? fmt(kg) + " kg × " : "") + val;
+ if (rz === "kardio") return val + " min";
+ if (rz === "cas" || rz === "strec") return val + " s";
+ return val + "×";
+}
+
+/* ================= ROZEHŘÁTÍ PŘED TRÉNINKEM =================
+   Pět až osm minut, které rozhodnou, jestli tě něco chytne. */
+const ROZEHRATI = {
+ horni: { n:"Horní tělo", ic:"🔥", polozky:[
+   ["🚴 5 minut lehké kardio", "Pás, rotoped nebo veslo. Tempo, u kterého ještě zvládneš mluvit. Jde jen o to zahřát se a rozproudit krev."],
+   ["🔄 Kroužení pažemi", "20 malých kruhů vpřed, 20 vzad, pak 10 velkých. Ramena se musí prohřát dřív, než na ně dáš kila."],
+   ["🎗 Band pull-apart 2 × 15", "Guma před tělem, roztáhni do stran. Probudí zadní ramena a lopatky — ty pak drží tlaky."],
+   ["🏋️ Rozcvičovací série", "První cvik dne udělej 1–2 série s poloviční vahou po 10 opakováních. Nepočítá se do plánu."]
+ ]},
+ dolni: { n:"Dolní tělo", ic:"🔥", polozky:[
+   ["🚴 5 minut lehké kardio", "Rotoped nebo svižná chůze do mírného kopce. Nohy musí být teplé, jinak dřep nikdy nesedne."],
+   ["🦵 Švihy nohou 15× na stranu", "Vpřed–vzad, pak do stran. Uvolní kyčle, aby šel dřep hlouběji."],
+   ["🧎 Hluboký dřep — 60 s výdrž", "Sedni si co nejhlouběji a jen tam buď. Paty na zemi, lokty mezi koleny."],
+   ["🎗 Chůze s gumou do strany", "2 × 15 kroků. Rozsvítí střední hýžďový sval, aby ti kolena nepadala dovnitř."],
+   ["🏋️ Rozcvičovací série", "Dřep nebo mrtvý tah: prázdná tyč 10×, pak 50 % váhy 5×. Teprve pak jedeš naostro."]
+ ]},
+ cele: { n:"Celé tělo", ic:"🔥", polozky:[
+   ["🚴 5 minut lehké kardio", "Cokoliv, u čeho se zadýcháš jen mírně. Cílem je teplo, ne únava."],
+   ["🤸 Největší protažení světa 5× na stranu", "Výpad, loket k zemi, rotace paží vzhůru. Za dvě minuty projedeš kyčle i hrudní páteř."],
+   ["🔄 Kroužení pažemi + švihy nohou", "Po 15 opakováních. Rychlá pojistka proti natažení."],
+   ["🏋️ Rozcvičovací série", "U prvního cviku poloviční váha, 10 opakování."]
+ ]},
+ kardio: { n:"Kardio", ic:"🔥", polozky:[
+   ["🚶 3 minuty v pohodovém tempu", "Než přidáš, nech tep vyjet postupně. Prudký start = píchání v boku."],
+   ["🦵 Švihy nohou a kotníky", "10× na stranu. Hlavně před během."]
+ ]},
+ mobilita: { n:"Mobilita", ic:"🌿", polozky:[
+   ["🚶 2 minuty chůze nebo pár kroužení", "Do studeného svalu se nikdy netahej. Krátká chůze stačí."]
+ ]}
+};
+function rozTyp(r){
+ if (!r) return "cele";
+ if (r.typ === "kardio") return "kardio";
+ if (r.typ === "mobilita") return "mobilita";
+ const ids = r.ex.map(e => e[0]).join(" ");
+ const dolni = /squat|rdl|deadlift|legpress|legext|curl(?!bb|db)|hipthrust|bulg|lunge|glbridge|kickback|calf|sumodb|goblet|hacksquat|stepup|kbswing/.test(ids);
+ const horni = /bench|press|pullup|latpd|row|ohp|raise|curlbb|curldb|hammer|tri|facepull|shrug|dip|pushup|fly|pecdeck/.test(ids);
+ if (dolni && horni) return "cele";
+ return dolni ? "dolni" : "horni";
+}
+function rozehratiHtml(r, kompakt){
+ const z = ROZEHRATI[rozTyp(r)];
+ if (!z) return "";
+ if (kompakt)
+  return '<div class="rozk">'+z.ic+' <b>Rozehřátí '+esc(z.n.toLowerCase())+'</b> — '
+   + esc(z.polozky[0][0].replace(/^\S+\s/, "")) + ' + ' + (z.polozky.length-1) + ' další. Rozklikni trénink.</div>';
+ return '<details class="roz"><summary>'+z.ic+' Rozehřátí před tréninkem — '+esc(z.n.toLowerCase())
+  +' <span>'+z.polozky.length+' kroků · 5–8 min</span></summary>'
+  + z.polozky.map(x=>'<div class="rp"><b>'+esc(x[0])+'</b><span>'+esc(x[1])+'</span></div>').join("")
+  +'<div class="hint" style="padding:8px 11px 10px">Rozehřátí se nepočítá do sérií — je to daň za to, '
+  +'že tě příští týden nebude nic bolet.</div></details>';
+}
+
+/* ================= PODROBNÁ TECHNIKA =================
+   [nastavení, provedení, nejčastější chyba, dech] — rozklikne se u cviku. */
+const TECH = {
+ bench:["Lavice: oči pod tyčí, nohy celou plochou na zemi, mírný prohyb v bedrech, zadek na lavici.",
+  "Lopatky stáhni dozadu a dolů a drž je tam celou sérii. Tyč spouštěj na spodní část prsou, lokty asi 45° od těla. Dole se dotkni, nepruž.",
+  "Roztažené lokty do stran a odlepený zadek. Bolí z toho ramena a nepočítá se to.",
+  "Nádech dole, výdech při tlaku nahoru."],
+ dbbench:["Jednoručky si polož na stehna vsedě a lehni si i s nimi — kolena si je vykopnou nahoru.",
+  "Dolů až k vnějšku hrudníku, o kus hlouběji než s tyčí. Nahoře činky sblíž, ale neklepej s nimi o sebe.",
+  "Padání zápěstí dozadu. Drž pěst nad předloktím.",
+  "Nádech dolů, výdech nahoru."],
+ chestpressm:["Sedačku nastav tak, aby madla byla ve výšce středu hrudníku.",
+  "Lopatky opřené o opěrku, tlač obloukem dopředu, na konci nezamykej lokty úplně.",
+  "Příliš vysoká sedačka — pak to jde do ramen místo prsou.",
+  "Výdech při tlaku."],
+ pushup:["Ruce trochu šířeji než ramena, prsty vpřed, tělo v jedné přímce od hlavy po paty.",
+  "Dolů, dokud se hrudník skoro nedotkne země, lokty dozadu (ne do stran). Nahoru tlač celou dlaní.",
+  "Prověšená bedra. Zpevni zadek a břicho, jako bys chtěl(a) zmáčknout ořech.",
+  "Nádech dolů, výdech nahoru."],
+ pecdeck:["Madla ve výšce ramen, lopatky opřené, lokty mírně pokrčené.",
+  "Zavírej obloukem před hrudník a vteřinu stiskni. Zpět pomalu, nenech závaží dopadnout.",
+  "Napnuté lokty — zatěžuje to kloub, ne sval.",
+  "Výdech při zavření."],
+ inclinedb:["Lavice 30°, víc už dělá z prsou ramena. Záda opřená, nohy pevně.",
+  "Činky k vnějšku hrudníku, lokty ~45°. Nahoru po oblouku, ne po přímce.",
+  "Moc strmá lavice a činky nad obličejem.",
+  "Nádech dolů, výdech nahoru."],
+ cablefly:["Kladky ve výšce ramen, krok dopředu, jedna noha vepředu pro stabilitu.",
+  "Ruce vedeš obloukem před hrudník, lokty pořád stejně pokrčené. Vteřina stisku na konci.",
+  "Tlačení místo rozpažování — pak z toho jsou tricepsy.",
+  "Výdech při stisku."],
+ dip:["Ruce na bradlech, ramena dolů od uší, mírný předklon trupu.",
+  "Dolů, dokud ramena nejsou v úrovni loktů — ne níž. Nahoru tlač, ale nezamykej lokty násilím.",
+  "Propadnutí do ramen a příliš hluboký sešup. Rameno to nemá rádo.",
+  "Nádech dolů, výdech nahoru."],
+ pullup:["Úchop nadhmatem trochu šířeji než ramena, ramena aktivně stáhni dolů ještě před tahem.",
+  "Táhni lokty k žebrům a hrudník k tyči. Dolů pomalu, ale nepouštěj se do úplného visu bez napětí.",
+  "Kmitání a půlka rozsahu. Radši méně opakování a celý rozsah.",
+  "Výdech nahoru, nádech dolů."],
+ assistpull:["Dopomoc nastav tak, abys dal(a) 8–10 čistých opakování — poslední dvě mají být těžká.",
+  "Stejná technika jako u shybů: ramena dolů, lokty k tělu, hrudník nahoru.",
+  "Moc velká dopomoc — pak se to nikdy nenaučíš bez ní.",
+  "Výdech nahoru."],
+ latpd:["Kolena pod válce, mírný záklon trupu (asi 15°), hrudník ven.",
+  "Táhni tyč ke klíčním kostem, lokty veď dolů k žebrům. Nahoře nech ramena vytáhnout.",
+  "Tahání za hlavu a houpání trupem.",
+  "Výdech při tahu dolů."],
+ cablerow:["Sed vzpřímeně, kolena mírně pokrčená, chodidla pevně opřená.",
+  "Lokty táhni dozadu podél těla, na konci stáhni lopatky k sobě. Trup se nehoupá.",
+  "Zaklánění celým tělem — to už není záda, to je setrvačnost.",
+  "Výdech při tahu k sobě."],
+ bentrow:["Předklon asi 45°, záda rovná, tyč visí pod rameny, kolena mírně pokrčená.",
+  "Táhni tyč k pupku, lokty dozadu. Nahoře vteřina, dolů pod kontrolou.",
+  "Kulatá záda. Radši nižší váha a rovná páteř.",
+  "Nádech dole, výdech při tahu."],
+ csrow:["Hrudník opřený o opěrku, ta drží trup za tebe — proto je tenhle cvik bezpečnější.",
+  "Táhni lokty dozadu, lopatky k sobě. Hrudník neodlepuj od opěrky.",
+  "Odlepování hrudníku, aby šla vyšší váha. Tím se cvik ruší.",
+  "Výdech při tahu."],
+ ohp:["Stoj na šířku ramen, tyč na horních prsou, lokty mírně před tyčí, hýždě a břicho zpevněné.",
+  "Tlač tyč nad hlavu a hlavu mírně prostrč dopředu, až je tyč nad středem chodidel. Dolů pod kontrolou.",
+  "Prohnutí v bedrech místo zpevnění — pak to nese páteř, ne ramena.",
+  "Nádech dole, výdech nahoru."],
+ shpressdb:["Sed s opěrkou nebo stoj, činky ve výšce uší, dlaně vpřed nebo mírně natočené k sobě.",
+  "Tlač nahoru a lehce k sobě. Nahoře nezamykej lokty naplno.",
+  "Přehnaný záklon zad. Zpevni břicho, jako bys čekal(a) ránu.",
+  "Výdech nahoru."],
+ latraise:["Stoj mírně předkloněný, činky u stehen, lokty jemně pokrčené.",
+  "Zvedej do stran do výšky ramen, jako bys naléval(a) vodu ze džbánu (malíky mírně výš).",
+  "Moc těžké činky a švih. Tenhle cvik se dělá lehce a pomalu.",
+  "Výdech nahoru."],
+ cablelat:["Kladka dole, stoj bokem, kabel vedeš před tělem.",
+  "Zvedej do strany do výšky ramene, dolů pomalu proti odporu.",
+  "Zvedání ramene k uchu — trapéz to rád přebere.",
+  "Výdech nahoru."],
+ facepull:["Kladka ve výšce obličeje, lano nadhmatem, krok dozadu do napětí.",
+  "Táhni lano k obličeji, lokty vysoko, na konci rozevři ruce do stran a stáhni lopatky.",
+  "Tahání k hrudníku — to už je jiný cvik. Lokty musí zůstat vysoko.",
+  "Výdech při tahu."],
+ shrugdb:["Činky podél těla, ramena uvolněná dolů, paže napnuté.",
+  "Zvedni ramena přímo nahoru k uším, nahoře vteřinu drž. Nekruž rameny.",
+  "Kroužení rameny a pokrčování loktů.",
+  "Výdech nahoru."],
+ curlbb:["Stoj na šířku ramen, lokty u těla, tyč podhmatem na šířku ramen.",
+  "Ohýbej v loktech, lokty zůstávají na místě. Nahoře vteřina, dolů pomalu.",
+  "Houpání celým tělem. Když musíš švihat, je to moc.",
+  "Výdech nahoru."],
+ curldb:["Činky podél těla, dlaně vpřed, lokty u žeber.",
+  "Zvedej střídavě nebo obě naráz, nahoře zápěstí lehce vytoč. Dolů pomalu na tři doby.",
+  "Vysunování loktů dopředu — pak to táhne rameno.",
+  "Výdech nahoru."],
+ hammer:["Činky podél těla, dlaně k sobě (jako kladivo), lokty u těla.",
+  "Zvedej bez otáčení zápěstí. Tenhle úchop bere víc předloktí a spodek bicepsu.",
+  "Švihání a zvedání ramen.",
+  "Výdech nahoru."],
+ tripush:["Kladka nahoře, lano nebo rovná tyč, lokty přilepené k bokům, mírný předklon.",
+  "Propínej jen v lokti, dole vteřinu stiskni. Lokty se nesmí hnout dopředu ani dozadu.",
+  "Zapojení ramen a celého těla. Triceps má dělat všechnu práci.",
+  "Výdech při propnutí."],
+ ohtri:["Kladka dole nebo jedna činka obouruč, ruce nad hlavou, lokty vzhůru a u hlavy.",
+  "Spouštěj za hlavu, dokud cítíš protažení, pak propni. Lokty zůstávají na místě.",
+  "Rozjíždění loktů do stran.",
+  "Výdech při propnutí."],
+ squat:["Tyč na horní části zad (ne na krku), chodidla na šířku ramen, špičky mírně ven, celé chodidlo na zemi.",
+  "Nádech do břicha, zpevni. Kolena jdou ve směru špiček, klesej tak hluboko, jak dovolí rovná záda. Nahoru tlač patami.",
+  "Kolena dovnitř a zaoblení beder dole. Radši méně kila a čistý pohyb.",
+  "Nádech nahoře, zadrž během sešupu, výdech až za nejtěžším bodem."],
+ hacksquat:["Ramena pod podložky, záda celou plochou na opěrce, chodidla ve střední části plošiny.",
+  "Klesej pomalu do 90° a níž, pokud to kolena dovolí. Nahoru tlač celým chodidlem.",
+  "Odlepování beder od opěrky ve spodní pozici.",
+  "Výdech nahoru."],
+ goblet:["Jednu činku drž svisle u hrudníku oběma rukama, lokty dolů.",
+  "Dřepni mezi paty, lokty projdou vnitřkem kolen. Trup zůstává vzpřímený — o to se stará ta činka vpředu.",
+  "Předklon. Když padáš dopředu, je činka moc těžká nebo chybí pohyblivost kotníků.",
+  "Nádech dolů, výdech nahoru."],
+ sumodb:["Široký stoj, špičky výrazně ven, činka svisle mezi nohama.",
+  "Klesej rovně dolů, kolena tlač ven. Nahoře stiskni hýždě.",
+  "Kolena padající dovnitř.",
+  "Výdech nahoru."],
+ legpress:["Chodidla na šířku ramen ve střední části plošiny, bedra přitisknutá k opěrce.",
+  "Spouštěj, dokud jsou stehna asi v 90°. Nahoru tlač patami, kolena nezamykej naplno.",
+  "Příliš hluboký sešup, při kterém se zvedne pánev — to je nejrychlejší cesta k bolavým zádům.",
+  "Výdech při tlaku."],
+ legext:["Osa stroje v úrovni kolene, opěrka na nártech, ne na holeni.",
+  "Propni nohy, nahoře vteřinu stiskni stehna, dolů pomalu.",
+  "Švihání a bouchání závaží dole.",
+  "Výdech nahoru."],
+ rdl:["Tyč u stehen, kolena jen lehce pokrčená a zůstanou tak, záda rovná, lopatky stažené.",
+  "Vysunuj boky dozadu a tyč veď těsně po stehnech. Dolů, dokud cítíš tah v zadní straně stehen — obvykle pod kolena.",
+  "Kulatá záda a dřepování. Tohle není dřep, je to pohyb boků dozadu.",
+  "Nádech nahoře, výdech při návratu."],
+ rdldb:["Jednoručky před stehny, kolena lehce pokrčená.",
+  "Boky dozadu, činky kloužou po stehnech. Záda rovná po celou dobu.",
+  "Zaoblení zad ve spodní pozici.",
+  "Výdech nahoru."],
+ deadlift:["Střed chodidel pod tyčí, tyč se skoro dotýká holení, ruce vně kolen, hrudník ven, boky výš než kolena.",
+  "Zpevni břicho, zatlač nohama do země a veď tyč po holeních nahoru. Nahoře stiskni hýždě, nezaklánět se.",
+  "Zvedání zády s kulatou páteří a odtržení tyče od těla. Tyč musí jít po nohou.",
+  "Nádech dole, zadržet, výdech až nahoře."],
+ lyingcurl:["Lehni na břicho, osa stroje v úrovni kolene, opěrka nad patami.",
+  "Přitahuj paty k zadku, nahoře vteřina, dolů pomalu. Pánev zůstává na podložce.",
+  "Zvedání zadku, aby šla vyšší váha.",
+  "Výdech při přitažení."],
+ seatcurl:["Sedni, opěrku nastav nad kotníky, stehna zajisti podložkou.",
+  "Zatlač patami dolů a dozadu, dole vteřina, zpět pomalu.",
+  "Krátký rozsah — jeď celou dráhu.",
+  "Výdech při stahu."],
+ bulg:["Zadní noha na lavici, přední asi krok a půl vpředu, trup mírně předkloněný.",
+  "Klesej rovně dolů, koleno přední nohy ve směru špičky. Tlač přední patou.",
+  "Příliš krátký krok — pak to jde do kolene místo do hýždí.",
+  "Výdech nahoru."],
+ lungedb:["Činky podél těla, stoj vzpřímený, pohled vpřed.",
+  "Vykroč, obě kolena do 90°, zadní koleno těsně nad zem. Zpět odrazem přední paty.",
+  "Krátký krok a naklánění trupu.",
+  "Výdech při návratu."],
+ hipthrust:["Lopatky opřené o lavici, činka na kyčlích s podložkou, chodidla tak, aby holeně byly nahoře svisle.",
+  "Zvedej pánev, dokud tělo netvoří rovnou linku od kolen po ramena. Nahoře stiskni hýždě na jednu vteřinu. Brada u hrudníku.",
+  "Prohýbání v bedrech místo stisku hýždí. Rozsah končí, když jsi rovně — ne výš.",
+  "Výdech nahoře, nádech dole."],
+ glbridge:["Lehni na záda, kolena pokrčená, paty blízko zadku.",
+  "Zvedni pánev, nahoře stiskni. Bedra nezaklánět, práci dělá zadek.",
+  "Tlačení špičkami. Tlač patami.",
+  "Výdech nahoře."],
+ kickback:["Manžeta na kotníku, kladka dole, mírný předklon a přidržení se stroje.",
+  "Zanožuj s propnutou nohou dozadu, nahoře stiskni hýždi. Zpět pomalu.",
+  "Prohýbání beder místo pohybu v kyčli.",
+  "Výdech při zanožení."],
+ backext:["Podložka pod kyčlemi (ne pod břichem), chodidla zaklíněná.",
+  "Klesej pomalu, nahoru jen do roviny těla. Nezaklánět se výš.",
+  "Přehnaný záklon a švihání.",
+  "Výdech nahoru."],
+ calf:["Špičky na hraně stupínku, paty volně dolů.",
+  "Klesni co nejníž, pak vytlač co nejvýš a nahoře vteřinu vydrž. Pomalu, pružit nemá cenu.",
+  "Rychlé kmitání s malým rozsahem.",
+  "Výdech nahoru."],
+ hangraise:["Viz na hrazdě, ramena aktivně stažená dolů.",
+  "Zvedej kolena nebo napnuté nohy k hrudníku, pánev na konci podsaď. Dolů pomalu, bez rozhoupání.",
+  "Houpání — pak to dělá setrvačnost.",
+  "Výdech nahoru."],
+ cablecrunch:["Klek pod horní kladkou, lano u hlavy, boky zůstávají na místě.",
+  "Rol páteř dolů, jako bys chtěl(a) přiblížit hrudník k pánvi. Boky se nehýbou.",
+  "Ohýbání v kyčlích místo v páteři.",
+  "Výdech při stahu."],
+ plank:["Lokty pod rameny, tělo v přímce od hlavy po paty, pohled dolů.",
+  "Zpevni břicho, zadek a stehna. Pánev lehce podsaď. Drž kvalitně kratší dobu než dlouho a prověšeně.",
+  "Prohnutá bedra a zvednutý zadek.",
+  "Dýchej normálně — nezadržovat!"]
+};
+function techBox(id){
+ const t = TECH[id];
+ if (!t) return "";
+ const L = [["Nastavení", t[0]], ["Provedení", t[1]], ["Častá chyba", t[2]], ["Dech", t[3]]];
+ return '<details class="tech"><summary>📐 Technika podrobně</summary>'
+  + L.map(x=>'<div class="tr"><b>'+x[0]+'</b><span>'+esc(x[1])+'</span></div>').join("")
+  +'</details>';
+}
+
 /* ---- doporučená váha, která se hýbe s tím, jak trénuješ ----
    Nikdy jsi to nedělal  → odhad z tělesné váhy.
    Dal jsi všechny série na horní hranici → přidáme.
@@ -4778,11 +5136,12 @@ function startSession(who, rid, bud){
    const min = minulaLekce(who, exId);
    const bmin = bud ? budMinula(bud, exId) : null;
    const n = plannedSets(e[1]);
-   const dop = dalsiVaha(who, exId, e[1]);
+   const rz0 = rezim(exId, e[1]);
+   const dop = rz0 === "kg" ? dalsiVaha(who, exId, e[1]) : null;
    const start = (dop && dop.kg) ? dop.kg : "";
    const mk = (m) => Array.from({length:n}, () => ({ kg: start, reps: "", done: false }));
    return {
-    id: exId, popis: e[1], pauza: e[3], klic: rid+"|"+i,
+    id: exId, popis: e[1], pauza: e[3], klic: rid+"|"+i, rz: rezim(exId, e[1]),
     sets: mk(min), bsets: bud ? mk(bmin) : []
    };
   })
@@ -4825,8 +5184,11 @@ function sessPauza(){
 function sessSoucty(kdo){
  const s0 = state.sess;
  let hot = 0, cel = 0, obj = 0, rep = 0;
- s0.ex.forEach(x => ((kdo === "bud") ? (x.bsets||[]) : x.sets).forEach(p => {
-   cel++; if (p.done){ hot++; rep += (+p.reps || 0); obj += (+p.kg || 0) * (+p.reps || 0); } }));
+ s0.ex.forEach(x => {
+  const kilove = (x.rz || rezim(x.id, x.popis)) === "kg";
+  ((kdo === "bud") ? (x.bsets||[]) : x.sets).forEach(p => {
+   cel++; if (p.done){ hot++; rep += (+p.reps || 0); if (kilove) obj += (+p.kg || 0) * (+p.reps || 0); } });
+ });
  const min = Math.max(1, Math.round((Date.now() - new Date(s0.start).getTime())/60000));
  return { hot, cel, obj: Math.round(obj), rep, min };
 }
@@ -4905,17 +5267,21 @@ function renderSession(){
   const E = EX[x.id] || { n: x.id, m: "", i: "machine", t: "" };
   const min = kdo === "bud" ? budMinula(s0.bud, x.id) : minulaLekce(who, x.id);
   const rady = sessSets(i, kdo).map((p,j)=>{
-   const dp = (j === 0 && kdo !== "bud") ? dalsiVaha(who, x.id, x.popis) : null;
+   const rz = x.rz || rezim(x.id, x.popis);
+   const dp = (rz === "kg" && j === 0 && kdo !== "bud") ? dalsiVaha(who, x.id, x.popis) : null;
    const mp = min && min.s[j]
-     ? (fmt(min.s[j][0])+" kg × "+min.s[j][1])
-     : (dp ? '<span class="dopor '+dp.smer+'">'+(SMER_IC[dp.smer]||"🎯")+" "+fmt(dp.kg)+' kg</span>'
-           : (j === 0 && kdo !== "bud" ? '<span class="dopor">'+esc(doporucKratky(who, x.id))+'</span>' : "—"));
-   return '<div class="setrow'+(p.done?" done":"")+'">'
+     ? serieText(rz, min.s[j][0], min.s[j][1])
+     : (dp ? '<span class="dopor '+dp.smer+'">'+(SMER_IC[dp.smer]||"🎯")+" "+fmt(dp.kg)+' kg</span>' : "—");
+   const ph = REZIM_POPIS[rz] || REZIM_POPIS.kg;
+   const kgPole = rz === "kg"
+     ? '<input type="number" step="0.5" min="0" max="500" inputmode="decimal" placeholder="kg" '
+       +'value="'+(p.kg!==""&&p.kg!==null?p.kg:"")+'" data-sk="'+i+'|'+j+'">'
+     : '<span class="nokg">'+(rz==="reps"?"vlastní váha":(rz==="kardio"?"tempo":"výdrž"))+'</span>';
+   return '<div class="setrow'+(p.done?" done":"")+(rz!=="kg"?" bezkg":"")+'">'
     +'<span class="n">'+(j+1)+'</span>'
     +'<span class="prev">'+mp+'</span>'
-    +'<input type="number" step="0.5" min="0" max="500" inputmode="decimal" placeholder="kg" '
-    +'value="'+(p.kg!==""&&p.kg!==null?p.kg:"")+'" data-sk="'+i+'|'+j+'">'
-    +'<input type="number" step="1" min="0" max="300" inputmode="numeric" placeholder="op." '
+    + kgPole
+    +'<input type="number" step="1" min="0" max="600" inputmode="numeric" placeholder="'+ph.hlava[1]+'" '
     +'value="'+(p.reps!==""&&p.reps!==null?p.reps:"")+'" data-sr="'+i+'|'+j+'">'
     +'<button class="okbtn" data-sdone="'+i+'|'+j+'" type="button" aria-label="Hotovo">✓</button>'
     +'</div>';
@@ -4933,12 +5299,17 @@ function renderSession(){
    +'<div class="exhead"><span class="exic"><svg viewBox="0 0 24 24" aria-hidden="true">'+(ICO[E.i]||ICO.machine)+'</svg></span>'
    +'<span class="n">'+esc(E.n)+'</span><span class="tgt">'+esc(x.popis)+'</span></div>'
    + (duo ? '<div class="duotag">zapisuješ za <b>'+esc(sessJmeno(kdo))+'</b></div>' : '')
-   +'<div class="sethead"><span>#</span><span>Minule</span><span>kg</span><span>opak.</span><span></span></div>'
+   +'<div class="sethead"><span>#</span><span>Minule</span><span>'
+   + ((REZIM_POPIS[x.rz || rezim(x.id, x.popis)] || REZIM_POPIS.kg).hlava[0] || '')
+   +'</span><span>'
+   + ((REZIM_POPIS[x.rz || rezim(x.id, x.popis)] || REZIM_POPIS.kg).hlava[1])
+   +'</span><span></span></div>'
    + rady
    +'<button class="addset" data-addsess="'+i+'" type="button">+ Přidat sérii</button>'
    + duoMini
    + spoluCvik(i)
    +'<div class="hint" style="margin-top:6px">'+esc(E.t)+'</div>'
+   + techBox(x.id)
    +'</div>';
  }).join("");
 
@@ -4981,6 +5352,7 @@ function renderSession(){
   +'<div class="sess-bar"><i style="width:'+Math.round(t.hot/Math.max(1,t.cel)*100)+'%"></i></div>'
   + prepinac
   + spoluPanel()
+  + rozehratiHtml(r, false)
   + telo
   +'<div class="sess-foot">'
   +'<button class="ghost" data-sess="pauza" type="button">⏱ Pauza '+esc(sessPauza())+'</button>'
@@ -5006,13 +5378,14 @@ function finishSession(){
  if (!t.hot && !(duo && tBud.hot)){ cancelSession(); return; }
  let osobaky = [];
  s0.ex.forEach(x => {
-  const pred = nejlepsiPred(who, x.id);
+  const kilove = (x.rz || rezim(x.id, x.popis)) === "kg";
+  const pred = kilove ? nejlepsiPred(who, x.id) : 0;
   let nej = 0;
   x.sets.filter(p => p.done).forEach(p => {
-   logAdd(who, x.id, (+p.kg || 0), (+p.reps || 0));
-   if ((+p.kg || 0) > nej) nej = (+p.kg || 0);
+   logAdd(who, x.id, kilove ? (+p.kg || 0) : 0, (+p.reps || 0));
+   if (kilove && (+p.kg || 0) > nej) nej = (+p.kg || 0);
   });
-  if (nej > 0 && nej > pred && pred > 0) osobaky.push((EX[x.id]||{n:x.id}).n+" "+fmt(nej)+" kg");
+  if (kilove && nej > 0 && nej > pred && pred > 0) osobaky.push((EX[x.id]||{n:x.id}).n+" "+fmt(nej)+" kg");
   if (duo) (x.bsets||[]).filter(p => p.done).forEach(p =>
     budLogAdd(s0.bud, x.id, (+p.kg || 0), (+p.reps || 0)));
  });
@@ -5132,6 +5505,7 @@ function exRow(rid, e, i){
   +'<span class="exname"><span class="n">'+esc(x.n)+'</span><br><span class="m">'+esc(x.m)+' · <span class="en">'+esc(x.en||"")+'</span></span></span>'
   +'<span class="exsets"><span class="s">'+esc(e[1])+'</span><br><span class="r">RPE '+e[2]+' · pauza '+e[3]+'</span></span>'
   +'</summary><p class="extip">'+esc(x.t)+sel+'</p>'
+  + techBox(chosenId)
   + dalsiVahaText(state.trWho, chosenId, e[1])
   + logBox(state.trWho, chosenId, e[1], e[3])
   +'</details>';
@@ -5253,6 +5627,7 @@ function routineCard(r){
   +(kolikrat?' · <b>'+kolikrat+'×</b> odtrénováno':'')+'</span></div>'
   +'<p class="who" style="margin-bottom:10px"><span class="tpill">'+TYP_LABEL[r.typ]+'</span> '+esc(r.tip)+'</p>'
   +'<button class="act" data-start="'+r.id+'" type="button" style="width:100%;margin-bottom:10px">▶︎ Spustit trénink</button>'
+  + rozehratiHtml(r, false)
   + r.ex.map((e,i)=>exRow(r.id,e,i)).join("") + '</div>';
 }
 const TR_TIME = [["all","Vše"],[20,"⏱ do 20 min"],[30,"⏱ do 30 min"],[45,"⏱ do 45 min"],[999,"⏱ mám čas"]];
@@ -5364,10 +5739,17 @@ function renderTrenink(){
   ? '<h2>'+vyber.length+' '+(vyber.length===1?"trénink":(vyber.length<5?"tréninky":"tréninků"))+' pro tenhle výběr</h2>'
     + vyber.map(routineCard).join("")
   : '<div class="card"><p class="who" style="margin:0">Pro tenhle výběr tu nic není — zkus povolit delší čas nebo jiný typ.</p></div>';
+ const strecTip = state.trTyp === "mobilita"
+  ? '<div class="note"><b>Jak protahovat, aby to k něčemu bylo:</b> každou pozici drž <b>30–45 vteřin</b> '
+    +'a dýchej do ní — sval povolí až po dvaceti vteřinách klidu. <b>Nepruž</b>, netahej do bolesti, '
+    +'jen do příjemného tahu. Po tréninku protahuj zahřáté svaly, ráno jeď spíš pohyb (kočka–kráva, kroužení) '
+    +'než dlouhé výdrže. A hlavně: <b>protažení není odměna, je to údržba</b> — deset minut týdně ti ušetří '
+    +'měsíc s bolavými zády.</div>'
+  : "";
  const tip = who==="p"
   ? '<div class="note"><b>Dvojitá progrese:</b> stejná váha, přidávej opakování. Horní hranice ve všech sériích → +2,5 kg (horní tělo) / +5 kg (dolní) a znovu. U každého cviku jde vybrat varianta — když je nářadí obsazené nebo něco nesedí. Deload každý 7. týden: poloviční série.</div>'
   : '<div class="note"><b>Neboj se činek:</b> silový trénink u ženy = pevné tvary, ne „chlapské svaly" — na ty nejsou hormony, nestane se to omylem. U každého cviku jde vybrat varianta. Váhy zapisuj do Hevy: síla nahoru = postava se mění, i když váha stojí.</div>';
- document.getElementById("tab-trenink").innerHTML = tgl + spoluPozvankaKarta() + bezi + peerTreninkBox() + head + trReco(who) + sparingCard(who) + hledejEx + nalez + filtry + list + histCard(who) + rekordy(who) + tip
+ document.getElementById("tab-trenink").innerHTML = tgl + spoluPozvankaKarta() + bezi + peerTreninkBox() + head + trReco(who) + sparingCard(who) + hledejEx + nalez + filtry + strecTip + list + histCard(who) + rekordy(who) + tip
   + '<div class="note"><b>Deník máš přímo tady.</b> Rozklikni cvik, zapiš kg a opakování — appka si pamatuje, '
   + 'co jsi zvedal(a) minule, a sama řekne, kdy přidat. Tlačítko s časem spustí odpočinek mezi sériemi.</div>';
 }
@@ -6889,13 +7271,14 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">29</td></tr>'
+  +'<tr><td>Verze</td><td class="num">30</td></tr>'
   +'<tr><td>Tréninků k výběru</td><td class="num">'+(ROUTINES.p.length+ROUTINES.v.length)+'</td></tr>'
   +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
   +'<tr><td>Receptů na večeře</td><td class="num">'+pc.rec+'</td></tr>'
   +'<tr><td>Tréninkových variant</td><td class="num">'+pc.tr+'</td></tr>'
   +'<tr><td>Cviků v databázi</td><td class="num">'+pc.cvik+'</td></tr>'
+  +'<tr><td>Podrobných návodů techniky</td><td class="num">'+Object.keys(TECH).length+'</td></tr>'
   +'<tr><td>Odznaků k odemčení</td><td class="num">'+pc.odz+'</td></tr>'
   +'<tr><td>Tenhle telefon</td><td class="num">'+(me ? esc(BASE_T[me].name) : "nenastaveno")+'</td></tr>'
   +'</tbody></table>'
@@ -7517,10 +7900,11 @@ document.addEventListener("click", e=>{
   const set = sessSets(i)[j];
   const kgEl = document.querySelector('[data-sk="'+i+'|'+j+'"]');
   const rEl  = document.querySelector('[data-sr="'+i+'|'+j+'"]');
+  if (!rEl) return;
   if (!set.done){
    const reps = parseInt(rEl.value, 10);
    if (!reps){ rEl.focus(); return; }
-   set.kg = parseFloat(String(kgEl.value).replace(",", ".")) || 0;
+   set.kg = kgEl ? (parseFloat(String(kgEl.value).replace(",", ".")) || 0) : 0;
    set.reps = reps; set.done = true;
    saveSess();
    if (window.sync && sync.on) sync.pushWidget();
@@ -7590,9 +7974,9 @@ document.addEventListener("click", e=>{
   const p = as.dataset.addset.split("|");
   const kgEl = document.getElementById("lg-"+p[0]+"-"+p[1]+"-kg");
   const rEl  = document.getElementById("lg-"+p[0]+"-"+p[1]+"-r");
-  const kg = parseFloat(String(kgEl.value).replace(",", ".")) || 0;
+  const kg = kgEl ? (parseFloat(String(kgEl.value).replace(",", ".")) || 0) : 0;
   const reps = parseInt(rEl.value, 10);
-  if (!reps || reps < 1 || reps > 100){ rEl.focus(); return; }
+  if (!reps || reps < 1 || reps > 600){ rEl.focus(); return; }
   logAdd(p[0], p[1], kg, reps);
   kontrolaOdznaku(); renderTrenink();
   return;
