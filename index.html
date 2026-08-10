@@ -2328,7 +2328,6 @@ function profilSet(who, data){
  const p0 = Object.assign({}, profil(who), data || {});
  store.set("profil_" + who, p0);
  if (data && data.vaha && data.vaha !== stara) vahaZapis(who, data.vaha);
- if (window.sync && sync.on) sync.pushProfil(who);
  return p0;
 }
 function profilHotovy(who){ return !!store.get("profil_" + who, null); }
@@ -2411,7 +2410,8 @@ function target(who){
 /* ============ state ============ */
 const jsDay = new Date().getDay();
 const todayIdx = (jsDay + 6) % 7;
-function dateOfWeekday(i){ const d = new Date(); d.setDate(d.getDate() + (i - todayIdx)); return d.toISOString().slice(0,10); }
+function dateOfWeekday(i){ const d = new Date(); d.setDate(d.getDate() + (i - todayIdx));
+ return d.getFullYear()+"-"+dvoj(d.getMonth()+1)+"-"+dvoj(d.getDate()); }
 function daysBetween(a,b){ return Math.round((new Date(b) - new Date(a)) / 86400000); }
 
 const state = {
@@ -2465,6 +2465,7 @@ const state = {
  sessMin: !!(store.get("session", null) || {}).min,
  pick0: null,
  prTik: null,
+ pairTik: null,
  spar: store.get("spar", []),
  fotoP: store.get("fotoP", []),
  fotoV: store.get("fotoV", [])
@@ -2519,6 +2520,12 @@ function kdoMapa(){
 const KDO = new Proxy({}, { get: (t, k) => kdoMapa()[k], has: (t,k) => k in kdoMapa(),
                             ownKeys: () => Object.keys(kdoMapa()),
                             getOwnPropertyDescriptor: () => ({ enumerable:true, configurable:true }) });
+/* české množné číslo: pl(1,"den","dny","dní") → "den" */
+function pl(n, jeden, dva, pet){
+ const a = Math.abs(n);
+ return a === 1 ? jeden : (a >= 2 && a <= 4 ? dva : pet);
+}
+function pocet(n, jeden, dva, pet){ return n + " " + pl(n, jeden, dva, pet); }
 function isoDnes(){ const d = new Date(); return d.getFullYear()+"-"+dvoj(d.getMonth()+1)+"-"+dvoj(d.getDate()); }
 function isoPlus(n){ const d = new Date(); d.setDate(d.getDate()+n); return d.getFullYear()+"-"+dvoj(d.getMonth()+1)+"-"+dvoj(d.getDate()); }
 function wdOf(iso){ const d = new Date(iso+"T12:00:00"); return (d.getDay()+6)%7; }
@@ -2682,13 +2689,14 @@ function navrhNew(iso, pole, hod){
  syncDot();
 }
 function navrhSchval(id){
+ const _popis = (state.navrhy && state.navrhy[id]) ? popisZmeny(state.navrhy[id]) : "";
  const n = state.navrhy[id];
  if (!n) return;
  jidloSet(n.iso, n.pole, n.hod);
  delete state.navrhy[id]; navrhyUloz();
  const me = store.get("meId", "p");
  pushMsg("navok-"+id, "✅", "Schváleno",
-   BASE_T[me].name+" "+rod(me,"odsouhlasil","odsouhlasila")+": "+popisZmeny(n).replace(/<[^>]+>/g,"")+". Lid promluvil. 🏛️");
+   jmeno(me)+" "+rod(me,"odsouhlasil","odsouhlasila")+": "+_popis.replace(/<[^>]+>/g,"")+". Lid promluvil. 🏛️");
  celebrate("✅");
  renderAll();
 }
@@ -2702,12 +2710,13 @@ function navrhZamit(id){
  renderAll();
 }
 function navrhForce(id){
+ const _popis = (state.navrhy && state.navrhy[id]) ? popisZmeny(state.navrhy[id]) : "";
  const n = state.navrhy[id];
  if (!n) return;
  jidloSet(n.iso, n.pole, n.hod);
  delete state.navrhy[id]; navrhyUloz();
  pushMsg("navf-"+id, "⚡", BASE_T[n.od].name+" to "+rod(n.od,"prosadil","prosadila")+" silou",
-   popisZmeny(n).replace(/<[^>]+>/g,"")+". Bez hlasování. Dekret nabývá účinnosti okamžitě. 🏛️");
+   _popis.replace(/<[^>]+>/g,"")+". Bez hlasování. Dekret nabývá účinnosti okamžitě. 🏛️");
  celebrate("⚡");
  renderAll();
 }
@@ -2858,7 +2867,7 @@ function renderPick(){
       return '<button class="'+(st.f===t[0]?"on":"")+'" data-pkf="'+t[0]+'" type="button">'+t[1]+' '+n+'</button>';
     }).join("")
   +'</div></div>'
-  +'<div class="pk-count">'+idx.length+' '+(idx.length===1?"možnost":(idx.length<5?"možnosti":"možností"))
+  +'<div class="pk-count">'+idx.length+' '+pl(idx.length,"možnost","možnosti","možností")
   +' · ťukni a je vybráno'
   +(kolikFav ? ' · ⭐ '+kolikFav+' nahoře' : '')
   +' <button class="sh" id="pickRnd" type="button">🎲 náhodně</button></div>'
@@ -3139,10 +3148,13 @@ function popisDne(iso, i){
 function renderDnes(){
  const iso = state.dayIso || isoDnes();
  const opts = [];
- for (let i = -1; i <= 6; i++){
-  const x = isoPlus(i);
+ const dny = [];
+ for (let i = -1; i <= 6; i++) dny.push(isoPlus(i));
+ if (dny.indexOf(iso) < 0) dny.push(iso);          // Týden umí poslat i vzdálenější den
+ dny.sort().forEach(x => {
+  const i = daysBetween(isoDnes(), x);
   opts.push('<option value="'+x+'"'+(x===iso?" selected":"")+'>'+esc(popisDne(x,i))+'</option>');
- }
+ });
  const din = dinIso(iso);
  const kv = KDO[kdoVari(iso)] || KDO.s;
  const kdoSel = '<select data-kdo="'+iso+'" style="width:auto;margin-top:4px">'
@@ -3179,7 +3191,7 @@ function renderTyden(){
   const iso = isoZ(d);
   const din = dinIso(iso), kdo = kdoVari(iso), kv = KDO[kdo] || KDO.s;
   const minule = iso < dnes, dnesek = iso === dnes;
-  const snedeno = state.checks[iso+"|v|v4"] || state.checks[iso+"|p|p4"];
+  const snedeno = state.checks[iso+"|v|s4"] || state.checks[iso+"|p|s4"];
   const opt = o => '<option value="'+o.id+'"'+(o.id===din.id?" selected":"")+'>'+esc(o.name)+'</option>';
   const sel = '<select data-din="'+iso+'">'
    + '<optgroup label="Vaří se doma">'+DINNERS.filter(o=>!o.out).map(opt).join("")+'</optgroup>'
@@ -3495,7 +3507,7 @@ function renderRecepty(){
     +'Recepty se přerovnají — nahoře budou ty, na které nemusíš nikam běžet.</p><div>'
     + pantryList().map(n=>'<button class="pchip'+(state.pantry.includes(n)?" on":"")+'" data-pantry="'+esc(n)+'" '
       +'type="button">'+esc(n)+'</button>').join("")
-    + '</div>'+(state.pantry.length ? '<div class="hint">Vybráno '+state.pantry.length+' surovin · '
+    + '</div>'+(state.pantry.length ? '<div class="hint">Vybráno '+pocet(state.pantry.length,"surovina","suroviny","surovin")+' · '
       +'<button class="sh" id="pantryClr" type="button">vyčistit</button></div>' : '')+'</div>'
   : "";
 
@@ -3551,7 +3563,7 @@ function outKatalog(){
   + 'Vyber si to pak v Dnes v rozbalovacím menu v sekci <b>Venku 🌯</b> a den se přepočítá.</div>'
   + OUT_KATALOG.map(g =>
     '<details class="rec"><summary><span class="t">'+esc(g[0])+'</span>'
-    +'<span class="k">'+g[1].length+' položek</span></summary><div class="inner">'
+    +'<span class="k">'+pocet(g[1].length,"položka","položky","položek")+'</span></summary><div class="inner">'
     +'<table><thead><tr><th>Položka</th><th class="num">kcal</th><th class="num">bílkoviny</th></tr></thead><tbody>'
     + g[1].map(r=>'<tr><td>'+esc(r[0])+'</td><td class="num">'+fmt(r[1])+'</td><td class="num">'+r[2]+' g</td></tr>').join("")
     +'</tbody></table><div class="note" style="margin-top:10px">'+g[2]+'</div></div></details>'
@@ -3577,10 +3589,15 @@ const ODDELENI = [
  ["doplnky",  "💊 Doplňky", ["kreatin","vitamin","omega","whey","protein"]],
  ["ostatni",  "🧺 Ostatní", []]
 ];
+/* Vyhrává nejdelší shoda, ne pořadí sekcí — jinak „arašídové máslo"
+   skončí u másla a „kokosové mléko" u mléka. */
 function oddeleniPro(nazev){
  const t = String(nazev).toLowerCase();
- for (const o of ODDELENI) if (o[2].some(k => t.indexOf(k) >= 0)) return o[0];
- return "ostatni";
+ let nej = null, delka = 0;
+ for (const o of ODDELENI) o[2].forEach(k => {
+  if (t.indexOf(k) >= 0 && k.length > delka){ delka = k.length; nej = o[0]; }
+ });
+ return nej || "ostatni";
 }
 /* ---- normalizace jednotek a zaokrouhlení na balení ---- */
 function normUnit(q, u){
@@ -3611,11 +3628,15 @@ function castoSeznam(){
 function renderNakup(){
  const dni = state.nakupDni || 7;
  const agg = {};
- for (let i = 0; i < dni; i++) dinIso(isoPlus(i)).ing.forEach(x=>{
+ for (let i = 0; i < dni; i++){
+  const den = isoPlus(i);
+  if (kdoVari(den) === "o") continue;      // ten den se nevaří, jde se ven
+  dinIso(den).ing.forEach(x=>{
   const n = normUnit(x[1], x[2]);
   const k = x[0]+"|"+n[1];
   agg[k] = (agg[k] || 0) + n[0];
- });
+  });
+ }
  Object.keys(STAPLES).forEach(h => STAPLES[h].forEach(x => {
   const n = normUnit(x[1] || 0, x[2]);
   const k = x[0]+"|"+n[1];
@@ -3624,7 +3645,7 @@ function renderNakup(){
 
  const polozky = Object.keys(agg).map(k => {
   const p = k.split("|"), b = baleni(agg[k], p[1]);
-  return { nazev:p[0], q:b[0], u:b[1], syrove:agg[k], su:p[1], odd:oddeleniPro(p[0]), key:"d|"+p[0] };
+  return { nazev:p[0], q:b[0], u:b[1], syrove:agg[k], su:p[1], odd:oddeleniPro(p[0]), key:"d|"+k };
  });
 
  const hotovo = polozky.filter(x => state.shop[x.key] || mamDoma(x.nazev)).length
@@ -3713,7 +3734,12 @@ function nedeleIso(){
 }
 function prepKroky(){
  const tyden = Array.from({length:7}, (_,i)=>dinIso(isoPlus(i)));
- const dopredu = tyden.filter(r => !r.out && (tagOf(r) === "trouba" || tagOf(r) === "klasika")).slice(0,2);
+ const videnoR = {};
+ const dopredu = tyden.filter(r => {
+  if (r.out || (tagOf(r) !== "trouba" && tagOf(r) !== "klasika")) return false;
+  if (videnoR[r.id]) return false;
+  videnoR[r.id] = 1; return true;
+ }).slice(0,2);
  const kroky = [
   ["Nákup podle seznamu výše", "Celý týden na jeden zátah. Co není doma, to se večer nesní.", 45],
   ["10 vajec natvrdo", "Devět minut varu, pak do studené vody. Vydrží týden a vyřeší svačiny i autobagy.", 12],
@@ -3846,13 +3872,45 @@ const DOW_ICS = ["","MO","TU","WE","TH","FR","SA","SU"];
 /* UID musí být pro danou připomínku VŽDY stejné, jinak kalendář při dalším
    stažení nepozná, že jde o tutéž událost, a nasype si tam kopie.            */
 function icsUid(id, i){ return "pf-" + id + "-" + i + "@pevefit"; }
-/* Pořadové číslo verze — vyšší číslo řekne kalendáři "tohle je novější". */
-function icsSeq(){ return Math.floor(Date.now() / 3600000) % 100000; }
+/* Pořadové číslo verze — vyšší číslo řekne kalendáři „tohle je novější".
+   Musí jenom růst, takže si ho držíme sami; hodinové razítko by se jednou
+   přetočilo a od té chvíle by kalendář všechny další verze ignoroval. */
+function icsSeq(){
+ const n = (store.get("icsSeq", 0) || 0) + 1;
+ store.set("icsSeq", n);
+ return n;
+}
+/* text v .ics: escapovat čárky, středníky a zalomit dlouhé řádky na 75 znaků */
+function icsEsc(t){
+ return String(t == null ? "" : t)
+  .replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,")
+  .replace(/\r?\n/g, "\\n");
+}
+function icsFold(radky){
+ const out = [];
+ radky.forEach(r => {
+  let x = String(r);
+  if (x.length <= 74){ out.push(x); return; }
+  out.push(x.slice(0, 74));
+  x = x.slice(74);
+  while (x.length > 73){ out.push(" " + x.slice(0, 73)); x = x.slice(73); }
+  if (x.length) out.push(" " + x);
+ });
+ return out;
+}
+function icsNyni(){
+ const d = new Date();
+ const dv = n => (n < 10 ? "0" : "") + n;
+ return d.getUTCFullYear() + dv(d.getUTCMonth()+1) + dv(d.getUTCDate()) + "T"
+      + dv(d.getUTCHours()) + dv(d.getUTCMinutes()) + dv(d.getUTCSeconds()) + "Z";
+}
 
 function icsText(who){
  const sel = remSel();
  const L = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//PEVE FIT//CS","CALSCALE:GREGORIAN",
             "METHOD:PUBLISH","X-WR-CALNAME:PEVE FIT — připomínky"];
+ const seq = icsSeq();
+ const stamp = icsNyni();
  let n = 0;
  PRIPOMINKY.filter(p => sel[p.id]).forEach(p => {
   p.ev(who).forEach((e, ei) => {
@@ -3860,21 +3918,23 @@ function icsText(who){
    const rrule = e.freq === "WEEKLY" ? "FREQ=WEEKLY;BYDAY="+DOW_ICS[e.dow]
                : (e.freq === "MONTHLY" ? "FREQ=MONTHLY;BYMONTHDAY="+e.den : "FREQ=DAILY");
    const alarm = e.alarm || 0;
+   n++;
    L.push("BEGIN:VEVENT",
      "UID:"+icsUid(p.id, ei),
-     "SEQUENCE:"+(n++, icsSeq()),
+     "SEQUENCE:"+seq,
+     "DTSTAMP:"+stamp,
      "DTSTART:"+icsStamp(zac, e.cas),
      "DTEND:"+icsStamp(zac, plusMin(e.cas, e.min || 10)),
      "RRULE:"+rrule,
-     "SUMMARY:"+e.nazev,
-     "DESCRIPTION:"+e.popis+" — z appky PEVE FIT",
+     "SUMMARY:"+icsEsc(e.nazev),
+     "DESCRIPTION:"+icsEsc(e.popis+" — z appky PEVE FIT"),
      "TRANSP:TRANSPARENT",
-     "BEGIN:VALARM","TRIGGER:-PT"+alarm+"M","ACTION:DISPLAY","DESCRIPTION:"+e.nazev,"END:VALARM",
+     "BEGIN:VALARM","TRIGGER:-PT"+alarm+"M","ACTION:DISPLAY","DESCRIPTION:"+icsEsc(e.nazev),"END:VALARM",
      "END:VEVENT");
   });
  });
  L.push("END:VCALENDAR");
- return { text: L.join("\r\n"), pocet: n };
+ return { text: icsFold(L).join("\r\n"), pocet: n };
 }
 
 /* Zrušovací soubor: pošle kalendáři "tyhle události zruš".
@@ -4006,7 +4066,8 @@ function repTarget(str){
   if (!m) return null;
   return { sets:+m[1], lo:+m[2], hi:+(m[3] || m[2]) };
 }
-function czDate(iso){ const p = iso.split("-"); return (+p[2])+". "+(+p[1])+"."; }
+function czDate(iso){
+ if (!iso || typeof iso !== "string" || iso.indexOf("-") < 0) return "—"; const p = iso.split("-"); return (+p[2])+". "+(+p[1])+"."; }
 
 function kgSpark(sessions){
   const pts = sessions.slice(-10).map(x => topSet(x.s)[0]).filter(v => v > 0);
@@ -4710,8 +4771,14 @@ const EX_STREC = ["catcow","hipflex","hamstretch","chestdoor","thoracic","childp
 
 function rezim(exId, presc){
  if (EX_KARDIO.indexOf(exId) >= 0) return "kardio";
- if (EX_STREC.indexOf(exId) >= 0) return "strec";
  const t = String(presc || "");
+ if (EX_STREC.indexOf(exId) >= 0){
+  // některé „protahovací" cviky se ve skutečnosti počítají na opakování
+  if (/\d\s*(s|sek|vteřin)\b/i.test(t)) return "strec";
+  if (/\d\s*min\b/i.test(t)) return "kardio";
+  if (/\d\s*(×|x|kruh|opak|pomal|na stranu|vpřed|vzad)/i.test(t)) return "reps";
+  return "strec";
+ }
  if (/\d\s*(s|sek|vteřin)\b/i.test(t)) return "cas";
  if (/\d\s*min\b/i.test(t)) return "kardio";
  if (VAHY_TELO.indexOf(exId) >= 0 || VAHY_GUMA.indexOf(exId) >= 0) return "reps";
@@ -4770,6 +4837,7 @@ function rozTyp(r){
  const dolni = /squat|rdl|deadlift|legpress|legext|curl(?!bb|db)|hipthrust|bulg|lunge|glbridge|kickback|calf|sumodb|goblet|hacksquat|stepup|kbswing/.test(ids);
  const horni = /bench|press|pullup|latpd|row|ohp|raise|curlbb|curldb|hammer|tri|facepull|shrug|dip|pushup|fly|pecdeck/.test(ids);
  if (dolni && horni) return "cele";
+ if (!dolni && !horni) return "cele";     // třeba samý střed těla — rozehřej celé tělo
  return dolni ? "dolni" : "horni";
 }
 function rozehratiHtml(r, kompakt){
@@ -5000,26 +5068,29 @@ function dalsiVaha(who, exId, presc){
  const kg = topSet(minule.s)[0];
  if (!kg) return null;
  const tg = repTarget(presc);
- const krok = incFor(exId);
+ const k0 = VAHY[exId];
+ const krok = (k0 && k0[2]) || incFor(exId);
+ const ruka = !!(k0 && k0[3] === "ruka");
  const pauza = daysBetween(minule.d, iso);
 
  // dlouhá pauza u cviku — začneme níž, ať to není hrdinství
- if (pauza >= 42) return { kg: zaokr(kg * 0.85, krok), ruka:false, smer:"dolu",
-   duvod: "u tohohle cviku jsi nebyl " + Math.round(pauza/7) + " týdnů — ubereme 15 %, do dvou tréninků to doženeš" };
- if (pauza >= 21) return { kg: zaokr(kg * 0.92, krok), ruka:false, smer:"dolu",
+ if (pauza >= 42) return { kg: zaokr(kg * 0.85, krok), ruka:ruka, smer:"dolu",
+   duvod: "u tohohle cviku jsi " + rod(who,"nebyl","nebyla") + " " + pocet(Math.round(pauza/7),"týden","týdny","týdnů")
+        + " — ubereme 15 %, do dvou tréninků to doženeš" };
+ if (pauza >= 21) return { kg: zaokr(kg * 0.92, krok), ruka:ruka, smer:"dolu",
    duvod: "tři týdny pauzy u tohohle cviku — ubereme 8 % a rozjedeme to znovu" };
 
- if (!tg) return { kg: kg, ruka:false, smer:"stejne", duvod: "jako minule — a přidej opakování" };
+ if (!tg) return { kg: kg, ruka:ruka, smer:"stejne", duvod: "jako minule — a přidej opakování" };
 
  const vsechny = minule.s.length >= tg.sets;
  const nahore  = minule.s.every(x => x[1] >= tg.hi);
  const pod     = minule.s.filter(x => x[1] < tg.lo).length;
 
- if (vsechny && nahore) return { kg: zaokr(kg + krok, krok), ruka:false, smer:"nahoru",
+ if (vsechny && nahore) return { kg: zaokr(kg + krok, krok), ruka:ruka, smer:"nahoru",
    duvod: "minule všechny série na horní hranici — zasloužíš si přidat " + fmt(krok) + " kg" };
- if (pod >= 2) return { kg: zaokr(kg - krok, krok), ruka:false, smer:"dolu",
-   duvod: "minule ti " + pod + " série spadly pod " + tg.lo + " opakování — ubereme a uděláme to čistě" };
- return { kg: kg, ruka:false, smer:"stejne",
+ if (pod >= 2) return { kg: zaokr(kg - krok, krok), ruka:ruka, smer:"dolu",
+   duvod: "minule ti " + pocet(pod,"série spadla","série spadly","sérií spadlo") + " pod " + tg.lo + " opakování — ubereme a uděláme to čistě" };
+ return { kg: kg, ruka:ruka, smer:"stejne",
    duvod: "drž váhu a dotlač to na " + tg.sets + "× " + tg.hi + " — pak přidáš" };
 }
 function zaokr(v, krok){
@@ -5046,6 +5117,11 @@ function planMinut(who, rid){
  const r = (rutiny(who) || []).find(x => x.id === rid);
  return r ? r.min : null;
 }
+/* 45 minut je „45:00", ne „00:45" */
+function casTrvani(min){
+ const m = Math.max(0, Math.round(min || 0));
+ return m >= 60 ? (Math.floor(m/60) + ":" + dvoj(m % 60) + " h") : (m + ":00");
+}
 function zbyvaMin(hot, cel, min, planMin){
  hot = +hot || 0; cel = +cel || 0; min = +min || 0;
  if (cel <= 0) return null;
@@ -5066,7 +5142,9 @@ function casZa(min){
  const d = new Date(Date.now() + min * 60000);
  return dvoj(d.getHours()) + ":" + dvoj(d.getMinutes());
 }
+function jeHotovo(hot, cel){ return hot >= cel; }
 function zbyvaText(hot, cel, min, planMin, dlouhy){
+ if (jeHotovo(hot, cel)) return "hotovo 💪";
  const z = zbyvaMin(hot, cel, min, planMin);
  if (z === null) return "";
  if (z === 0) return "poslední série";
@@ -5213,20 +5291,35 @@ function spoluPozvanka(){
  if (stari > 90) return null;
  return d.pozvanka;
 }
+/* Každý má jinou sadu tréninků, takže „stejný trénink" většinou u druhého
+   vůbec neexistuje. Hledáme proto nejbližší svým typem a délkou. */
+function spoluProtejsek(me, rid){
+ const moje = rutiny(me);
+ const presne = moje.find(x => x.id === rid);
+ if (presne) return presne;
+ const vzor = (ROUTINES.p.concat(ROUTINES.v)).find(x => x.id === rid);
+ if (!vzor) return moje[0];
+ const stejny = moje.filter(x => x.typ === vzor.typ);
+ const zdroj = stejny.length ? stejny : moje;
+ return zdroj.slice().sort((a,b)=> Math.abs(a.min - vzor.min) - Math.abs(b.min - vzor.min))[0];
+}
 function spoluPrijmi(){
  const d = spoluBezi();
  if (!d) return;
  const me = store.get("meId", null);
  if (!me) return;
- const rid = (rutiny(me).find(x => x.id === d.rid) ? d.rid : rutiny(me)[0].id);
+ const r0 = spoluProtejsek(me, d.rid);
+ if (!r0) return;
+ const rid = r0.id;
  if (state.sess && state.sess.rid !== rid) cancelSession();
  if (!state.sess) startSession(me, rid, null);
  state.sess.spolu = true; saveSess();
  sync.spoluSet2("pozvanka", null);
  spoluMojeSety();
  spoluUdalost(spoluHlaska("pripoj", me));
- pushMsg("spolu-in-" + d.id + "-" + me, "🤜", BASE_T[me].name + " se přidal" + rod(me, "", "a") + " k tréninku",
-   "Od téhle chvíle vidíte série jeden druhého živě. Ať vyhraje ten poctivější. 🏛️");
+ pushMsg("spolu-in-" + d.id + "-" + me, "🤜", jmeno(me) + " se přidal" + rod(me, "", "a") + " k tréninku",
+   (rid === d.rid ? "" : "Ty jedeš " + rid + ", protože " + d.rid + " ve tvojí sadě není. ")
+   + "Od téhle chvíle vidíte série jeden druhého živě. Ať vyhraje ten poctivější. 🏛️");
  celebrate("🤜"); syncDot();
  renderSession(); renderTrenink(); renderDnes();
 }
@@ -5289,7 +5382,10 @@ function budNejlepsi(bud, exId){
  budLog(bud, exId).forEach(x => x.s.forEach(pp => { if (pp[0] > best) best = pp[0]; }));
  return best;
 }
-function sparHist(){ return store.get("spar", []); }
+function sparHist(who){
+ const a = store.get("spar", []) || [];
+ return who ? a.filter(x => (x.who || "p") === who) : a;
+}
 function sparUloz(z){
  const a = sparHist().concat([z]).slice(-60);
  store.set("spar", a); state.spar = a;
@@ -5408,7 +5504,7 @@ function renderMini(){
    + (()=>{ const z = zbyvaText(ty.hot, ty.cel, ty.min, planMinut(s0.who, s0.rid), false);
             return z ? ' · '+z : (t.obj?' · '+fmt(t.obj)+' kg':''); })()
    +(s0.bud?' · s '+esc(sKym(s0.bud)):'')+'</span></span>'
-   +'<span class="mb-c">'+dvoj(Math.floor(t.min/60))+":"+dvoj(t.min%60)+'</span>'
+   +'<span class="mb-c">'+casTrvani(t.min)+'</span>'
    +'<span class="mb-go">Zpět</span>'
    +'<span class="mb-bar"><i style="width:'+pct+'%"></i></span>';
  };
@@ -5509,7 +5605,7 @@ function renderSession(){
   +'<div class="mt">'+t.hot+'/'+t.cel+' sérií'+(t.obj?' · '+fmt(t.obj)+' kg objem':'')
   +(duo?' · zapisuješ za '+esc(sessJmeno(kdo)):'')+'</div>'
   +'<div class="zb">'+esc(zbyvaText(tTy.hot, tTy.cel, tTy.min, planMinut(who, s0.rid), true))+'</div></div>'
-  +'<div class="clock" id="sessClock">'+dvoj(Math.floor(t.min/60))+":"+dvoj(t.min%60)+'</div>'
+  +'<div class="clock" id="sessClock">'+casTrvani(t.min)+'</div>'
   +'<button class="mini" data-sess="mini" type="button" title="Minimalizovat">▾ Skrýt</button>'
   +'<button class="ghost" data-sess="zrus" type="button">Zrušit</button></div>'
   + (state.zrusPtl
@@ -5633,6 +5729,7 @@ function parseMin(str){
   return m ? (+m[1])*60 + (+m[2]) : 120;
 }
 function startTimer(sec, label){
+  clearTimeout(window._timerHide);
   state.timer = { end: Date.now() + sec*1000, label: label };
   if (timerId) clearInterval(timerId);
   timerId = setInterval(tickTimer, 250);
@@ -5653,7 +5750,11 @@ function tickTimer(){
     if (timerId){ clearInterval(timerId); timerId = null;
       if (navigator.vibrate) { try { navigator.vibrate([200,120,200]); } catch(e){} } }
     bar.classList.add("done");
-    setTimeout(()=>{ state.timer = null; bar.classList.remove("done"); bar.hidden = true; }, 6000);
+    clearTimeout(window._timerHide);
+  window._timerHide = setTimeout(()=>{
+   if (state.timer && state.timer.end > Date.now()) return;   // mezitím začala nová pauza
+   state.timer = null; bar.classList.remove("done"); bar.hidden = true;
+  }, 6000);
   } else bar.classList.remove("done");
 }
 
@@ -5693,13 +5794,13 @@ const SPAR_HLASKY = [
 function sparingCard(who){
  const parti = partiSeznam();
  const vyber = state.budName || "";
- const bil = sparBilance();
+ const bil = sparBilance(who);
  const shrn = bil.length
   ? '<div class="sparbil">'+bil.slice(0,4).map(b=>
       '<span><b>'+esc(b.bud)+'</b> '+b.v+'–'+b.p+(b.r?'–'+b.r:'')+'</span>').join("")+'</div>'
   : '';
  return '<div class="card sparcard"><div class="rhead"><h3>🤜 Trénink s kámošem</h3>'
-  +'<span class="rmeta">'+(bil.length ? bil.reduce((a,b)=>a+b.v+b.p+b.r,0)+' společných' : 'nový režim')+'</span></div>'
+  +'<span class="rmeta">'+(bil.length ? pocet(bil.reduce((a,b)=>a+b.v+b.p+b.r,0),"společný","společné","společných") : 'nový režim')+'</span></div>'
   +'<p class="who">Jdeš do posilky s někým? Napiš jeho jméno, spusť trénink a zapisuj série <b>za oba</b> — '
   +'přepínačem nahoře. Appka počítá objem každému zvlášť a na konci vyhlásí vítěze. '
   + esc(SPAR_HLASKY[(new Date().getDate()) % SPAR_HLASKY.length])+'</p>'
@@ -5719,9 +5820,9 @@ function sparingCard(who){
 }
 
 /* ---- bilance sparingu ---- */
-function sparBilance(){
+function sparBilance(who){
  const m = {};
- sparHist().forEach(x=>{
+ sparHist(who).forEach(x=>{
   const k = x.bud;
   if (!m[k]) m[k] = { bud:k, v:0, p:0, r:0, oTy:0, oBud:0, min:0, posl:x.d };
   if (x.v === "V") m[k].v++; else if (x.v === "P") m[k].p++; else m[k].r++;
@@ -5739,8 +5840,9 @@ function sparHlaskaBilance(b){
  if (b.p > b.v) return "Prohráváš. Zatím. Odveta je vždycky o jeden trénink dál.";
  return "Naprosto vyrovnané. Tohle je ta nejlepší možná varianta — nikdo nemůže přestat.";
 }
-function sparStatyCard(){
- const bil = sparBilance();
+function sparStatyCard(who){
+ const ja = who || store.get("meId", null) || "p";
+ const bil = sparBilance(ja);
  if (!bil.length){
   return '<div class="card"><h3>🤜 Sparing — souboje s parťáky</h3>'
    +'<p class="who">Zatím tu nic není. Vezmi kámoše do posilovny, v Tréninku spusť '
@@ -5750,13 +5852,13 @@ function sparStatyCard(){
  const celkem = bil.reduce((a,b)=>a+b.v+b.p+b.r, 0);
  const vyhry = bil.reduce((a,b)=>a+b.v, 0);
  const prohry = bil.reduce((a,b)=>a+b.p, 0);
- const posledni = sparHist().slice(-8);
+ const posledni = sparHist(ja).slice(-8);
  const graf = dvojSloupceSvg(posledni.map(x=>({ lab: czDate(x.d).replace(/\s/g,""), a: x.oTy, b: x.oBud })),
    { prazdno:"Zatím není z čeho kreslit." })
    .replace("naplánováno","ty").replace("odtrénováno","parťák");
 
  return '<div class="card"><div class="rhead"><h3>🤜 Sparing — souboje s parťáky</h3>'
-  +'<span class="rmeta">'+celkem+' společných · '+vyhry+'–'+prohry+'</span></div>'
+  +'<span class="rmeta">'+pocet(celkem,"společný","společné","společných")+' · '+vyhry+'–'+prohry+'</span></div>'
   +'<p class="who">Objem = kg × opakování sečtený za celý trénink. Kdo má víc, ten den vyhrál. '
   +'Žádná diskuze, žádné výmluvy o „dneska jsem jen doprovod".</p>'
   + bil.map(b=>{
@@ -5764,7 +5866,7 @@ function sparStatyCard(){
      const pct = Math.round(b.v * 100 / Math.max(1, c));
      return '<div class="sparrow">'
       +'<div class="sh"><b>🤜 '+esc(b.bud)+'</b>'
-      +'<span class="rmeta">'+b.v+' V · '+b.p+' P'+(b.r?' · '+b.r+' R':'')+' · '+c+' '+(c===1?'trénink':(c<5?'tréninky':'tréninků'))+'</span></div>'
+      +'<span class="rmeta">'+b.v+' V · '+b.p+' P'+(b.r?' · '+b.r+' R':'')+' · '+pocet(c,"trénink","tréninky","tréninků")+'</span></div>'
       +'<div class="sbar"><i style="width:'+pct+'%"></i><span>'+pct+' % výher</span></div>'
       +'<table><tbody>'
       +'<tr><td>Tvůj objem celkem</td><td class="num">'+fmt(Math.round(b.oTy))+' kg</td></tr>'
@@ -5775,11 +5877,12 @@ function sparStatyCard(){
       +'<div class="hint" style="margin-top:4px">'+esc(sparHlaskaBilance(b))+'</div>'
       +'</div>';
     }).join("")
-  +'<h4 style="margin:14px 0 2px;font-size:14px">'+(posledni.length===1?'Poslední souboj':'Posledních '+posledni.length+(posledni.length<5?' souboje':' soubojů'))+' — objem</h4>'
+  +'<h4 style="margin:14px 0 2px;font-size:14px">'+(posledni.length===1?'Poslední souboj'
+     :(posledni.length<5 ? 'Poslední '+posledni.length+' souboje' : 'Posledních '+posledni.length+' soubojů'))+' — objem</h4>'
   + graf
   +'<table style="margin-top:8px"><thead><tr><th>Kdy</th><th>S kým</th><th>Co</th>'
   +'<th class="num">Ty</th><th class="num">On/ona</th></tr></thead><tbody>'
-  + sparHist().slice(-10).reverse().map(x=>
+  + sparHist(ja).slice(-10).reverse().map(x=>
      '<tr><td>'+czDate(x.d)+'</td><td>'+esc(x.bud)+'</td><td>'+esc(x.rid)+'</td>'
      +'<td class="num'+(x.v==="V"?' win':'')+'">'+fmt(x.oTy)+'</td>'
      +'<td class="num'+(x.v==="P"?' win':'')+'">'+fmt(x.oBud)+'</td></tr>').join("")
@@ -5794,7 +5897,8 @@ const PARTIE = [
  ["Prsa",    /prsa/i,                                   "#eb6834"],
  ["Ramena",  /ramen/i,                                  "#8b5cf6"],
  ["Paže",    /biceps|triceps|předlokt/i,                "#f0a500"],
- ["Střed",   /břich|střed|páteř|bedra/i,                "#0ea5b7"],
+ ["Střed",   /břiš|břich|střed|páteř|bedra|core/i,      "#0ea5b7"],
+ ["Celé tělo", /celé tělo|celé telo|zadní řetěz/i,       "#d6457a"],
  ["Ostatní", /./,                                       "#8b8f98"]
 ];
 function partieCviku(exId){
@@ -5952,7 +6056,7 @@ function cislaCard(who){
 }
 
 function routineCard(r){
- const serie = r.ex.reduce((a,e)=>{ const m = String(e[1]).match(/^(\d+)\s*×/); return a + (m ? +m[1] : 1); }, 0);
+ const serie = r.ex.reduce((a,e)=> a + plannedSets(e[1]), 0);
  const je = favR().indexOf(r.id) >= 0;
  const kolikrat = (state.hist || []).filter(h => h.rid === r.id).length;
  return '<div class="card'+(je?" oblib":"")+'"><div class="rhead"><h3>'
@@ -5988,13 +6092,24 @@ function trList(who){
  });
 }
 
+/* Co je na řadě. Řídí se sadou tréninků, ne tím, jestli jsi „p" nebo „v" —
+   jinak by se po přepnutí sady hledal trénink, který v seznamu vůbec není. */
+function frontaId(who){
+ return sadaTreninku(who) === "p" ? QUEUE[state.queue % QUEUE.length]
+                                  : V_QUEUE[state.fb % V_QUEUE.length];
+}
+function frontaDal(who){
+ if (sadaTreninku(who) === "p"){ state.queue = (state.queue + 1) % QUEUE.length; store.set("queue", state.queue); }
+ else { state.fb = (state.fb + 1) % V_QUEUE.length; store.set("fb", state.fb); }
+}
 function trReco(who){
  const t = state.trTime;
  const vse = rutiny(who);
  const naplan = planDne(isoZ(new Date()))[who];
  const hlavni = (naplan && vse.find(r => r.id === naplan))
-   || (who === "p" ? vse.find(r => r.id === QUEUE[state.queue])
-                   : vse.find(r => r.id === V_QUEUE[state.fb % V_QUEUE.length]));
+   || vse.find(r => r.id === frontaId(who))
+   || vse.find(r => r.typ === "sila") || vse[0];
+ if (!hlavni) return "";
  let pick = hlavni, proc;
  if (t === "all" || hlavni.min <= t){
   proc = (naplan === hlavni.id
@@ -6020,8 +6135,8 @@ function renderTrenink(){
   +'<button data-trwho="p" class="'+(who==="p"?"on":"")+'">'+esc(jmeno("p"))+'</button>'
   +'<button data-trwho="v" class="'+(who==="v"?"on":"")+'">'+esc(jmeno("v"))+'</button></div>';
  let head = "";
- if (who==="p") {
-  const q = QUEUE[state.queue];
+ if (sadaTreninku(who) === "p") {
+  const q = frontaId(who);
   head = '<div class="card"><h3>Další ve frontě</h3><p class="who">A → N → C → G — jdeš do posilovny, uděláš další v pořadí. '
    +'<b>Nohy jsou jen jednou týdně</b> (N), zbytek je horní tělo. Krize frontu posune taky.</p>'
    +'<div class="qbox"><div class="qletter">'+q+'</div>'
@@ -6030,7 +6145,7 @@ function renderTrenink(){
    +'<button class="act" id="doneBtn" type="button">Odtrénováno →</button></div></div>';
  } else {
   head = '<div class="card"><h3>Další na řadě</h3><p class="who">FB1 → FB2 → FB4 se střídají, 3× týdně — všechny jsou celé tělo, ale <b>tři čtvrtiny objemu jdou na nohy a zadek</b>. Když se nestihne posilovna, počítá se i FB3 nebo cokoli z domácích. První 3 týdny lehké váhy — učí se technika.</p>'
-   +'<div class="qbox"><div class="qletter">'+V_QUEUE[state.fb % V_QUEUE.length]+'</div>'
+   +'<div class="qbox"><div class="qletter">'+frontaId(who)+'</div>'
    +'<div style="flex:1;min-width:150px"><div style="font-size:15px;font-weight:600">Celé tělo</div>'
    +'<div class="dim" style="font-size:12.5px">Chodí s Pepulem: Po / Út / Čt · FB1 → FB2 → FB4</div></div>'
    +'<button class="act" id="doneBtnV" type="button">Odtrénováno →</button></div></div>';
@@ -6261,7 +6376,7 @@ function topVeceri(n){
  return Object.keys(c).sort((a,b)=>c[b]-c[a]).slice(0,n).map(id=>({ id:id, n:c[id], name:dinnerById(id).name }));
 }
 function nohyDni(w){
- const NOHOU = w === "p" ? ["N","B","D"] : ["GL","FB1","FB2","FB4"];
+ const NOHOU = sadaTreninku(w) === "p" ? ["N","B","D"] : ["GL","GL2","FB1","FB2","FB4"];
  return histW(w).filter(x => NOHOU.indexOf(x.rid) >= 0).length;
 }
 function nedelniVazeni(w){
@@ -6275,17 +6390,24 @@ function vejcoRecepty(){
 }
 function nakupu(){ return store.get("shopHist", []).length; }
 function nakupuSCastkou(){ return store.get("shopHist", []).filter(h=>h.c).length; }
+function stouchPrictiK(w){
+ const k = "stouch_" + w;
+ store.set(k, (store.get(k, 0) || 0) + 1);
+}
+/* Vlastní počítadlo — feed se ořezává na 60 zpráv, takže spočítat to ze zpráv
+   znamenalo, že odznak zase zmizel, jakmile přišly novější zprávy. */
 function stouchnuti(w){
- const jm = (BASE_T[w]||{}).name;
- return store.get("msgs", []).filter(m => String(m.id).indexOf("re-") === 0 && m.od === jm).length;
+ const jm = jmeno(w);
+ const ze = store.get("msgs", []).filter(m => String(m.id).indexOf("re-") === 0 && m.od === jm).length;
+ return Math.max(store.get("stouch_" + w, 0) || 0, ze);
 }
 
 const ODZNAKY = [
- { id:"spar1",   ic:"🤜", n:"První sparing",     s:"trénink s kámošem",             p:w=>[w==="p"?sparHist().length:0,1] },
- { id:"spar5",   ic:"🥊", n:"Pět soubojů",       s:"tohle už je rivalita",          p:w=>[w==="p"?sparHist().length:0,5] },
- { id:"sparw3",  ic:"👑", n:"Tři výhry",         s:"tři vyhrané souboje",           p:w=>[w==="p"?sparHist().filter(x=>x.v==="V").length:0,3] },
- { id:"sparw10", ic:"🏛️", n:"Deset výher",       s:"kámoši už chodí neradi",        p:w=>[w==="p"?sparHist().filter(x=>x.v==="V").length:0,10] },
- { id:"parti3",  ic:"👥", n:"Tři parťáci",       s:"cvič se třemi různými lidmi",   p:w=>[w==="p"?new Set(sparHist().map(x=>x.bud)).size:0,3] },
+ { id:"spar1",   ic:"🤜", n:"První sparing",     s:"trénink s kámošem",             p:w=>[sparHist(w).length,1] },
+ { id:"spar5",   ic:"🥊", n:"Pět soubojů",       s:"tohle už je rivalita",          p:w=>[sparHist(w).length,5] },
+ { id:"sparw3",  ic:"👑", n:"Tři výhry",         s:"tři vyhrané souboje",           p:w=>[sparHist(w).filter(x=>x.v==="V").length,3] },
+ { id:"sparw10", ic:"🏛️", n:"Deset výher",       s:"kámoši už chodí neradi",        p:w=>[sparHist(w).filter(x=>x.v==="V").length,10] },
+ { id:"parti3",  ic:"👥", n:"Tři parťáci",       s:"cvič se třemi různými lidmi",   p:w=>[new Set(sparHist(w).map(x=>x.bud)).size,3] },
 
  { id:"vaha1",   ic:"⚖️", n:"První vážení",      s:"zapiš první váhu",              p:w=>[wtArr(w).length,1] },
  { id:"vaha8",   ic:"📊", n:"Osm vážení",        s:"dva měsíce poctivě",            p:w=>[wtArr(w).length,8] },
@@ -6319,22 +6441,22 @@ const ODZNAKY = [
  { id:"mira1",   ic:"📏", n:"První míry",        s:"pas, boky, paže",               p:w=>[mrArr(w).length,1] },
  { id:"mira6",   ic:"📐", n:"Šest měření",       s:"tady už je vidět trend",        p:w=>[mrArr(w).length,6] },
 
- { id:"favs5",   ic:"⭐", n:"Pět oblíbených",    s:"označ 5 receptů hvězdičkou",    p:()=>[store.get("favs",[]).length,5] },
- { id:"favs15",  ic:"🌟", n:"Patnáct oblíbených",s:"máte z čeho vybírat",           p:()=>[store.get("favs",[]).length,15] },
- { id:"kuchar",  ic:"👨‍🍳", n:"Kuchař",           s:"dovař 5× v kuchařském režimu",  p:()=>[store.get("cooked",0),5] },
- { id:"kuchar20",ic:"🍳", n:"Šéfkuchař",         s:"dovař 20× krok za krokem",      p:()=>[store.get("cooked",0),20] },
- { id:"vlastni", ic:"✍️", n:"Vlastní recept",    s:"přidej svůj recept",            p:()=>[store.get("myRecipes",[]).length,1] },
- { id:"plan4",   ic:"📅", n:"Čtyři týdny",       s:"naplánuj celé okno dopředu",    p:()=>[planChybi()===0?1:0,1] },
+ { dom:true, id:"favs5",   ic:"⭐", n:"Pět oblíbených",    s:"označ 5 receptů hvězdičkou",    p:()=>[store.get("favs",[]).length,5] },
+ { dom:true, id:"favs15",  ic:"🌟", n:"Patnáct oblíbených",s:"máte z čeho vybírat",           p:()=>[store.get("favs",[]).length,15] },
+ { dom:true, id:"kuchar",  ic:"👨‍🍳", n:"Kuchař",           s:"dovař 5× v kuchařském režimu",  p:()=>[store.get("cooked",0),5] },
+ { dom:true, id:"kuchar20",ic:"🍳", n:"Šéfkuchař",         s:"dovař 20× krok za krokem",      p:()=>[store.get("cooked",0),20] },
+ { dom:true, id:"vlastni", ic:"✍️", n:"Vlastní recept",    s:"přidej svůj recept",            p:()=>[store.get("myRecipes",[]).length,1] },
+ { dom:true, id:"plan4",   ic:"📅", n:"Čtyři týdny",       s:"naplánuj celé okno dopředu",    p:()=>[planChybi()===0?1:0,1] },
  { id:"stouch",  ic:"❤️", n:"Deset šťouchnutí",  s:"posílej si to navzájem",        p:w=>[stouchnuti(w),10] },
 
  /* --- ty vtipnější, ať to není samá dřina --- */
  { id:"maximus", ic:"🏛️", n:"Maximus",           s:"25 dokončených jednotek — a lid tě zdraví", p:w=>[histW(w).length,25] },
- { id:"kebab",   ic:"🌯", n:"Kebabový diplomat", s:"5 dní vyřešených venku (bez výčitek)",  p:()=>[dnyVenku(),5] },
- { id:"nogen",   ic:"🛒", n:"Nedělní generál",   s:"4× dotažený nákup do konce",            p:()=>[nakupu(),4] },
- { id:"ucetni",  ic:"💸", n:"Rodinný účetní",    s:"3× zapsaná útrata za nákup",            p:()=>[nakupuSCastkou(),3] },
- { id:"hazard",  ic:"🎲", n:"Hazardér",          s:"5× zamíchané menu — ať to není nuda",   p:()=>[store.get("shuffleN",0),5] },
+ { dom:true, id:"kebab",   ic:"🌯", n:"Kebabový diplomat", s:"5 dní vyřešených venku (bez výčitek)",  p:()=>[dnyVenku(),5] },
+ { dom:true, id:"nogen",   ic:"🛒", n:"Nedělní generál",   s:"4× dotažený nákup do konce",            p:()=>[nakupu(),4] },
+ { dom:true, id:"ucetni",  ic:"💸", n:"Rodinný účetní",    s:"3× zapsaná útrata za nákup",            p:()=>[nakupuSCastkou(),3] },
+ { dom:true, id:"hazard",  ic:"🎲", n:"Hazardér",          s:"5× zamíchané menu — ať to není nuda",   p:()=>[store.get("shuffleN",0),5] },
  { id:"nohy",    ic:"🦵", n:"Den nohou přežit",  s:"5× odtrénované nohy (nikdo neutekl)",   p:w=>[nohyDni(w),5] },
- { id:"vejcofil",ic:"🥚", n:"Vejcofil",          s:"3 vaječné recepty v oblíbených",        p:()=>[vejcoRecepty(),3] },
+ { dom:true, id:"vejcofil",ic:"🥚", n:"Vejcofil",          s:"3 vaječné recepty v oblíbených",        p:()=>[vejcoRecepty(),3] },
  { id:"nedelnik",ic:"😴", n:"Nedělní vážič",     s:"4× vážení v neděli ráno, jak se patří", p:w=>[nedelniVazeni(w),4] },
  { id:"blazen",  ic:"❤️‍🔥", n:"Zamilovaný blázen", s:"25 šťouchnutí — už to hraničí s obtěžováním", p:w=>[stouchnuti(w),25] },
  { id:"slon",    ic:"🐘", n:"Stotunový",         s:"100 tun nazvedáno celkem",              p:w=>[objemCelkem(w),100000] }
@@ -6343,7 +6465,17 @@ const ODZNAKY = [
 function odzStav(o, w){
  try { const r = o.p(w); return [r[0]||0, r[1]||1]; } catch(e){ return [0,1]; }
 }
-function ziskane(w){ return ODZNAKY.filter(o => { const r = odzStav(o,w); return r[0] >= r[1]; }).map(o => o.id); }
+/* Odznak je důkaz, že se to jednou povedlo — když ti pak spadne série,
+   o odznak nepřijdeš. Držíme si proto i seznam už udělených. */
+function odzUlozene(w){
+ return (store.get("odznaky", []) || []).filter(k => k.indexOf(w + "|") === 0).map(k => k.slice(2));
+}
+function ziskaneTed(w){ return ODZNAKY.filter(o => { const r = odzStav(o,w); return r[0] >= r[1]; }).map(o => o.id); }
+function ziskane(w){
+ const set = {};
+ ziskaneTed(w).concat(odzUlozene(w)).forEach(id => { if (ODZNAKY.some(o=>o.id===id)) set[id] = 1; });
+ return Object.keys(set);
+}
 function nejblizsi(w){
  let best = null;
  ODZNAKY.forEach(o => {
@@ -6381,13 +6513,13 @@ function odznakStrip(){
        +'<span class="kdy">'+fmt(nb.cur)+' / '+fmt(nb.cil)+'</span></div>'
      : '<p class="who" style="margin:8px 0 0"><b>Máš všechny.</b> To je fakt něco.</p>')
   +'<p class="who" style="margin:9px 0 0">'+esc(MOTIV_ODZ[todayIdx % MOTIV_ODZ.length])
-  +' · '+esc((BASE_T[druhy]||{}).name)+' má <b>'+mamDruhy+'</b>.</p>'
+  +' · '+esc(jmeno(druhy))+' má <b>'+mamDruhy+'</b>.</p>'
   +'<button class="ghost" data-goto="progres" type="button" style="margin-top:10px">Zobrazit všechny</button></div>';
 }
 
 function odznakCard(w){
  const mam = ziskane(w);
- return '<div class="card"><div class="rhead"><h3>'+BASE_T[w].name+' — odznaky</h3>'
+ return '<div class="card"><div class="rhead"><h3>'+esc(jmeno(w))+' — odznaky</h3>'
   +'<span class="rmeta">'+mam.length+'/'+ODZNAKY.length+'</span></div>'
   +'<div class="odz">'+ODZNAKY.map(o=>{
     const on = mam.indexOf(o.id) >= 0, r = odzStav(o,w);
@@ -6399,14 +6531,25 @@ function odznakCard(w){
 }
 
 function kontrolaOdznaku(){
- const drive = store.get("odznaky", []);
- const ted = [];
- ["p","v"].forEach(w => ziskane(w).forEach(id => ted.push(w+"|"+id)));
+ const drive = store.get("odznaky", []) || [];
+ const set = {};
+ drive.forEach(k => set[k] = 1);
+ ["p","v"].forEach(w => ziskaneTed(w).forEach(id => set[w+"|"+id] = 1));
+ const ted = Object.keys(set).filter(k => ODZNAKY.some(o => o.id === k.slice(2)));
  ted.filter(k => drive.indexOf(k) < 0).forEach(k => {
-  const p = k.split("|"), o = ODZNAKY.find(x => x.id === p[1]);
-  if (o) pushMsg("odz-"+k, o.ic, "Nový odznak: "+o.n,
-    BASE_T[p[0]].name+" si právě "+rod(p[0],"odemkl","odemkla")+" odznak „"+o.n+"\". "
-    + (ziskane(p[0]).length >= ODZNAKY.length ? "A to byl poslední — všechny!" : "Zbývá jich ještě "+(ODZNAKY.length - ziskane(p[0]).length)+"."));
+  const q = k.split("|"), o = ODZNAKY.find(x => x.id === q[1]);
+  if (!o) return;
+  const zbyva = ODZNAKY.length - ziskane(q[0]).length;
+  const konec = zbyva <= 0 ? "A to byl poslední — všechny!" : "Zbývá " + pocet(zbyva, "odznak", "odznaky", "odznaků") + ".";
+  if (o.dom){
+   // tenhle si zaslouží celá domácnost — nemá smysl ho psát na jedno jméno
+   if (q[0] !== "p") return;
+   pushMsg("odz-dom-" + o.id, o.ic, "Nový odznak: " + o.n,
+     "Domácnost si právě odemkla odznak „" + o.n + "\". " + konec);
+  } else {
+   pushMsg("odz-" + k, o.ic, "Nový odznak: " + o.n,
+     jmeno(q[0]) + " si právě " + rod(q[0], "odemkl", "odemkla") + " odznak „" + o.n + "\". " + konec);
+  }
  });
  store.set("odznaky", ted);
 }
@@ -6473,7 +6616,8 @@ function objemPoTydnech(w){
  for (let k = 7; k >= 0; k--){
   const zac = isoZ(pondeli(-k)), kon = isoZ(new Date(new Date(pondeli(-k)).setDate(pondeli(-k).getDate()+6)));
   const v = histW(w).filter(x => x.d >= zac && x.d <= kon).reduce((a,x)=>a+(x.obj||0),0);
-  out.push({ lab: k === 0 ? "teď" : "-"+k, v: Math.round(v/1000), top: Math.round(v/1000)+" t" });
+  out.push({ lab: k === 0 ? "teď" : "-"+k, v: Math.round(v/100)/10,
+              top: (Math.round(v/100)/10).toLocaleString("cs-CZ")+" t" });
  }
  return out;
 }
@@ -6587,15 +6731,15 @@ function statyDomacnost(){
 function report(w){
  const t = target(w);
  let dnu = 0, sumK = 0, sumP = 0;
- for (let i = 1; i <= 7; i++){
+ for (let i = 0; i <= 6; i++){
   const tot = dayTotals(w, isoDaysAgo(i));
   if (tot.k > 0){ dnu++; sumK += tot.k; sumP += tot.p; }
  }
  const prumK = dnu ? Math.round(sumK/dnu) : 0, prumP = dnu ? Math.round(sumP/dnu) : 0;
- const nad = (()=>{ let n = 0; for (let i = 1; i <= 7; i++) if (dayTotals(w, isoDaysAgo(i)).k >= MIN_KCAL[w]) n++; return n; })();
+ const nad = (()=>{ let n = 0; for (let i = 0; i <= 6; i++) if (dayTotals(w, isoDaysAgo(i)).k >= MIN_KCAL[w]) n++; return n; })();
  const arr = wtArr(w).slice().sort((a,b)=>a.d.localeCompare(b.d));
  const posl = arr[arr.length-1];
- const tydenZpet = arr.filter(x => daysBetween(x.d, new Date().toISOString().slice(0,10)) >= 7).pop();
+ const tydenZpet = arr.filter(x => { const d = daysBetween(x.d, isoDnes()); return d >= 6 && d <= 16; }).pop();
  const zmena = posl && tydenZpet ? Math.round((posl.kg - tydenZpet.kg)*10)/10 : null;
  const all = logAll();
  let trenink = 0; const dny = {};
@@ -6647,53 +6791,77 @@ function fotoCard(who){
 }
 
 function weeklyRate(arr){
- const s = arr.slice().sort((a,b)=>a.d.localeCompare(b.d));
+ const s = (arr||[]).slice().filter(x=>x && x.d && x.kg).sort((a,b)=>a.d.localeCompare(b.d));
  if (s.length < 2) return null;
  const last = s[s.length-1];
- // nejstarší záznam v okně posledních 28 dní; potřebujeme rozestup aspoň 10 dní
- let base = null;
- for (const e of s){ if (daysBetween(e.d, last.d) <= 28) { base = base || e; } }
- base = base || s[0];
+ // nejstarší vážení v okně 28 dní; když by z toho vyšlo míň než 10 dní, sáhneme
+ // po ještě starším (kdo se váží jednou za měsíc, taky si zaslouží doporučení)
+ let base = s.find(e => daysBetween(e.d, last.d) <= 28) || s[0];
+ if (daysBetween(base.d, last.d) < 10){
+  const starsi = s.filter(e => daysBetween(e.d, last.d) >= 10);
+  base = starsi.length ? starsi[starsi.length-1] : base;
+ }
  const span = daysBetween(base.d, last.d);
- if (span < 10) return null;
+ if (span < 10 || span > 120) return null;
  return { rate: (last.kg - base.kg) / span * 7, span: span };
+}
+/* Doporučení se řídí cílem z profilu. Návrh se počítá z vypočítaného cíle,
+   ne z toho už jednou upraveného — jinak by šla čísla donekonečna nahoru. */
+function cilOsoby(who){ return (profil(who) || {}).cil || (who === "v" ? "drzet" : "nabrat"); }
+function zakladKcal(who){
+ try { return profilHotovy(who) ? vypocty(who).kcal : (PROFIL_DEF[who] ? PROFIL_DEF[who].rucne.kcal : target(who).kcal); }
+ catch(e){ return target(who).kcal; }
 }
 function reco(who){
  const arr = who==="p" ? state.wtP : state.wtV;
- const t = target(who);
  const r = weeklyRate(arr);
  if (!r) return { txt:"Zapisuj váhu každou neděli — doporučení se objeví, jakmile budou záznamy aspoň 10 dní od sebe.", act:null };
  const rt = Math.round(r.rate*100)/100;
- const rtx = (rt>0?"+":"")+rt.toLocaleString("cs-CZ")+" kg/týden za posledních "+r.span+" dní";
- if (who==="p"){
-  if (rt < 0.15) return { txt:"Tempo "+rtx+" — pomalejší než cíl (+0,25 až 0,4). <b>Nejíš dost.</b> Doporučení: přidat 250 kcal denně (med do shaku + větší večeře).", act: Math.round((t.kcal+250)/50)*50 };
-  if (rt > 0.6) return { txt:"Tempo "+rtx+" — rychlejší než cíl, přibývalo by zbytečně moc tuku. Doporučení: ubrat 200 kcal denně.", act: Math.round((t.kcal-200)/50)*50 };
+ const zaklad = zakladKcal(who);
+ const rtx = (rt>0?"+":"")+rt.toLocaleString("cs-CZ")+" kg/týden za posledních "+pocet(r.span,"den","dny","dní");
+ const uprav = d => Math.max(1200, Math.round((zaklad + d)/50)*50);
+ const cil = cilOsoby(who);
+
+ if (cil === "nabrat"){
+  if (rt < -0.1)  return { txt:"Tempo "+rtx+" — <b>ubývá to, i když chceš nabírat.</b> Doporučení: přidat 350 kcal denně.", act: uprav(350) };
+  if (rt < 0.15)  return { txt:"Tempo "+rtx+" — pomalejší než cíl (+0,25 až 0,4). <b>Nejíš dost.</b> Doporučení: přidat 250 kcal denně (med do shaku + větší večeře).", act: uprav(250) };
+  if (rt > 0.6)   return { txt:"Tempo "+rtx+" — rychlejší než cíl, přibývalo by zbytečně moc tuku. Doporučení: ubrat 200 kcal denně.", act: uprav(-200) };
   return { txt:"Tempo "+rtx+" — <b>přesně v cíli.</b> Nic neměň, jede to.", act:null };
  }
- if (rt <= -0.45) return { txt:"Tempo "+rtx+" — váha padá moc rychle, brala by s sebou sval. Doporučení: přidat 200 kcal denně.", act: Math.round((t.kcal+200)/50)*50 };
- if (rt >= 0.45) return { txt:"Tempo "+rtx+" — váha roste rychleji, než by u rekompozice měla. Doporučení: ubrat 150 kcal denně (nejdřív ale zkontroluj, jestli to není jen fáze cyklu).", act: Math.round((t.kcal-150)/50)*50 };
+ if (cil === "zhubnout"){
+  if (rt <= -1.0) return { txt:"Tempo "+rtx+" — <b>moc rychle.</b> Takhle jde dolů i sval. Doporučení: přidat 300 kcal denně.", act: uprav(300) };
+  if (rt <= -0.3) return { txt:"Tempo "+rtx+" — <b>přesně tak to má vypadat.</b> Nic neměň.", act:null };
+  if (rt < 0.15)  return { txt:"Tempo "+rtx+" — hubnutí stojí. Doporučení: ubrat 250 kcal denně, nebo přidat chůzi.", act: uprav(-250) };
+  return { txt:"Tempo "+rtx+" — váha jde <b>nahoru</b>, i když má jít dolů. Doporučení: ubrat 350 kcal denně a poctivě odškrtávat.", act: uprav(-350) };
+ }
+ if (rt <= -0.45) return { txt:"Tempo "+rtx+" — váha padá moc rychle, brala by s sebou sval. Doporučení: přidat 200 kcal denně.", act: uprav(200) };
+ if (rt >= 0.45)  return { txt:"Tempo "+rtx+" — váha roste rychleji, než by u rekompozice měla. Doporučení: ubrat 150 kcal denně"
+   + (zena(who) ? " (nejdřív ale zkontroluj, jestli to není jen fáze cyklu)" : "") + ".", act: uprav(-150) };
  return { txt:"Tempo "+rtx+" — <b>váha drží, přesně tak to má být.</b> Postava se mění v posilovně, ne na váze.", act:null };
 }
 function wtCard(who){
  const arr = who==="p" ? state.wtP : state.wtV;
  const t = target(who);
+ const jm = jmeno(who);
  const sorted = arr.slice().sort((a,b)=>a.d.localeCompare(b.d));
  const first = sorted[0], last = sorted[sorted.length-1];
  const delta = first && last ? Math.round((last.kg-first.kg)*10)/10 : 0;
- const goalTxt = who==="p" ? "cíl +0,25–0,4 kg/týden → 105 kg" : "cíl: váha drží, mění se postava";
+ const cilP = cilOsoby(who);
+ const goalTxt = cilP === "nabrat" ? "cíl: +0,25–0,4 kg/týden"
+   : (cilP === "zhubnout" ? "cíl: −0,3 až −0,8 kg/týden" : "cíl: váha drží, mění se postava");
  const rec = reco(who);
- const adj = t.kcal !== BASE_T[who].kcal;
+ const adj = t.kcal !== zakladKcal(who);
  const list = sorted.slice(-8).reverse().map(e=>
   '<tr><td>'+e.d.split("-").reverse().join(". ")+'</td><td class="num">'+e.kg.toLocaleString("cs-CZ")+' kg</td>'
   +'<td class="num"><button data-delwt="'+who+'|'+e.d+'" title="Smazat">×</button></td></tr>').join("");
- return '<div class="card"><h3>'+t.name+'</h3>'
+ return '<div class="card"><h3>'+esc(jm)+'</h3>'
   +'<p class="who">'+(last ? "Aktuálně <b>"+last.kg.toLocaleString("cs-CZ")+" kg</b>"+(sorted.length>1?" · od startu "+(delta>0?"+":"")+delta.toLocaleString("cs-CZ")+" kg":"") : "Zatím bez záznamu")+' · '+goalTxt+'</p>'
   +'<div class="wrow"><input type="number" step="0.1" min="30" max="250" id="wt-'+who+'" placeholder="kg" inputmode="decimal">'
   +'<button class="act small" data-addwt="'+who+'" type="button">Uložit dnešní váhu</button></div>'
   + wtChart(sorted, who==="p" ? "var(--s1)" : "var(--s3)")
   +'<div class="note reco">'+rec.txt
   +(rec.act ? ' <div style="margin-top:8px"><button class="act small" data-applyk="'+who+'|'+rec.act+'" type="button">Nastavit '+fmt(rec.act)+' kcal</button></div>' : '')
-  +(adj ? '<div style="margin-top:8px" class="dim">Aktuální cíl '+fmt(t.kcal)+' kcal (výchozí '+fmt(BASE_T[who].kcal)+') · <button class="ghost" data-applyk="'+who+'|'+BASE_T[who].kcal+'" type="button">vrátit výchozí</button></div>' : '')
+  +(adj ? '<div style="margin-top:8px" class="dim">Aktuální cíl '+fmt(t.kcal)+' kcal (spočítané '+fmt(zakladKcal(who))+') · <button class="ghost" data-applyk="'+who+'|0" type="button">vrátit spočítané</button></div>' : '')
   +'</div>'
   +'<table class="wlist"><tbody>'+list+'</tbody></table></div>';
 }
@@ -6705,16 +6873,17 @@ function mrCard(who){
  const inputs = fields.map(f=>'<input type="number" step="0.5" min="20" max="200" id="mr-'+who+'-'+f[0]+'" placeholder="'+f[1]+' cm" inputmode="decimal">').join("");
  let cmp = "";
  if (first && last && first !== last){
-  cmp = '<p class="who" style="margin-top:8px">Od první kontroly: '+fields.map(f=>{
+  const dostupne = fields.filter(f => first[f[0]] != null && last[f[0]] != null);
+  cmp = dostupne.length ? '<p class="who" style="margin-top:8px">Od první kontroly: '+dostupne.map(f=>{
    const d = Math.round((last[f[0]]-first[f[0]])*10)/10;
    return f[1]+" "+(d>0?"+":"")+d.toLocaleString("cs-CZ")+" cm";
-  }).join(" · ")+'</p>';
+  }).join(" · ")+'</p>' : "";
  }
  const list = sorted.slice(-5).reverse().map(e=>
   '<tr><td>'+e.d.split("-").reverse().join(". ")+'</td>'
   +fields.map(f=>'<td class="num">'+(e[f[0]]||"—")+'</td>').join("")
   +'<td class="num"><button data-delmr="'+who+'|'+e.d+'">×</button></td></tr>').join("");
- return '<div class="card"><h3>'+BASE_T[who].name+' — míry</h3>'
+ return '<div class="card"><h3>'+esc(jmeno(who))+' — míry</h3>'
   +'<div class="wrow">'+inputs+'<button class="act small" data-addmr="'+who+'" type="button">Uložit</button></div>'
   + cmp
   +'<table class="mlist wlist"><thead><tr><th>Datum</th>'+fields.map(f=>'<th class="num">'+f[1]+'</th>').join("")+'<th></th></tr></thead><tbody>'+list+'</tbody></table></div>';
@@ -6813,16 +6982,6 @@ const sync = {
       SDIL1.forEach(k => { if (sdil1Sluc(k, v[k])) zmena = true; });
       if (zmena) renderAll();
       SDIL1.forEach(k => sdil1Posli(k));
-    });
-    onValue(this._ref("profil"), snap => {
-      const v = snap.val() || {};
-      let zmena = false;
-      ["p","v"].forEach(w => {
-        if (v[w] && JSON.stringify(v[w]) !== JSON.stringify(store.get("profil_"+w, null))){
-          store.set("profil_"+w, v[w]); zmena = true;
-        }
-      });
-      if (zmena) renderAll();
     });
     onValue(this._ref("favr"), snap => {
       const v = snap.val();
@@ -6925,7 +7084,6 @@ const sync = {
   pushFavs(){ this._set("favs", store.get("favs", [])); },
   pushFavJ(){ this._set("favj", store.get("favJ", [])); },
   pushFavR(){ this._set("favr", store.get("favR", [])); },
-  pushProfil(w){ this._set("profil/" + w, store.get("profil_" + w, null)); },
   spoluSet(obj){ this._set("spolu", obj); },
   spoluSet2(klic, val){ this._set("spolu/" + klic, val); },
   pushWeek(){ this._set("week", state.week); },
@@ -7037,12 +7195,17 @@ const SDIL = {
  spar:    { c:"spar",   t:"pole",  id:x=>x.d+"|"+(x.who||"")+"|"+(x.bud||"")+"|"+(x.rid||""), st:"spar" },
  checks:  { c:"checks", t:"mapa",  st:"checks", dnu:200, dat:id=>id.slice(0,10) },
  water:   { c:"water",  t:"mapa",  st:"water",   dnu:200, dat:id=>id.slice(0,10) },
- odznaky: { c:"odz",    t:"pole",  id:x=>String(x) },
  parti:   { c:"parti",  t:"pole",  id:x=>String(x) },
+ odznaky: { c:"odz",    t:"pole",  id:x=>String(x) },
  pantry:  { c:"spiz",   t:"pole",  id:x=>String(x),                              st:"pantry" }
 };
 /* jednoduché hodnoty — sdílí se celé, vyhrává novější zápis */
-const SDIL1 = ["queue","fb","cooked","lastCheckin","cyklus","shopHist","shopCasto","nakupDni"];
+const SDIL1 = ["queue","fb","cooked","lastCheckin","cyklus","shopHist","shopCasto","nakupDni",
+ /* profily a čísla patří k člověku, ne k telefonu */
+ "profil_p","profil_v","kcal_p","kcal_v",
+ "n_prot_p","n_prot_v","n_water_p","n_water_v","n_mintr_p","n_mintr_v",
+ "n_rozvrh_p","n_rozvrh_v","n_tren_p","n_tren_v","n_zkus_p","n_zkus_v",
+ "n_casy","schval","stouch_p","stouch_v"];
 const SDIL1_ST = { queue:"queue", fb:"fb", lastCheckin:"lastCheckin", cyklus:"cyklus", nakupDni:"nakupDni" };
 
 let sdilTicho = false;          // při slučování se nerazítkuje
@@ -7120,6 +7283,14 @@ function sdilNaplanuj(k){
  if (!(window.sync && sync.on)) return;
  clearTimeout(sdilFronta[k]);
  sdilFronta[k] = setTimeout(()=>{ sdilPosli(k); }, 500);
+ stavNaplanuj();
+}
+/* ať druhý telefon pozná, že jsme tu byli — a to po každé změně, ne jen po tréninku */
+let stavTik = null;
+function stavNaplanuj(){
+ if (!(window.sync && sync.on)) return;
+ clearTimeout(stavTik);
+ stavTik = setTimeout(()=>{ try { sync.pushStatus(); } catch(e){} }, 1500);
 }
 function sdilPosli(k){
  if (!(window.sync && sync.on)) return;
@@ -7138,7 +7309,9 @@ function sdilPosli(k){
 }
 function sdil1Posli(k){
  if (!(window.sync && sync.on)) return;
- const b = { v: kopie(store.get(k, null)), t: (store.get("ts1", {}) || {})[k] || 0 };
+ const cas = (store.get("ts1", {}) || {})[k] || 0;
+ if (!cas) return;      // tuhle hodnotu jsme nikdy neměnili — nepřepisuj ji druhému prázdnem
+ const b = { v: kopie(store.get(k, null)), t: cas };
  const otisk = JSON.stringify(b);
  if (sync._sdilPos["1:" + k] === otisk) return;
  sync._sdilPos["1:" + k] = otisk;
@@ -7194,7 +7367,12 @@ function sdil1Sluc(k, vzdal){
 /* první rozjezd po propojení — pošli všechno, co mám */
 function sdilPosliVse(){
  Object.keys(SDIL).forEach(k => sdilPosli(k));
- SDIL1.forEach(k => sdil1Posli(k));
+ SDIL1.forEach(k => {
+  // co jsme nikdy nerazítkovali, orazítkujeme teď — jinak by to na server nedolétlo
+  const ts = store.get("ts1", {}) || {};
+  if (!ts[k] && store.get(k, null) !== null){ ts[k] = 1; store.set("ts1", ts); }
+  sdil1Posli(k);
+ });
 }
 
 /* store.set se stará o razítka i o odeslání — nemusí se to psát u každé změny */
@@ -7264,8 +7442,9 @@ function pairCard(){
    +'<div class="code">'+esc(fam)+'</div>'
    +'<div class="wrow"><button class="act small" id="pairCopy" type="button">Poslat kód Verune</button>'
    +'<button class="ghost" id="pairReset" type="button">'+(conf?'Fakt odpojit?':'Odpojit')+'</button></div>'
-   +'<div class="hint">Sdílí se: zprávy, oblíbené recepty, jídelníček na týden, nákupní seznam a krátký '
-   +'přehled „kolik má dneska snědeno". Odškrtávání jídel, váhy a míry zůstávají jen v tvém telefonu.</div></div>';
+   +'<div class="hint">Sdílí se úplně všechno kromě fotek: zprávy, oblíbené, jídelníček, nákup, '
+   +'odškrtnutá jídla, voda, tréninkový deník, historie tréninků, vážení, míry, profily i cíle. '
+   +'Co zapíše jeden, vidí druhý do vteřiny. <b>Fotky a vzhled appky</b> zůstávají v telefonu.</div></div>';
 }
 
 /* Trénuje zrovna ten druhý? Vrací null, když ne nebo když jsou data stará. */
@@ -7282,7 +7461,8 @@ function peerTreninkRadek(){
  if (!t) return "";
  const pct = Math.round(t.s.hot * 100 / Math.max(1, t.s.cel));
  return '<div class="livetr'+(t.cerstve ? " on" : "")+'">'
-  +'<div class="lt-head"><b>'+(t.cerstve ? "🔴 " : "⏸ ")+esc(t.jm)+' '+(t.cerstve ? "právě trénuje" : "trénovala")+'</b>'
+  +'<div class="lt-head"><b>'+(t.cerstve ? "🔴 " : "⏸ ")+esc(t.jm)+' '
+  +(t.cerstve ? "právě trénuje" : rod(t.kdo,"trénoval","trénovala"))+'</b>'
   +'<span class="rmeta">'+esc(t.s.rid)+' · '+t.s.min+' min'+(t.s.bud ? ' · s '+esc(t.s.bud) : '')
   +(t.cerstve ? ' · '+esc(zbyvaText(t.s.hot, t.s.cel, t.s.min, planMinut(t.kdo, t.s.rid), true)) : '')
   +'</span></div>'
@@ -7291,9 +7471,10 @@ function peerTreninkRadek(){
   +'<div class="dim" style="font-size:12px">'
   +(t.cerstve
     ? (pct >= 80 ? "Už to dojíždí. Ty máš alibi jaké? 👀"
-       : (pct >= 40 ? "Půlka za ní. Teď je ta chvíle nasadit si boty."
-          : "Právě začala. Můžeš se přidat, nebo se pak dívat na statistiky."))
-    : "Naposledy se ozvala před "+t.stari+" min — nejspíš už dotrénovala.")
+       : (pct >= 40 ? "Půlka za "+rod(t.kdo,"ním","ní")+". Teď je ta chvíle nasadit si boty."
+          : "Právě "+rod(t.kdo,"začal","začala")+". Můžeš se přidat, nebo se pak dívat na statistiky."))
+    : "Naposledy se "+rod(t.kdo,"ozval","ozvala")+" před "+pocet(t.stari,"minutou","minutami","minutami")
+      +" — nejspíš už "+rod(t.kdo,"dotrénoval","dotrénovala")+".")
   +'</div>'
   +(t.cerstve && !spoluJaJsem()
     ? '<div class="wrow" style="margin:9px 0 0"><button class="act small" data-spolu="pridej" type="button">'
@@ -7322,25 +7503,43 @@ function peerTreninkBox(){
  return r ? '<div class="card" style="border-color:var(--s2)">'+r+'</div>' : "";
 }
 
+/* Karta druhého. Čísla se počítají z opravdových dat — ta se od verze 33
+   sdílí celá, takže tu nemusí viset starý souhrn ze serveru. Ze serveru
+   se bere jen to, kdy se ten druhý telefon naposled ozval.            */
 function peerCard(){
-  const p = window.sync ? sync.peer : null;
-  if (!p || !store.get("meId", null)) return "";
-  const kp = Math.min(100, Math.round((p.kcal||0)*100/(p.cil||1)));
-  const pp = Math.min(100, Math.round((p.prot||0)*100/(p.cilProt||1)));
-  let ago = "";
-  if (p.kdy){
+  const me = store.get("meId", null);
+  if (!me || !window.sync) return "";
+  const other = me === "p" ? "v" : "p";
+  if (!BASE_T[other]) return "";
+  const p = sync.peer || null;
+  if (!p && !sync.on) return "";
+  const iso = isoDnes();
+  const t = target(other);
+  const d = dayTotals(other, iso);
+  const kp = Math.min(100, Math.round(d.k*100/(t.kcal||1)));
+  const pp = Math.min(100, Math.round(d.p*100/(t.prot||1)));
+  const kg = vahaTed(other);
+  let ago = "ještě se neozval(a)";
+  if (p && p.kdy){
     const m = Math.round((Date.now() - new Date(p.kdy).getTime())/60000);
     ago = m < 2 ? "právě teď" : (m < 60 ? "před "+m+" min"
         : (m < 1440 ? "před "+Math.round(m/60)+" h" : "před "+Math.round(m/1440)+" dny"));
   }
-  return '<div class="card"><div class="rhead"><h3>'+esc(p.jmeno||"Druhý telefon")+' — živě</h3>'
+  const dnesTr = (state.hist||[]).filter(x => x.who === other && x.d === iso);
+  return '<div class="card"><div class="rhead"><h3>'+esc(jmeno(other))+' — živě</h3>'
    +'<span class="pill live"><i></i>'+esc(ago)+'</span></div>'
-   +'<div class="meter-row"><span class="lab">Kalorie</span><span class="val">'+fmt(p.kcal||0)+' / '+fmt(p.cil||0)+' kcal</span></div>'
+   +'<div class="meter-row"><span class="lab">Kalorie</span><span class="val">'+fmt(d.k)+' / '+fmt(t.kcal)+' kcal</span></div>'
    +'<div class="meter m-kcal"><i style="width:'+kp+'%"></i></div>'
-   +'<div class="meter-row"><span class="lab">Bílkoviny</span><span class="val">'+(p.prot||0)+' / '+(p.cilProt||0)+' g</span></div>'
+   +'<div class="meter-row"><span class="lab">Bílkoviny</span><span class="val">'+d.p+' / '+t.prot+' g</span></div>'
    +'<div class="meter m-prot"><i style="width:'+pp+'%"></i></div>'
-   +'<p class="who" style="margin:6px 0 0">Série: <b>'+(p.serie||0)+' dní</b>'
-   +(p.vaha ? ' · poslední váha <b>'+String(p.vaha).replace(".",",")+' kg</b>' : '')+'</p>'
+   +'<div class="meter-row"><span class="lab">Voda</span><span class="val">'
+   + (waterGet(other, iso)*GLASS/1000).toLocaleString("cs-CZ")+' / '+(waterCil(other)/1000).toLocaleString("cs-CZ")+' l</span></div>'
+   +'<div class="meter m-prot"><i style="width:'
+   + Math.min(100, Math.round(waterGet(other, iso)*GLASS*100/Math.max(1,waterCil(other))))+'%"></i></div>'
+   +'<p class="who" style="margin:6px 0 0">Série: <b>'+streak(other)+' dní</b>'
+   +(kg ? ' · poslední váha <b>'+String(kg).replace(".",",")+' kg</b>' : '')
+   +(dnesTr.length ? ' · dneska <b>'+rod(other,"odtrénoval","odtrénovala")+' '+esc(dnesTr[dnesTr.length-1].rid)+'</b> 🏋️' : '')
+   +'</p>'
    + peerTreninkRadek()
    +'</div>';
 }
@@ -7450,6 +7649,48 @@ function renderNastaveni(){
   if (state.tab === "nastaveni") renderNastaveniTab();
 }
 
+/* ---------- pozvánky odkazem ----------
+   Dva různé odkazy: „pojď do naší rodiny" (sdílíme úplně všechno)
+   a „na, měj vlastní appku" (kámoš dostane čistý start jen pro sebe). */
+function zakladniUrl(){
+ return location.origin + location.pathname.replace(/index\.html$/, "");
+}
+function odkazParak(){
+ const fam = store.get("famId", "");
+ const me = store.get("meId", "p");
+ const druhy = me === "p" ? "v" : "p";
+ return zakladniUrl() + "?kod=" + encodeURIComponent(fam) + "&kdo=" + druhy;
+}
+function odkazKamos(jm){
+ return zakladniUrl() + "?nova=1" + (jm ? "&jm=" + encodeURIComponent(jm) : "");
+}
+function pozvankaCard(){
+ const fam = store.get("famId", null);
+ const me = store.get("meId", null);
+ return '<div class="card"><h3>✉️ Pozvánky</h3>'
+  +'<p class="who">Dva odkazy, dvě různé věci. Nespleť si je — ten první dává plný přístup '
+  +'k vašim datům, ten druhý ne.</p>'
+  +'<div class="nblok"><div class="nh">👫 Pozvat parťáka do téhle appky</div>'
+  +'<div class="hint" style="margin-top:0">Otevře se mu tahle appka, sám se propojí a od té chvíle '
+  +'vidíte oba to samé — jídlo, deník, váhy, všechno. <b>Posílej jen tomu, s kým chceš sdílet úplně všechno.</b></div>'
+  + (fam && me
+     ? '<div class="wrow" style="margin-top:8px"><button class="act small" id="pozviParak" type="button">Poslat odkaz parťákovi</button>'
+       +'<button class="ghost" id="kopirParak" type="button">Zkopírovat</button></div>'
+       +'<div class="code" style="font-size:11.5px;word-break:break-all;margin-top:8px">'+esc(odkazParak())+'</div>'
+     : '<div class="hint">Nejdřív si nahoře vytvoř rodinný kód — pak se tu objeví odkaz.</div>')
+  +'</div>'
+  +'<div class="nblok" style="margin-top:12px"><div class="nh">💪 Poslat appku kámošovi</div>'
+  +'<div class="hint" style="margin-top:0">Kámoš dostane <b>vlastní appku s vlastním profilem</b> — svoje jméno, '
+  +'výšku, váhu a cíl, a appka mu spočítá kalorie a doporučené váhy na míru. '
+  +'S tvými daty nemá nic společného, nevidí je a ty nevidíš jeho. Až spolu půjdete do posilky, '
+  +'zapíšeš si ho jako parťáka do sparingu.</div>'
+  +'<div class="wrow" style="margin-top:8px"><button class="act small" id="pozviKamos" type="button">Poslat appku kámošovi</button>'
+  +'<button class="ghost" id="kopirKamos" type="button">Zkopírovat odkaz</button></div>'
+  +'<div class="code" style="font-size:11.5px;word-break:break-all;margin-top:8px">'+esc(odkazKamos(""))+'</div>'
+  +'</div>'
+  +'<div class="hint">Rodinný kód je jediné heslo, co appka má. Kdo ho má, vidí vaše data — '
+  +'tak ho neposílej do skupinových chatů.</div></div>';
+}
 function newFamCode(){
   const a = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let s = "";
@@ -7561,6 +7802,15 @@ function buildMsgs(){
    +"je to naplánovaná lenost a ta se jmenuje regenerace. Po ní čísla skočí nahoru.");
 }
 
+function kopiruj(t){
+ try { if (navigator.clipboard) navigator.clipboard.writeText(t).catch(()=>{}); } catch(e){}
+}
+function hlaskaMini(el, txt){
+ if (!el) return;
+ const p0 = el.textContent;
+ el.textContent = txt;
+ setTimeout(()=>{ el.textContent = p0; }, 1400);
+}
 function shareText(txt){
  if (navigator.share) navigator.share({ text: txt }).catch(()=>{});
  else if (navigator.clipboard) navigator.clipboard.writeText(txt).catch(()=>{});
@@ -7611,7 +7861,7 @@ function renderZpravy(){
 /* ---- týdenní vyhodnocení + série ---- */
 const MIN_KCAL = new Proxy({}, { get: (t, w) => (w === "p" || w === "v")
   ? (profilHotovy(w) ? vypocty(w).minKcal : (w === "p" ? 2800 : 1600)) : undefined });
-function isoDaysAgo(n){ const d = new Date(); d.setDate(d.getDate()-n); return d.toISOString().slice(0,10); }
+function isoDaysAgo(n){ return isoPlus(-n); }
 
 function dayTotals(who, iso){
  // kolik bylo ten den odškrtáno (jen z uložených checků, plán se bere z aktuálního nastavení)
@@ -7636,7 +7886,7 @@ function weekCard(who){
  for (let i=6;i>=0;i--){
   const iso = isoDaysAgo(i);
   const tot = dayTotals(who, iso);
-  const wd = new Date(iso).getDay();
+  const wd = (wdOf(iso)+1) % 7;
   days.push({ lab: DAYS[(wd+6)%7], k: tot.k, ok: tot.k >= MIN_KCAL[who], part: tot.k > 0 && tot.k < MIN_KCAL[who] });
  }
  const okDays = days.filter(d=>d.ok).length;
@@ -7667,7 +7917,8 @@ function progHlava(){
   +'<div style="font-size:24px;font-weight:700;line-height:1.1">'+wkNo+'.</div></div>'
   +'<div style="flex:1;min-width:180px;font-size:13px" class="'+(deload?"":"dim")+'">'
   +(deload ? '<b style="color:var(--s2)">Deload týden!</b> Stejné cviky a váhy, ale poloviční počet sérií. Nevynechávejte to — po deloadu čísla skočí nahoru.'
-           : 'Deload (poloviční série) přijde v '+((Math.floor((wkNo-1)/7)+1)*7)+'. týdnu, tedy za '+(((Math.floor((wkNo-1)/7)+1)*7)-wkNo)+' týdny.')
+           : 'Deload (poloviční série) přijde v '+((Math.floor((wkNo-1)/7)+1)*7)+'. týdnu, tedy za '
+             + pocet(((Math.floor((wkNo-1)/7)+1)*7)-wkNo, "týden", "týdny", "týdnů")+'.')
   +'</div></div>';
 }
 function checkinStav(){
@@ -7675,8 +7926,10 @@ function checkinStav(){
  if (!lc) return { dni: null, dluh: true, text: "Zatím žádná měsíční kontrola — udělejte první hned na startu." };
  const d = daysBetween(lc, new Date().toISOString().slice(0,10));
  return { dni: d, dluh: d >= 28,
-   text: d >= 28 ? "Od poslední kontroly uběhlo " + d + " dní — je čas na fotky a míry."
-                 : "Poslední kontrola před " + d + " dny. Další zhruba za " + (28-d) + " dní." };
+   text: d >= 28 ? "Od poslední kontroly uběhlo " + pocet(d,"den","dny","dní") + " — je čas na fotky a míry."
+                 : (d === 0 ? "Poslední kontrola byla dneska. Další zhruba za 4 týdny."
+                    : "Poslední kontrola před " + (d === 1 ? "dnem" : pocet(d,"dnem","dny","dny"))
+                      + ". Další zhruba za " + pocet(28-d,"den","dny","dní") + ".") };
 }
 
 /* --- 1/4 Přehled --- */
@@ -7722,7 +7975,7 @@ function progStaty(){
   +'<div class="grid2">'+statyCard("p")+statyCard("v")+'</div>'
   + statyDomacnost()
   +'<h2>Sparing</h2>'
-  + sparStatyCard()
+  + sparStatyCard("p") + sparStatyCard("v")
   +'<div class="note">Tréninkové rekordy, objem a rozložení partií jsou vedle v <b>Trénink → Moje čísla</b> — '
   +'tady jsou čísla za domácnost, jídlo a docházku.</div>';
 }
@@ -7738,7 +7991,14 @@ function renderProgres(){
  const t = { progres: progPrehled, telo: progTelo, staty: progStaty, odznaky: progOdznaky };
  Object.keys(t).forEach(k => {
   const el = document.getElementById("tab-" + k);
-  if (el) el.innerHTML = t[k]();
+  if (!el) return;
+  try { el.innerHTML = t[k](); }
+  catch(e){
+   el.innerHTML = '<div class="card"><h3>Tuhle část se nepodařilo vykreslit</h3>'
+    +'<p class="who">V datech je něco rozbitého, ale zbytek appky jede dál. '
+    +'Když to nezmizí, zkus v Nastavení → Data zálohu a znovunačtení.</p>'
+    +'<div class="hint">'+esc(String(e && e.message || e))+'</div></div>';
+  }
  });
 }
 
@@ -7752,8 +8012,17 @@ function nTgl(k, def, zap, vyp){
   + (v ? (zap||"Zapnuto") : (vyp||"Vypnuto")) + '</button>';
 }
 function nSel(k, def, opts){
+ const akt = String(nast(k, def));
+ const list = opts.slice();
+ // když spočítaná hodnota není v nabídce, doplníme ji — jinak by select
+ // ukazoval první položku a lhal o tom, co je nastavené
+ if (!list.some(o => String(o[0]) === akt)){
+  const cislo = parseFloat(akt);
+  list.push([akt, isNaN(cislo) ? akt : (cislo >= 1000 ? (cislo/1000).toLocaleString("cs-CZ")+" l (spočítané)" : akt)]);
+  list.sort((a,b)=>(parseFloat(a[0])||0)-(parseFloat(b[0])||0));
+ }
  return '<select data-nsel="'+k+'">'
-  + opts.map(o=>'<option value="'+o[0]+'"'+(String(nast(k,def))===String(o[0])?" selected":"")+'>'+esc(o[1])+'</option>').join("")
+  + list.map(o=>'<option value="'+o[0]+'"'+(String(o[0])===akt?" selected":"")+'>'+esc(o[1])+'</option>').join("")
   + '</select>';
 }
 function nRow(lab, ctrl, pop){
@@ -7797,6 +8066,7 @@ function renderNastaveniTab(){
   +'úplně dole je tlačítko, které vrátí vše do výroby.</p></div>'
 
   + pairCard()
+  + pozvankaCard()
 
   +'<h2>Profily</h2>'
   + profilCard("p")
@@ -7903,7 +8173,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">33</td></tr>'
+  +'<tr><td>Verze</td><td class="num">34</td></tr>'
   +'<tr><td>Tréninků k výběru</td><td class="num">'+(ROUTINES.p.length+ROUTINES.v.length)+'</td></tr>'
   +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
@@ -8008,12 +8278,19 @@ document.addEventListener("input", e=>{
  }
  if (e.target.dataset && e.target.dataset.pr !== undefined){
   const q = e.target.dataset.pr.split("|");
-  const cis = ["vek","vyska","vaha"].indexOf(q[1]) >= 0;
-  let v = cis ? parseFloat(String(e.target.value).replace(",", ".")) : String(e.target.value).slice(0,16);
-  if (cis && (!v || isNaN(v))) return;
+  const MEZE = { vek:[14,90], vyska:[130,220], vaha:[35,250] };
+  const m = MEZE[q[1]];
+  let v;
+  if (m){
+   v = parseFloat(String(e.target.value).replace(",", "."));
+   if (!v || isNaN(v) || v < m[0] || v > m[1]) return;   // rozepsané číslo ignorujeme
+  } else {
+   v = String(e.target.value).slice(0,16);
+  }
   profilSet(q[0], { [q[1]]: v });
+  // překreslujeme jen to, co nekrade kurzor — celý Nastavení až na blur
   clearTimeout(state.prTik);
-  state.prTik = setTimeout(()=>{ renderAll(); }, 900);
+  state.prTik = setTimeout(()=>{ renderDnes(); renderNext(); renderProgres(); }, 700);
   return;
  }
  if (e.target.id === "pickQ" && state.pick0){
@@ -8062,6 +8339,7 @@ document.addEventListener("change", e=>{
    const sel = remSel(); sel[t.dataset.rem] = t.checked;
    state.rem = sel; store.set("rem", sel); renderNastaveniTab();
  }
+ else if (t.dataset.pr !== undefined){ renderAll(); }
  else if (t.dataset.prsel !== undefined){
    const q = t.dataset.prsel.split("|");
    profilSet(q[0], { [q[1]]: (q[1] === "akt" ? parseFloat(t.value) : t.value) });
@@ -8133,7 +8411,9 @@ document.addEventListener("click", e=>{
  if (pkfav && state.pick0){ favJTgl(pkfav.dataset.pkfav); state.pick0.qFocus = false; renderPick(); return; }
  if (e.target.id === "pickRnd" && state.pick0){
   const st = state.pick0, sl = JIDLA_SLOTY.find(x=>x.key===st.key), list = sl.list();
-  const kand = list.map((o,i)=>({o,i})).filter(x=>pkFiltr(x.o, st.f));
+  const dotaz = String(st.q || "").trim().toLowerCase();
+  const kand = list.map((o,i)=>({o,i})).filter(x=>pkFiltr(x.o, st.f))
+    .filter(x=>!dotaz || String(x.o.name).toLowerCase().indexOf(dotaz) >= 0);
   if (kand.length){
    const v = kand[Math.floor(Math.random()*kand.length)];
    pickSet(st.iso, st.key, v.i);
@@ -8152,7 +8432,8 @@ document.addEventListener("click", e=>{
  if (e.target.closest("#miniBar")){ sessObnov(); return; }
  if (e.target.closest("[data-notif]")){ otevriNotif(); return; }
  const gt = e.target.closest("[data-goto]");
- if (gt){ showTab(gt.dataset.goto); return; }
+ if (gt){
+  if (state.notif) zavriNotif(); showTab(gt.dataset.goto); return; }
  const gb = e.target.closest("nav.tabs button");
  if (gb){ const g = gb.dataset.grp; showTab(lastSub[g] || GROUPS[g].tabs[0][0]); return; }
  const sb = e.target.closest("#subnav button");
@@ -8294,8 +8575,9 @@ document.addEventListener("click", e=>{
   const r = REAKCE[+rk.dataset.reak];
   const me = store.get("meId", null);
   if (!me) return;
-  pushMsg("re-"+rk.dataset.reak+"-"+Date.now(), r[0], r[1]+" — "+BASE_T[me].name, r[2]);
-  celebrate(r[0]); renderZpravy(); syncDot(); return;
+  pushMsg("re-"+rk.dataset.reak+"-"+Date.now(), r[0], r[1]+" — "+jmeno(me), r[2]);
+  stouchPrictiK(me);
+  celebrate(r[0]); renderZpravy(); syncDot(); kontrolaOdznaku(); return;
  }
 
  /* ---- párování ---- */
@@ -8326,6 +8608,23 @@ document.addEventListener("click", e=>{
   if (state.onb !== null){ renderOnb(); sync.start(); return; }
   renderZpravy(); renderNastaveni(); sync.start(); return;
  }
+ if (e.target.id === "pozviParak" || e.target.id === "kopirParak"){
+  const u = odkazParak();
+  const txt = "Pojď se mnou do PEVE FIT 💪\n\n" + u
+    + "\n\nOtevři ten odkaz v mobilu — appka se sama propojí a budeme mít oba to samé.";
+  if (e.target.id === "kopirParak"){ kopiruj(u); hlaskaMini(e.target, "Zkopírováno"); }
+  else shareText(txt);
+  return;
+ }
+ if (e.target.id === "pozviKamos" || e.target.id === "kopirKamos"){
+  const u = odkazKamos("");
+  const txt = "Hele, tímhle si vedu jídlo a tréninky — vem si to taky 💪\n\n" + u
+    + "\n\nVyplníš výšku, váhu a cíl a appka ti spočítá kalorie i doporučené váhy na cviky. "
+    + "Je to celé zdarma a jenom tvoje.";
+  if (e.target.id === "kopirKamos"){ kopiruj(u); hlaskaMini(e.target, "Zkopírováno"); }
+  else shareText(txt);
+  return;
+ }
  if (e.target.id === "pairCopy"){
   const fam = store.get("famId", "");
   const txt = "Náš rodinný kód do PEVE FIT 💪\n\n" + fam
@@ -8333,11 +8632,20 @@ document.addEventListener("click", e=>{
   shareText(txt); return;
  }
  if (e.target.id === "pairReset"){
-  if (!state.pairConfirm){ state.pairConfirm = true; renderZpravy(); return; }
+  if (!state.pairConfirm){
+   state.pairConfirm = true;
+   renderZpravy(); renderNastaveniTab();
+   clearTimeout(state.pairTik);
+   state.pairTik = setTimeout(()=>{ state.pairConfirm = false; renderZpravy(); renderNastaveniTab(); }, 8000);
+   return;
+  }
   state.pairConfirm = false;
   store.set("famId", null);
   if (window.sync) { sync.on = false; sync.status = "off"; sync.peer = null; }
-  renderZpravy(); renderNastaveni(); return;
+  // posluchače Firebase nejde odpojit jednotlivě — načteme appku znovu,
+  // jinak by nám do nové rodiny pořád tekla data z té staré
+  location.reload();
+  return;
  }
 
  const fv = e.target.closest("[data-fav]");
@@ -8497,8 +8805,12 @@ document.addEventListener("click", e=>{
   if (!state.resetPtl){ state.resetPtl = true; renderNastaveniTab(); setTimeout(()=>{ state.resetPtl = false; }, 6000); return; }
   state.resetPtl = false;
   ["prot_p","prot_v","water_p","water_v","casy","mintr_p","mintr_v","rozvrh_p","rozvrh_v",
-   "tren_p","tren_v","hlasky","zpravyAuto","konfety","stouch"].forEach(k => store.set("n_"+k, null));
+   "tren_p","tren_v","hlasky","zpravyAuto","konfety","stouch","zkus_p","zkus_v",
+   "rekSort","rekPocet","ukaz1rm","statObd"].forEach(k => store.set("n_"+k, null));
   store.set("schval", true);
+  store.set("kcal_p", null); store.set("kcal_v", null);
+  state.nakupDni = 7; store.set("nakupDni", 7);
+  state.spizOdecist = false; store.set("spizOdecist", false);
   pushMsg("reset-"+Date.now(), "\u21a9️", "Nastavení zpátky ve výrobním stavu",
     "Všechny šroubky zase tam, kde je Pepulus našel. Nic z jídla ani deníku se nesmazalo.");
   renderAll(); return;
@@ -8547,9 +8859,10 @@ document.addEventListener("click", e=>{
  }
  const st0 = e.target.closest("[data-start]");
  if (st0){
-  const rozdelany = state.sess && state.sess.ex.some(x => x.sets.some(p => p.done));
-  if (rozdelany && state.sess.rid !== st0.dataset.start){
-   renderSession();          // rozdělaný trénink nepřepisujeme — otevřeme ho
+  const rozdelany = state.sess && state.sess.ex.some(x =>
+    x.sets.some(p => p.done) || (x.bsets||[]).some(p => p.done));
+  if (rozdelany){
+   renderSession();          // cokoli je zapsané, nepřepisujeme — jen otevřeme
    return;
   }
   startSession(state.trWho, st0.dataset.start, state.budName || null);
@@ -8656,19 +8969,25 @@ document.addEventListener("click", e=>{
 
  const tw = e.target.closest("[data-trwho]");
  if (tw){ state.trWho = tw.dataset.trwho; renderTrenink(); renderCisla(); return; }
- if (e.target.id === "doneBtn"){
-  const hotovo = QUEUE[state.queue];
-  state.queue = (state.queue+1)%4; store.set("queue", state.queue);
-  pushMsg("tr-p-"+new Date().toISOString().slice(0,10)+"-"+hotovo, "🏋️", "Pepulus odtrénoval "+hotovo,
-    QUEUE_T[hotovo]+" je hotové. Zítra je na řadě "+QUEUE[state.queue]+".");
-  celebrate("🏋️"); renderTrenink(); syncDot(); return;
- }
- if (e.target.id === "doneBtnV"){
-  const hotovo = V_QUEUE[state.fb % V_QUEUE.length];
-  state.fb = (state.fb+1) % V_QUEUE.length; store.set("fb", state.fb);
-  pushMsg("tr-v-"+new Date().toISOString().slice(0,10)+"-"+hotovo, "🏋️", "Verune odtrénovala "+hotovo,
-    "Celé tělo hotové. Příště ji čeká "+V_QUEUE[state.fb]+".");
-  celebrate("💪"); renderTrenink(); syncDot(); return;
+ const odt = e.target.id === "doneBtn" ? "p" : (e.target.id === "doneBtnV" ? "v" : null);
+ if (odt){
+  const who = state.trWho === "v" && odt === "v" ? "v" : (odt === "v" ? "v" : "p");
+  const hotovo = frontaId(who);
+  const r0 = rutiny(who).find(x => x.id === hotovo);
+  const iso = isoDnes();
+  // zapíšeme to i do historie, ať se to objeví ve statistikách a v Mých číslech
+  if (!(state.hist || []).some(x => x.who === who && x.d === iso && x.rid === hotovo)){
+   state.hist = (state.hist || []).concat([{ d: iso, who: who, rid: hotovo,
+     min: r0 ? r0.min : 45, sets: r0 ? r0.ex.reduce((a,e)=>a+plannedSets(e[1]),0) : 0, obj: 0, rucne: true }]);
+   store.set("hist", state.hist);
+  }
+  frontaDal(who);
+  pushMsg("tr-"+who+"-"+iso+"-"+hotovo, "🏋️", jmeno(who)+" "+rod(who,"odtrénoval","odtrénovala")+" "+hotovo,
+    ((QUEUE_T[hotovo] || (r0 ? r0.title : "Trénink"))+" je hotové. Příště je na řadě "+frontaId(who)+"."));
+  kontrolaOdznaku();
+  celebrate(who === "v" ? "💪" : "🏋️"); renderAll(); syncDot();
+  if (window.sync && sync.on) sync.pushStatus();
+  return;
  }
  const sg = e.target.closest("[data-sug]");
  if (sg){
@@ -8722,7 +9041,8 @@ document.addEventListener("click", e=>{
                 "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist","plan","jidlo","shopHist","shopCasto","nakupDni","navrhy","schval","spizOdecist",
                 "n_prot_p","n_prot_v","n_water_p","n_water_v","n_casy","n_mintr_p","n_mintr_v",
                 "n_rozvrh_p","n_rozvrh_v","n_tren_p","n_tren_v","n_hlasky","n_zpravyAuto","n_konfety","n_stouch",
-                "favJ","parti","tlogB","spar","n_zkus_p","n_zkus_v","favR","profil_p","profil_v","ts1"]
+                "favJ","parti","tlogB","spar","n_zkus_p","n_zkus_v","favR","profil_p","profil_v","ts1","cooked","shuffleN","odznaky",
+                "n_rekSort","n_rekPocet","n_ukaz1rm","n_statObd","stouch_p","stouch_v","parti"]
    .concat(Object.keys(SDIL).map(k => "ts_" + k));
   const dump = {};
   keys.forEach(k=>{ const v = store.get(k, null); if (v !== null) dump[k] = v; });
@@ -8737,8 +9057,10 @@ document.addEventListener("click", e=>{
   const msg = document.getElementById("dataMsg");
   try {
    const obj = JSON.parse(document.getElementById("dataBox").value.trim());
-   if (!obj || typeof obj !== "object") throw 0;
-   Object.keys(obj).forEach(k => store.set(k, obj[k]));
+   if (!obj || typeof obj !== "object" || Array.isArray(obj)) throw 0;
+   const znam = ["week","checks","tlog","hist","wtP","wtV","profil_p","profil_v","favs","msgs","meId","famId"];
+   if (!znam.some(k => k in obj)) throw 0;
+   Object.keys(obj).filter(k => /^[a-zA-Z][a-zA-Z0-9_]*$/.test(k)).forEach(k => store.set(k, obj[k]));
    msg.textContent = "Načteno. Obnov stránku a data tam budou.";
    msg.style.color = "var(--good)";
   } catch(err){
@@ -8765,8 +9087,8 @@ document.addEventListener("click", e=>{
  const ap = e.target.closest("[data-applyk]");
  if (ap){
   const p = ap.dataset.applyk.split("|");
-  store.set("kcal_"+p[0], +p[1]);
-  renderAll(); showTab("progres"); return;
+  store.set("kcal_"+p[0], +p[1] > 0 ? +p[1] : null);
+  renderAll(); showTab("telo"); return;
  }
  const aw = e.target.closest("[data-addwt]");
  if (aw){
@@ -8855,6 +9177,27 @@ nactiMoje();
 renderAll();
 if (state.sess) renderSession();
 renderMini();
+(function pozvanka(){
+ try {
+  const q = new URLSearchParams(location.search);
+  const kod = q.get("kod"), kdo = q.get("kdo");
+  if (q.get("nova") === "1" && !store.get("famId", null)){
+   // čistý start pro kámoše — vlastní rodina, vlastní profil
+   store.set("famId", newFamCode());
+   store.set("meId", "p");
+   const jm = (q.get("jm") || "").slice(0,16);
+   if (jm) profilSet("p", { jm: jm });
+   store.set("onb", false);
+   history.replaceState(null, "", location.pathname);
+  } else if (kod && /^[A-Z0-9-]{15,30}$/i.test(kod) && !store.get("famId", null)){
+   store.set("famId", kod.toUpperCase());
+   if (kdo === "p" || kdo === "v") store.set("meId", kdo);
+   store.set("onb", true);
+   history.replaceState(null, "", location.pathname);
+  }
+  renderAll();
+ } catch(e){}
+})();
 (function deepLink(){
  try {
   const q = new URLSearchParams(location.search);
