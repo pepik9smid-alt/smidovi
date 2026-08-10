@@ -482,6 +482,9 @@
         color:var(--muted);padding:2px 4px}
   .pk-star.on{color:#f0a500}
   .pk-tick{flex:none;color:var(--s3);font-weight:700;font-size:16px}
+  .pk-sec{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);
+        font-weight:700;margin:14px 0 3px;padding-top:2px}
+  .pk-sec:first-child{margin-top:8px}
   .pk-none{padding:22px 4px;color:var(--text-secondary);font-size:14px}
   .mealbtn{display:flex;align-items:center;gap:8px;width:100%;margin-top:6px;padding:8px 10px;
         border-radius:10px;border:1px solid var(--border);background:var(--surface-1);
@@ -2533,11 +2536,23 @@ function renderPick(){
    .filter(x => pkFiltr(x.o, st.f))
    .filter(x => !q || x.o.name.toLowerCase().indexOf(q) >= 0);
 
- const radky = idx.length ? idx.map(x => {
+ // co je s hvězdičkou, jde nahoru — v pořadí, v jakém to bylo označené
+ const poradiFav = n => { const i = fav.indexOf(n); return i < 0 ? 1e9 : i; };
+ idx.sort((a,b)=>{
+  const fa = poradiFav(a.o.name), fb = poradiFav(b.o.name);
+  if (fa !== fb) return fa - fb;
+  return a.i - b.i;
+ });
+ const kolikFav = idx.filter(x => fav.indexOf(x.o.name) >= 0).length;
+ const deliciCara = (!q && st.f !== "fav" && kolikFav > 0 && kolikFav < idx.length) ? kolikFav : -1;
+
+ const radky = idx.length ? idx.map((x, poz) => {
    const m = porceMult(st.who, st.key, x.o.kcal, dk);
    const por = porceText(m);
    const je = fav.indexOf(x.o.name) >= 0;
-   return '<div class="pk-item'+(x.i === akt ? " on" : "")+'">'
+   return (poz === 0 && kolikFav > 0 && !q && st.f !== "fav" ? '<div class="pk-sec">⭐ Oblíbené</div>' : '')
+    + (poz === deliciCara ? '<div class="pk-sec">Všechno ostatní</div>' : '')
+    + '<div class="pk-item'+(x.i === akt ? " on" : "")+'">'
     +'<button class="pk-star'+(je?" on":"")+'" data-pkfav="'+esc(x.o.name)+'" type="button" aria-label="Oblíbené">'+(je?"★":"☆")+'</button>'
     +'<button class="pk-n" style="background:none;border:0;padding:0;text-align:left;font:inherit;color:inherit;cursor:pointer" data-pksel="'+x.i+'" type="button">'
     + esc(x.o.name)
@@ -2564,7 +2579,9 @@ function renderPick(){
     }).join("")
   +'</div></div>'
   +'<div class="pk-count">'+idx.length+' '+(idx.length===1?"možnost":(idx.length<5?"možnosti":"možností"))
-  +' · ťukni a je vybráno <button class="sh" id="pickRnd" type="button">🎲 náhodně</button></div>'
+  +' · ťukni a je vybráno'
+  +(kolikFav ? ' · ⭐ '+kolikFav+' nahoře' : '')
+  +' <button class="sh" id="pickRnd" type="button">🎲 náhodně</button></div>'
   + radky;
  const inp = document.getElementById("pickQ");
  if (inp && st.qFocus){ inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
@@ -2599,7 +2616,10 @@ const J_SNIDANE = V_BREAKFAST.concat([
  { name:"Rychlý smoothie: mléko, protein, ovesné vločky, banán", kcal:450, prot:36 },
  { name:"Zapečený toast s vejcem a sýrem (croque)", kcal:490, prot:31 },
  { name:"🥐 Vejce Benedikt v kavárně", kcal:520, prot:25, g:"venku" },
- { name:"🥪 Toast s vejcem z bistra", kcal:430, prot:20, g:"venku" }
+ { name:"🥪 Toast s vejcem z bistra", kcal:430, prot:20, g:"venku" },
+ { name:"🥤 Velký proteinový shake — mléko, vločky, banán, arašídové máslo", kcal:520, prot:42 },
+ { name:"🥤 Shake + 2 vejce natvrdo (když se nestíhá)", kcal:430, prot:44 },
+ { name:"🥛 Skyr s proteinovým práškem a ovocem", kcal:400, prot:45 }
 ]);
 
 const J_SVACINA = V_SNACK.concat([
@@ -2629,7 +2649,21 @@ const J_SVACINA = V_SNACK.concat([
  { name:"Zbytek oběda (malá porce)", kcal:280, prot:22 },
  { name:"Domácí proteinová kulička (2 ks)", kcal:230, prot:14 },
  { name:"🧊 Ledová káva s mlékem + tyčinka", kcal:320, prot:16, g:"venku" },
- { name:"🥨 Preclík se sýrem", kcal:300, prot:11, g:"venku" }
+ { name:"🥨 Preclík se sýrem", kcal:300, prot:11, g:"venku" },
+ { name:"🥤 Proteinový shake ve vodě (1 odměrka)", kcal:130, prot:26 },
+ { name:"🥤 Proteinový shake v mléce (300 ml)", kcal:280, prot:40 },
+ { name:"🥤 Proteinový shake s banánem", kcal:300, prot:32 },
+ { name:"🥤 Protein + arašídové máslo (rychlá bomba)", kcal:330, prot:32 },
+ { name:"🥤 Proteinová kaše — vločky + odměrka", kcal:350, prot:30 },
+ { name:"🥤 Zelený shake — protein, špenát, banán", kcal:260, prot:28 },
+ { name:"🥤 Mléko 400 ml + odměrka proteinu", kcal:320, prot:42 },
+ { name:"🥤 Gainer shake (2 odměrky + mléko + vločky)", kcal:520, prot:40 },
+ { name:"🌙 Kaseinový shake na noc", kcal:180, prot:32 },
+ { name:"💪 Protein + kreatin po tréninku", kcal:200, prot:28 },
+ { name:"🍦 Proteinová zmrzlina — skyr, protein, mražené ovoce", kcal:250, prot:30 },
+ { name:"🥛 Řecký jogurt s proteinovým práškem", kcal:290, prot:38 },
+ { name:"🍫 Proteinová tyčinka", kcal:200, prot:20 },
+ { name:"🥤 BCAA/EAA nápoj + banán", kcal:160, prot:12 }
 ]);
 
 const J_OBED = V_LUNCH.concat([
@@ -6217,7 +6251,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">26</td></tr>'
+  +'<tr><td>Verze</td><td class="num">27</td></tr>'
   +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
   +'<tr><td>Receptů na večeře</td><td class="num">'+pc.rec+'</td></tr>'
