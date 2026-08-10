@@ -1,4 +1,4 @@
-const CACHE = "pevefit-v25";
+const CACHE = "pevefit-v26";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./firebase-config.js", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {

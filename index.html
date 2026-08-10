@@ -487,6 +487,9 @@
         border-radius:10px;border:1px solid var(--border);background:var(--surface-1);
         color:var(--text-secondary);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-align:left}
   .mealbtn .arr{margin-left:auto;opacity:.7}
+  .udal{display:inline-block;font-size:10.5px;font-weight:700;background:var(--accent-soft);
+        color:var(--text-secondary);border-radius:99px;padding:1px 6px;vertical-align:1px}
+  .udal.moc{background:rgba(235,104,52,.16);color:var(--s2)}
   .logbox{border-top:1px solid var(--grid);margin-top:9px;padding-top:9px}
   .logline{font-size:12.5px;color:var(--text-secondary);margin-bottom:6px}
   .logline b{color:var(--text-primary);font-variant-numeric:tabular-nums}
@@ -3442,7 +3445,7 @@ function treninky(who){ return nast("tren_"+who, TRENINKY[who]) || []; }
 
 const PRIPOMINKY = [
  { id:"supl", ic:"💊", n:"Kreatin a vitamíny", pop:"Každé ráno v 8:00",
-   det:"Nejčastěji zapomenutá věc z celého plánu — a nejjednodušší.", def:true,
+   det:"Nejčastěji zapomenutá věc z celého plánu — a nejjednodušší. Pozor, je to KAŽDÝ den.", def:false,
    ev:(who)=>[{ freq:"DAILY", cas:"08:00", min:5,
      nazev:"💊 Kreatin 5 g + vitamin D3 + omega-3",
      popis:"Kreatin funguje jen když ho bereš KAŽDÝ den, i ve dnech volna. Zapij pořádně vodou." }] },
@@ -3525,19 +3528,26 @@ function prvniPristiho(){
 }
 const DOW_ICS = ["","MO","TU","WE","TH","FR","SA","SU"];
 
+/* UID musí být pro danou připomínku VŽDY stejné, jinak kalendář při dalším
+   stažení nepozná, že jde o tutéž událost, a nasype si tam kopie.            */
+function icsUid(id, i){ return "pf-" + id + "-" + i + "@pevefit"; }
+/* Pořadové číslo verze — vyšší číslo řekne kalendáři "tohle je novější". */
+function icsSeq(){ return Math.floor(Date.now() / 3600000) % 100000; }
+
 function icsText(who){
  const sel = remSel();
  const L = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//PEVE FIT//CS","CALSCALE:GREGORIAN",
             "METHOD:PUBLISH","X-WR-CALNAME:PEVE FIT — připomínky"];
  let n = 0;
  PRIPOMINKY.filter(p => sel[p.id]).forEach(p => {
-  p.ev(who).forEach(e => {
+  p.ev(who).forEach((e, ei) => {
    const zac = e.freq === "WEEKLY" ? nextDow(e.dow) : (e.freq === "MONTHLY" ? prvniPristiho() : new Date());
    const rrule = e.freq === "WEEKLY" ? "FREQ=WEEKLY;BYDAY="+DOW_ICS[e.dow]
                : (e.freq === "MONTHLY" ? "FREQ=MONTHLY;BYMONTHDAY="+e.den : "FREQ=DAILY");
    const alarm = e.alarm || 0;
    L.push("BEGIN:VEVENT",
-     "UID:pf"+(n++)+"-"+p.id+"@pevefit",
+     "UID:"+icsUid(p.id, ei),
+     "SEQUENCE:"+(n++, icsSeq()),
      "DTSTART:"+icsStamp(zac, e.cas),
      "DTEND:"+icsStamp(zac, plusMin(e.cas, e.min || 10)),
      "RRULE:"+rrule,
@@ -3550,6 +3560,42 @@ function icsText(who){
  });
  L.push("END:VCALENDAR");
  return { text: L.join("\r\n"), pocet: n };
+}
+
+/* Zrušovací soubor: pošle kalendáři "tyhle události zruš".
+   Kryje i staré, chybně očíslované UID z dřívějších stažení — proto ten rozsah. */
+function icsStorno(){
+ const L = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//PEVE FIT//CS","CALSCALE:GREGORIAN",
+            "METHOD:CANCEL","X-WR-CALNAME:PEVE FIT — připomínky"];
+ const ted = icsStamp(new Date(), "08:00");
+ const konec = icsStamp(new Date(), "08:05");
+ let n = 0;
+ const push = (uid) => {
+  L.push("BEGIN:VEVENT",
+    "UID:" + uid,
+    "DTSTART:" + ted,
+    "DTEND:" + konec,
+    "SEQUENCE:99999",
+    "STATUS:CANCELLED",
+    "SUMMARY:PEVE FIT — zrušeno",
+    "END:VEVENT");
+  n++;
+ };
+ PRIPOMINKY.forEach(p => {
+  for (let i = 0; i < 12; i++) push(icsUid(p.id, i));      // nové stabilní UID
+  for (let k = 0; k < 50; k++) push("pf" + k + "-" + p.id + "@pevefit"); // staré posunuté UID
+ });
+ L.push("END:VCALENDAR");
+ return { text: L.join("\r\n"), pocet: n };
+}
+function stahniStorno(){
+ const out = icsStorno();
+ const blob = new Blob([out.text], { type: "text/calendar;charset=utf-8" });
+ const a = document.createElement("a");
+ a.href = URL.createObjectURL(blob);
+ a.download = "peve-fit-ODEBRAT.ics";
+ document.body.appendChild(a); a.click();
+ setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
 
 function pocetUdalosti(who){
@@ -3585,18 +3631,26 @@ function remCard(){
      return '<label class="mine" style="align-items:flex-start;gap:11px;cursor:pointer;border-bottom:1px solid var(--grid)">'
       +'<input type="checkbox" data-rem="'+p.id+'"'+(on?" checked":"")+' style="width:21px;height:21px;margin:2px 0 0;accent-color:var(--s3);flex:none">'
       +'<span style="flex:1"><span style="font-weight:600">'+p.ic+' '+esc(p.n)+'</span>'
+      +' <span class="udal'+(p.ev(who).length>2?" moc":"")+'">'+p.ev(who).length+'×</span>'
       +'<br><span class="dim" style="font-size:12.5px">'+esc(p.pop)+'</span>'
       +'<br><span style="font-size:12.5px;color:var(--text-secondary)">'+esc(p.det)+'</span></span></label>';
    }).join("")
   +'</div>'
   +'<div class="wrow" style="margin-top:12px"><button class="act small" id="icsGet" type="button">Stáhnout připomínky</button>'
+  +'<button class="ghost" id="icsDel" type="button">🗑️ Odebrat z kalendáře</button>'
   +'<span class="dim" style="font-size:12.5px">'+kolik+' '+(kolik===1?"připomínka":(kolik<5?"připomínky":"připomínek"))+' · '
   +'nastaveno pro <b>'+esc((BASE_T[who]||{name:"Pepulus"}).name)+'</b></span></div>'
   +'<div class="note"><b>Jak to otevřít:</b> soubor se stáhne do telefonu, ťukneš na něj a telefon se zeptá, '
   +'do kterého kalendáře to přidat. Doporučuju založit si na to <b>vlastní kalendář „PEVE FIT"</b> — pak jde jedním '
   +'přepínačem všechno vypnout, kdyby toho bylo moc. Události jsou označené jako „volno", '
   +'takže ti v kalendáři nebudou dělat obsazeno.</div>'
-  +'<div class="hint">Když si to rozmyslíš, stačí odškrtnout a stáhnout znovu — nové připomínky ty staré přepíšou.</div></div>';
+  +'<div class="note"><b>Zanesl se ti kalendář?</b> Dej <b>🗑️ Odebrat z kalendáře</b>, otevři stažený soubor '
+  +'v telefonu a kalendář všechny připomínky od PEVE FIT smaže — včetně starých kopií. '
+  +'Potom si odškrtni, co fakt chceš, a stáhni to znovu. Číslo u každé řádky říká, '
+  +'<b>kolik událostí denně nebo týdně</b> ti to do kalendáře přidá — u <span class="udal moc">5×</span> '
+  +'a víc si dobře rozmysli, jestli to tam chceš.</div>'
+  +'<div class="hint">Nově má každá připomínka pevné označení, takže opakované stažení už nevyrábí kopie, '
+  +'ale ty stávající jen přepíše.</div></div>';
 }
 
 /* ============ Trénink — deník ============ */
@@ -6163,7 +6217,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">25</td></tr>'
+  +'<tr><td>Verze</td><td class="num">26</td></tr>'
   +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
   +'<tr><td>Receptů na večeře</td><td class="num">'+pc.rec+'</td></tr>'
@@ -6902,6 +6956,15 @@ document.addEventListener("click", e=>{
  if (e.target.id === "checkinBtn"){ state.lastCheckin = new Date().toISOString().slice(0,10); store.set("lastCheckin", state.lastCheckin); renderProgres(); return; }
  if (e.target.id === "onbBtn"){ openOnb(); return; }
  if (e.target.id === "icsGet"){ stahniIcs(); return; }
+ if (e.target.id === "icsDel"){
+  stahniStorno();
+  const el = document.querySelector("#tab-nastaveni .card .hint");
+  pushMsg("icsdel-"+Date.now(), "🗑️", "Soubor na vyčištění kalendáře stažený",
+    "Otevři ho v telefonu a potvrď. Kalendář smaže všechny připomínky od PEVE FIT — "
+    +"i ty staré kopie. Pak si znovu vyber jen to, co chceš, a stáhni normální soubor.");
+  syncDot();
+  return;
+ }
  if (e.target.id === "expBtn"){
   const keys = ["week","pick","checks","shop","queue","fb","exsel","wtP","wtV","mrP","mrV","lastCheckin",
                 "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist","plan","jidlo","shopHist","shopCasto","nakupDni","navrhy","schval","spizOdecist",
