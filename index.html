@@ -447,6 +447,10 @@
   .sess-head .mini{background:var(--surface-1);border:1px solid var(--border);border-radius:9px;
         color:var(--text-primary);font:inherit;font-size:13px;font-weight:600;padding:7px 11px;cursor:pointer}
 
+  .meal .sekce{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-left:7px}
+  .porce{display:inline-block;font-size:10.5px;font-weight:700;background:var(--accent-soft);
+        color:var(--text-primary);border-radius:99px;padding:1px 7px;margin-left:5px;vertical-align:1px;
+        white-space:nowrap}
   .logbox{border-top:1px solid var(--grid);margin-top:9px;padding-top:9px}
   .logline{font-size:12.5px;color:var(--text-secondary);margin-bottom:6px}
   .logline b{color:var(--text-primary);font-variant-numeric:tabular-nums}
@@ -1215,6 +1219,26 @@ const DAYS = ["Po","Út","St","Čt","Pá","So","Ne"];
 const DAYFULL = ["pondělí","úterý","středa","čtvrtek","pátek","sobota","neděle"];
 
 const DINNERS = [
+ { id:"musakalilek", tag:"trouba", name:"Musaka s lilkem a mletým masem",
+   v:{por:"1 velký kus",kcal:470,prot:34}, p:{por:"2 kusy + sýr navíc",kcal:830,prot:58},
+   ing:[["Lilek",2,"ks"],["Mleté maso (jehněčí/hovězí)",500,"g"],["Brambory",600,"g"],["Passata",1,"bal"],["Bílý jogurt",300,"g"],["Vejce",2,"ks"],["Sýr strouhaný",120,"g"],["Cibule",1,"ks"]],
+   steps:["Lilek nakrájej na plátky, osol a nech 15 min pustit vodu. Osuš a opeč na pánvi dozlatova.","Cibuli osmahni, přidej maso, opeč, zalij passatou, osol a 10 min táhni.","Do pekáče vrstvi: brambory na plátky, lilek, maso, znovu lilek.","Jogurt rozšlehej s vejci a sýrem, přelij vrch.","Peč 190 °C asi 40 min, než vrch zezlátne. Nech 10 min odpočinout, ať se to dá krájet."] },
+ { id:"lilekparm", tag:"svet", name:"Lilek parmigiana s kuřetem",
+   v:{por:"1 porce",kcal:450,prot:38}, p:{por:"1,5 porce + pečivo",kcal:800,prot:62},
+   ing:[["Lilek",2,"ks"],["Kuřecí prsa",500,"g"],["Passata",1,"bal"],["Mozzarella",250,"g"],["Parmezán",60,"g"],["Česnek",3,"stroužky"],["Bazalka",1,"bal"]],
+   steps:["Lilek na plátky, osol, nech pustit vodu, osuš a opeč nasucho na grilovací pánvi.","Kuře nakrájej na plátky, osol a opeč dozlatova.","Passatu prohřej s česnekem a bazalkou, dochuť.","Vrstvi lilek, kuře, omáčka, mozzarella — a znovu. Nahoru parmezán.","Peč 200 °C 25 min. Pepulovi k tomu kus bagety na vytření."] },
+ { id:"lilekbowl", tag:"trouba", name:"Pečený lilek s mletým masem a rýží",
+   v:{por:"1 půlka lilku + 150 g rýže",kcal:440,prot:35}, p:{por:"2 půlky + 300 g rýže",kcal:820,prot:60},
+   ing:[["Lilek",2,"ks"],["Mleté maso vepřové/hovězí",500,"g"],["Rýže",300,"g"],["Rajčata",3,"ks"],["Cibule",1,"ks"],["Sýr strouhaný",80,"g"],["Česnek",2,"stroužky"]],
+   steps:["Lilky rozpul, vydlabej dužinu, misky potři olejem a osol.","Dužinu nakrájej a osmahni s cibulí a česnekem, přidej maso a rajčata.","Naplň lilkové lodičky, posyp sýrem.","Peč 200 °C 30 min. Podávej s rýží."] },
+ { id:"lileksatay", tag:"svet", name:"Kuřecí satay s grilovaným lilkem",
+   v:{por:"150 g kuřete + lilek",kcal:430,prot:42}, p:{por:"280 g kuřete + rýže",kcal:790,prot:68},
+   ing:[["Kuřecí prsa",600,"g"],["Lilek",2,"ks"],["Arašídové máslo",4,"lžíce"],["Kokosové mléko",1,"bal"],["Sójová omáčka",3,"lžíce"],["Rýže",250,"g"],["Limetka",1,"ks"]],
+   steps:["Kuře nakrájej na proužky, marinuj v sóji 15 min.","Lilek na silnější plátky, potři olejem a ogriluj z obou stran.","Kuře opeč dozlatova na rozpálené pánvi.","Arašídové máslo rozmíchej s kokosovým mlékem a sójou, prohřej na omáčku.","Vše polij omáčkou, zakápni limetkou. Pepulovi rýže navíc."] },
+ { id:"lilekcurry", tag:"svet", name:"Lilkové curry s cizrnou a kuřetem",
+   v:{por:"1 miska + 150 g rýže",kcal:450,prot:36}, p:{por:"velká miska + 300 g rýže + naan",kcal:810,prot:58},
+   ing:[["Lilek",2,"ks"],["Kuřecí prsa",400,"g"],["Cizrna",1,"plechovka"],["Kokosové mléko",1,"bal"],["Rajčatový protlak",2,"lžíce"],["Kari koření",2,"lžíce"],["Rýže",300,"g"],["Cibule",1,"ks"]],
+   steps:["Lilek na kostky, osol a opeč na oleji dozlatova — pustí vodu a zkaramelizuje.","Cibuli osmahni, přidej kari a protlak, krátce prohřej.","Přidej kuře na kostky, opeč, zalij kokosovým mlékem.","Vrať lilek, přidej scezenou cizrnu, 15 min povař.","Podávej s rýží, Pepulovi k tomu placka naan."] },
  { id:"stehna", name:"Pečená kuřecí stehna + brambory",
    v:{por:"1 stehno, 200 g brambor",kcal:430,prot:33}, p:{por:"2 stehna, 350 g brambor + olej",kcal:780,prot:60},
    ing:[["Kuřecí stehna",4,"ks"],["Brambory",1.2,"kg"],["Kořenová zelenina / cibule",1,"bal"]],
@@ -2180,9 +2204,18 @@ function dinIso(iso){
  return dinnerById(j.d || state.week[wdOf(iso)]);
 }
 function kdoVari(iso){ return jidloDne(iso).k || "s"; }
+const PICK_DEF = { sn:0, sv1:0, ob:0, sv2:2 };
 function pickIso(iso){
  const j = jidloDne(iso);
- return j.p || state.pick[wdOf(iso)] || { vb:0, vl:0, vs1:0, vs2:2, pb:0, pl:0 };
+ const raw = j.p || state.pick[wdOf(iso)] || {};
+ // staré klíče (každý měl svoje jídlo) přemapujeme na společné
+ const out = Object.assign({}, PICK_DEF);
+ ["sn","sv1","ob","sv2"].forEach(k => { if (typeof raw[k] === "number") out[k] = raw[k]; });
+ if (typeof raw.sn !== "number" && typeof raw.vb === "number") out.sn = raw.vb;
+ if (typeof raw.sv1 !== "number" && typeof raw.vs1 === "number") out.sv1 = raw.vs1;
+ if (typeof raw.ob !== "number" && typeof raw.vl === "number") out.ob = raw.vl;
+ if (typeof raw.sv2 !== "number" && typeof raw.vs2 === "number") out.sv2 = raw.vs2;
+ return out;
 }
 function jidloSet(iso, pole, hod){
  const j = Object.assign({}, state.jidlo[iso] || {});
@@ -2192,9 +2225,23 @@ function jidloSet(iso, pole, hod){
  if (window.sync && sync.on) sync.pushJidlo();
 }
 function pickSet(iso, key, idx){
- const p = Object.assign({}, pickIso(iso));
+ const stary = pickIso(iso);
+ const p = Object.assign({}, stary);
  p[key] = idx;
  jidloSet(iso, "p", p);
+ // jídlo je společné — ať to ten druhý ví
+ const sl = JIDLA_SLOTY.find(x => x.key === key);
+ const me = store.get("meId", null);
+ if (sl && me && window.sync && sync.on && stary[key] !== idx){
+  const list = sl.list(), o = list[idx];
+  const d = new Date(iso + "T12:00:00");
+  const den = iso === isoDnes() ? "dnes" : (DAYS[wdOf(iso)] + " " + d.getDate() + ". " + (d.getMonth()+1) + ".");
+  pushMsg("pick-" + iso + "-" + key + "-" + idx, "🍽️",
+    BASE_T[me].name + " " + rod(me, "změnil", "změnila") + " " + sl.n.toLowerCase(),
+    den.charAt(0).toUpperCase() + den.slice(1) + " je nově <b>" + (o ? o.name : "?") + "</b>. "
+    + "Jídla máte společná, tak ať tě to v lednici nepřekvapí. 🙂");
+  syncDot();
+ }
 }
 /* ---- hlášky dne ---- */
 const HLASKY = {
@@ -2384,23 +2431,94 @@ function posunCas(t){
  m = ((m % 1440) + 1440) % 1440;
  return Math.floor(m/60) + ":" + String(m%60).padStart(2,"0");
 }
+/* ================= SPOLEČNÁ JÍDLA =================
+   Jeden jídelníček pro oba. Uvedená čísla jsou za JEDNU základní porci;
+   každému se pak porce dopočítá podle jeho denního cíle (viz porceMult).   */
+
+const J_SNIDANE = V_BREAKFAST.concat([
+ { name:"Velký shake (vločky, protein, banán, arašídové máslo)", kcal:465, prot:34 },
+ { name:"Skyr + granola + med", kcal:430, prot:33 },
+ { name:"Bagel se šunkou, vejcem a sýrem", kcal:470, prot:27 },
+ { name:"3 vejce natvrdo + skyr + granola", kcal:480, prot:37 },
+ { name:"Kus frittaty + rohlík + kakao", kcal:455, prot:25 },
+ { name:"Tvaroh + ovoce + oříšky", kcal:420, prot:34 },
+ { name:"🥖 Bageta z pumpy + čoko mléko", kcal:480, prot:21, g:"venku" },
+ { name:"☕ Latte + croissant + jogurt", kcal:490, prot:16, g:"venku" },
+ { name:"🍔 Snídaňové menu z fastfoodu", kcal:520, prot:22, g:"venku" }
+]);
+
+const J_SVACINA = V_SNACK.concat([
+ { name:"Ořechy + banán + proteinový nápoj", kcal:330, prot:22 },
+ { name:"Tuňák + rohlík s máslem + sýr", kcal:310, prot:24 },
+ { name:"Rýžové chlebíčky + arašídové máslo + kakao", kcal:385, prot:16 },
+ { name:"Sendvič se šunkou, vejcem a sýrem", kcal:355, prot:19 },
+ { name:"Řecký jogurt + granola + med", kcal:380, prot:20 },
+ { name:"Vaječné muffiny 3 ks + banán", kcal:310, prot:20 },
+ { name:"Proteinová tyčinka + hrst ořechů", kcal:365, prot:20 },
+ { name:"🍗 KFC — 3 stripsy samotné", kcal:480, prot:42, g:"venku" },
+ { name:"🥤 Proteinový nápoj + banán", kcal:270, prot:27, g:"venku" }
+]);
+
+const J_OBED = V_LUNCH.concat([
+ { name:"Řízek s bramborovým salátem", kcal:540, prot:30 },
+ { name:"Guláš s knedlíkem", kcal:510, prot:29 },
+ { name:"Tatarák s topinkami", kcal:540, prot:36 },
+ { name:"Vepřo-knedlo-zelo", kcal:530, prot:27 },
+ { name:"Vývar + hovězí s rýží", kcal:510, prot:30 },
+ { name:"Smažený sýr s hranolky (nouzovka)", kcal:570, prot:21 },
+ { name:"Šakšuka ze 3 vajec + 2 pečiva", kcal:520, prot:27 },
+ { name:"Kuřecí kebab talíř s rýží", kcal:560, prot:35 },
+ { name:"🍔 Big Mac + malé hranolky", kcal:810, prot:34, g:"venku" },
+ { name:"🌯 Durum velký s extra masem", kcal:900, prot:55, g:"venku" },
+ { name:"🍕 Pizza + kuře navíc", kcal:760, prot:34, g:"venku" }
+]);
+
+/* Kolik z denního cíle připadá na které jídlo — počítá se z toho,
+   co zbyde po večeři (ta má u každého vlastní, ručně nastavenou porci). */
+const SLOT_PODIL = { sn: 0.30, sv1: 0.17, ob: 0.36, sv2: 0.17 };
+
+function porceMult(who, key, zaklad, vecereKcal){
+ if (!zaklad || zaklad < 60) return 1;
+ const zbytek = Math.max(700, target(who).kcal - (vecereKcal || 0));
+ const chci = zbytek * (SLOT_PODIL[key] || 0.25);
+ let m = Math.round((chci / zaklad) * 4) / 4;
+ return Math.max(0.5, Math.min(3, m));
+}
+function porceText(m){
+ if (m === 1) return "";
+ if (m === 0.5) return "půl porce";
+ if (m === 0.75) return "¾ porce";
+ if (m === 1.25) return "1¼ porce";
+ if (m === 1.5) return "1½ porce";
+ if (m === 1.75) return "1¾ porce";
+ if (m === 2) return "dvojitá porce";
+ if (m === 2.5) return "2½ porce";
+ if (m === 3) return "trojitá porce";
+ return String(m).replace(".", ",") + "× porce";
+}
+const JIDLA_SLOTY = [
+ { key:"sn",  slot:"s0", cas:"7:00",  n:"Snídaně",           list:()=>J_SNIDANE },
+ { key:"sv1", slot:"s1", cas:"10:30", n:"Dopolední svačina", list:()=>J_SVACINA },
+ { key:"ob",  slot:"s2", cas:"13:00", n:"Oběd",              list:()=>J_OBED },
+ { key:"sv2", slot:"s3", cas:"16:30", n:"Odpolední svačina", list:()=>J_SVACINA }
+];
+
 function planForIso(who, iso){
  const pk = pickIso(iso);
  const din = dinIso(iso);
- if (who==="p") return [
-  {slot:"p0",time:"7:00",name:"Velký shake — půlka",kcal:555,prot:41},
-  {slot:"p1",time:"9:00",name:"Velký shake — druhá půlka",kcal:555,prot:41},
-  {slot:"p2",time:"11:00",...P_BAG[pk.pb],opts:P_BAG,key:"pb",idx:pk.pb},
-  {slot:"p3",time:"13:30",...P_LUNCH[pk.pl],opts:P_LUNCH,key:"pl",idx:pk.pl},
-  {slot:"p4",time:"19:30",name:din.name+" — "+din.p.por,kcal:din.p.kcal,prot:din.p.prot}
- ].map(j=>Object.assign(j,{time:posunCas(j.time)}));
- return [
-  {slot:"v0",time:"7:00",...V_BREAKFAST[pk.vb],opts:V_BREAKFAST,key:"vb",idx:pk.vb},
-  {slot:"v1",time:"10:30",...V_SNACK[pk.vs1],opts:V_SNACK,key:"vs1",idx:pk.vs1},
-  {slot:"v2",time:"13:00",...V_LUNCH[pk.vl],opts:V_LUNCH,key:"vl",idx:pk.vl},
-  {slot:"v3",time:"16:30",...V_SNACK[pk.vs2],opts:V_SNACK,key:"vs2",idx:pk.vs2},
-  {slot:"v4",time:"19:30",name:din.name+" — "+din.v.por,kcal:din.v.kcal,prot:din.v.prot}
- ].map(j=>Object.assign(j,{time:posunCas(j.time)}));
+ const d = who === "p" ? din.p : din.v;
+ const out = JIDLA_SLOTY.map(sl => {
+  const list = sl.list();
+  const idx = Math.min(Math.max(0, pk[sl.key] | 0), list.length - 1);
+  const o = list[idx] || list[0];
+  const m = porceMult(who, sl.key, o.kcal, d.kcal);
+  return { slot: sl.slot, time: posunCas(sl.cas), sekce: sl.n,
+           name: o.name, kcal: Math.round(o.kcal * m), prot: Math.round(o.prot * m),
+           mult: m, opts: list, key: sl.key, idx: idx };
+ });
+ out.push({ slot:"s4", time: posunCas("19:30"), sekce:"Večeře",
+            name: din.name + " — " + d.por, kcal: d.kcal, prot: d.prot, mult: 1 });
+ return out;
 }
 function planFor(who, dayIdx){ return planForIso(who, dateOfWeekday(dayIdx)); }
 
@@ -2467,9 +2585,11 @@ function personCard(who, iso){
   const id = iso+"|"+who+"|"+m.slot;
   const on = !!state.checks[id];
   const sel = m.opts ? buildSelect(m.key, iso, m.opts, m.idx) : "";
+  const por = porceText(m.mult || 1);
   return '<div class="meal'+(on?" checked":"")+'">'
    +'<input type="checkbox" data-check="'+id+'"'+(on?" checked":"")+' aria-label="Snědeno">'
-   +'<div class="body"><div class="time">'+m.time+'</div><div class="name">'+esc(m.name)+'</div>'+sel+'</div>'
+   +'<div class="body"><div class="time">'+m.time+(m.sekce?' <span class="sekce">'+esc(m.sekce)+'</span>':'')+'</div>'
+   +'<div class="name">'+esc(m.name)+(por?' <span class="porce">'+esc(por)+'</span>':'')+'</div>'+sel+'</div>'
    +'<div class="nums">'+fmt(m.kcal)+' kcal · '+m.prot+' g</div></div>';
  }).join("");
 
@@ -5848,7 +5968,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">23</td></tr>'
+  +'<tr><td>Verze</td><td class="num">24</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
   +'<tr><td>Receptů na večeře</td><td class="num">'+pc.rec+'</td></tr>'
   +'<tr><td>Tréninkových variant</td><td class="num">'+pc.tr+'</td></tr>'
