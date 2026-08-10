@@ -493,6 +493,27 @@
   .udal{display:inline-block;font-size:10.5px;font-weight:700;background:var(--accent-soft);
         color:var(--text-secondary);border-radius:99px;padding:1px 6px;vertical-align:1px}
   .udal.moc{background:rgba(235,104,52,.16);color:var(--s2)}
+  .card.oblib{border-color:#f0a500}
+  .rhead h3 .star{background:none;border:0;font-size:17px;line-height:1;cursor:pointer;
+        color:var(--muted);padding:0 2px 0 0;vertical-align:-1px}
+  .rhead h3 .star:has(+*){}
+  .card.oblib .rhead h3 .star{color:#f0a500}
+  .dopor{color:var(--s3);font-weight:600}
+  .dopbox{margin:0 0 8px;padding:8px 10px;border-radius:9px;background:var(--accent-soft);
+        font-size:12.5px;line-height:1.45;color:var(--text-secondary);border-left:3px solid var(--s1)}
+  .dopbox b{color:var(--text-primary);font-size:13.5px}
+  .dopbox.nahoru{border-left-color:var(--s3)}
+  .dopbox.dolu{border-left-color:var(--s2)}
+  .dopbox.stejne{border-left-color:var(--muted)}
+  .dopor.nahoru{color:var(--s3)}
+  .dopor.dolu{color:var(--s2)}
+  .sess-head .zb{font-size:11px;color:var(--text-secondary);font-variant-numeric:tabular-nums;
+        margin-top:2px;white-space:nowrap}
+  .sp-os u{display:block;text-decoration:none;font-size:11px;color:var(--text-secondary);
+        font-variant-numeric:tabular-nums;margin-top:4px}
+  .sp-cas{margin-top:8px;font-size:12.5px;line-height:1.45;padding:7px 9px;border-radius:9px;
+        background:var(--page);border:1px dashed var(--border);color:var(--text-secondary)}
+  .sp-cas b{color:var(--text-primary)}
   .spolu{margin:0 0 12px;padding:11px 12px;border-radius:13px;border:1px solid var(--border);
         background:var(--surface-1)}
   .spolu.on{border-color:var(--s1)}
@@ -2040,7 +2061,19 @@ const ALTS = {
 
 const ROUTINES = {
  p: [
-  { id:"A", title:"A — Horní tělo (tlaky)", min:75, typ:"sila",
+  { id:"R", title:"R — Push/Pull hybrid 40′", min:40, typ:"sila",
+    tip:"Když je čas jen na jedno a chceš zasáhnout celé horní tělo. Střídej tlak a tah, pauzy krať.",
+    ex:[["bench","3 × 6–8",8,"2:30"],["cablerow","3 × 8–10",8,"2:00"],["shpressdb","3 × 10–12",9,"1:30"],["latpd","3 × 10–12",9,"1:30"],["curldb","2 × 12–15",9,"1:00"],["tripush","2 × 12–15",9,"1:00"]] },
+ { id:"S", title:"S — Silový trojboj (dřep, bench, tah)", min:70, typ:"sila",
+    tip:"Tři cviky, na kterých se pozná, jestli sílíš. Dlouhé pauzy, málo opakování, plná koncentrace.",
+    ex:[["squat","5 × 5",8,"3:00"],["bench","5 × 5",8,"3:00"],["deadlift","3 × 5",8,"3:30"],["cablerow","3 × 8–10",8,"2:00"],["plank","3 × 45 s",8,"1:00"]] },
+ { id:"T", title:"T — Paže a ramena 35′", min:35, typ:"sila",
+    tip:"Den na to, co je vidět v tričku. Krátké pauzy, hodně opakování, pumpa až to pálí.",
+    ex:[["shpressdb","4 × 8–10",8,"2:00"],["latraise","4 × 15–20",10,"1:00"],["curlbb","3 × 8–10",9,"1:30"],["ohtri","3 × 10–12",9,"1:30"],["hammer","3 × 12–15",9,"1:00"],["facepull","3 × 15–20",9,"1:00"]] },
+ { id:"U", title:"U — Záda do šířky 45′", min:45, typ:"sila",
+    tip:"Široká záda dělají pas užší, aniž bys zhubl. Tahej lokty, ne ruce.",
+    ex:[["pullup","4 × 6–10",8,"2:30"],["bentrow","4 × 8–10",8,"2:30"],["latpd","3 × 10–12",9,"1:30"],["csrow","3 × 10–12",9,"1:30"],["facepull","3 × 15–20",9,"1:00"],["shrugdb","3 × 12–15",9,"1:00"]] },
+ { id:"A", title:"A — Horní tělo (tlaky)", min:75, typ:"sila",
     tip:"Hlavní tlakový den. Bench jede první, dokud jsi svěží — na něm se měří pokrok.",
     ex:[["bench","4 × 5–8",8,"3:00"],["pullup","4 × 8–10",8,"2:30"],["inclinedb","3 × 10–12",9,"2:00"],["cablerow","3 × 10–12",9,"2:00"],["latraise","3 × 15–20",10,"1:30"],["tripush","3 × 12–15",10,"1:30"],["facepull","2 × 15–20",9,"1:00"],["cablefly","3 × 12–15",10,"1:30"],["shrugdb","3 × 12–15",10,"1:30"]] },
   { id:"B", title:"B — Dolní tělo (kvadricepsy)", min:60, typ:"sila",
@@ -2082,7 +2115,7 @@ const ROUTINES = {
   { id:"M", title:"M — HIIT rotoped 20′", min:20, typ:"kardio",
     tip:"Krátké a nepříjemné. Maximálně 2× týdně a nikdy den před těžkými nohami.",
     ex:[["jumpjack","1 × 60 s","—","0:30"],["bikehiit","8 × 30 s naplno",9,"1:30"],["bike","1 × 5 min vyklusání",5,"0:00"]] },
-  { id:"N", title:"N — Kardio v klidu 40′", min:40, typ:"kardio",
+  { id:"N40", title:"N40 — Kardio v klidu 40′", min:40, typ:"kardio",
     tip:"Chůze do kopce nebo rotoped v tempu, u kterého zvládneš telefonovat. Spálí kalorie a vůbec neubere sílu na další trénink.",
     ex:[["walkhill","1 × 40 min",5,"0:00"],["bike","alternativa 40 min",5,"0:00"]] },
   { id:"O", title:"O — Metabolický okruh 25′", min:25, typ:"kardio",
@@ -2093,7 +2126,19 @@ const ROUTINES = {
     ex:[["catcow","10 kol","—","0:00"],["thoracic","10 / strana","—","0:00"],["chestdoor","2 × 40 s","—","0:00"],["hipflex","2 × 40 s / strana","—","0:00"],["hamstretch","2 × 40 s / strana","—","0:00"],["childpose","1 × 60 s","—","0:00"]] }
  ],
  v: [
-  { id:"FB1", title:"FB1 — celé tělo, důraz nohy a hýždě", min:50, typ:"sila",
+  { id:"GL2", title:"GL2 — Hýždě naostro 30′", min:30, typ:"sila",
+    tip:"Krátký a nekompromisní. Hip thrust jede první, dokud máš sílu — na něm se to celé láme.",
+    ex:[["hipthrust","4 × 10–12",8,"2:00"],["kickback","3 × 12–15",9,"1:00"],["glbridge","3 × 15–20",9,"1:00"],["monster","3 × 20 kroků",9,"1:00"]] },
+ { id:"UP2", title:"UP2 — Horní tělo s jednoručkami 35′", min:35, typ:"sila",
+    tip:"Ramena a záda drží držení těla. Půl hodiny týdně a poznáš to na fotkách dřív než na váze.",
+    ex:[["dbbench","3 × 10–12",8,"1:30"],["cablerow","3 × 10–12",8,"1:30"],["shpressdb","3 × 10–12",9,"1:30"],["latraise","3 × 15–20",10,"1:00"],["curldb","2 × 12–15",9,"1:00"],["plank","3 × 40 s",8,"1:00"]] },
+ { id:"FB5", title:"FB5 — Celé tělo 40′", min:40, typ:"sila",
+    tip:"Když se stihne jen jeden trénink za týden, ať je to tenhle. Nic nevynecháš.",
+    ex:[["goblet","3 × 10–12",8,"2:00"],["rdldb","3 × 10–12",8,"2:00"],["latpd","3 × 10–12",8,"1:30"],["shpressdb","3 × 10–12",9,"1:30"],["hipthrust","3 × 12–15",9,"1:30"],["deadbug","3 × 10 na stranu",8,"1:00"]] },
+ { id:"ST", title:"ST — Střed a stabilita 25′", min:25, typ:"sila",
+    tip:"Pevný střed = rovná záda a méně bolestí. Kvalita provedení je tady důležitější než čas.",
+    ex:[["plank","3 × 45 s",8,"1:00"],["sideplank","3 × 30 s na stranu",8,"1:00"],["deadbug","3 × 12",8,"1:00"],["hollow","3 × 30 s",9,"1:00"],["backext","3 × 12–15",8,"1:00"],["monster","2 × 20 kroků",8,"1:00"]] },
+ { id:"FB1", title:"FB1 — celé tělo, důraz nohy a hýždě", min:50, typ:"sila",
     tip:"Celé tělo, ale pět ze sedmi cviků jde na nohy a zadek — tam se u tebe nejvíc pozná změna. Horní tělo drží držení těla a ten úzký pas.",
     ex:[["hipthrust","4 × 10–12",8,"2:00"],["goblet","3 × 8–10",7,"2:00"],["rdldb","3 × 10–12",8,"1:30"],["kickback","3 × 15 / noha",9,"1:00"],["monster","2 × 12 kroků","—","1:00"],["latpd","3 × 10–12",8,"2:00"],["plank","3 × 30–45 s","—","1:00"]] },
   { id:"FB2", title:"FB2 — celé tělo, důraz nohy a hýždě", min:50, typ:"sila",
@@ -3797,14 +3842,14 @@ function logBox(who, exId, presc, pauza){
     const kg = topSet(minule.s)[0];
     if (ok && kg) rada = '<div class="logline tip-up">✓ Minule jsi dal(a) všechny série na horní hranici — '
       +'dneska jdi na <b>'+fmt(Math.round((kg + incFor(exId))*10)/10)+' kg</b>.</div>';
-    else if (kg) rada = '<div class="logline">Cíl: <b>'+tg.sets+' série po '+tg.hi+' opakováních</b> s '+fmt(kg)+' kg. '
-      +'Až to dáš všude, přidáš '+fmt(incFor(exId))+' kg.</div>';
+    else if (kg) rada = '<div class="logline">Cíl: <b>'+tg.sets+' série po '+tg.hi+' opakováních</b> s '+fmt(kg)+' kg.</div>';
   }
   const chips = dnes && dnes.s.length
     ? '<div class="setchips">'+dnes.s.map((x,i)=>'<span class="setchip">'+(x[0]?fmt(x[0])+' kg × ':'')+x[1]
         +'<button data-delset="'+who+'|'+exId+'|'+i+'" title="Smazat">×</button></span>').join("")+'</div>'
     : "";
-  const posl = minule ? topSet(minule.s) : null;
+  const dopor = dalsiVaha(who, exId, presc);
+  const posl = dopor ? [dopor.kg] : (minule ? topSet(minule.s) : null);
   return '<div class="logbox">' + hist + rada + kgSpark(sessions) + chips
    +'<div class="logrow">'
    +'<input type="number" step="0.5" min="0" max="500" inputmode="decimal" id="lg-'+who+'-'+exId+'-kg" '
@@ -4043,13 +4088,19 @@ function nextUpList(){
 
  const out = [];
  if (state.sess && state.sess.who === me){
-  const t = sessSoucty();
-  out.push({ ic:"▶︎", tx:"<b>Trénink běží</b> — "+t.hot+"/"+t.cel+" sérií", kdy:t.min+" min", tab:"trenink", cls:"bezi" });
+  const t = sessSoucty("ty");
+  const z = zbyvaMin(t.hot, t.cel, t.min, planMinut(me, state.sess.rid));
+  out.push({ ic:"▶︎", tx:"<b>Trénink běží</b> — "+t.hot+"/"+t.cel+" sérií",
+    kdy: (z === null ? t.min+" min" : (z === 0 ? "poslední" : "~"+z+" min do konce")),
+    tab:"trenink", cls:"bezi" });
  }
 
  const pt = peerTrenink();
- if (pt && pt.cerstve) out.push({ ic:"🔴", tx:'<b>'+esc(pt.jm)+' trénuje</b> — '+esc(pt.s.rid),
-   kdy: pt.s.hot+"/"+pt.s.cel+" sérií", tab:"trenink" });
+ if (pt && pt.cerstve){
+  const zp = zbyvaMin(pt.s.hot, pt.s.cel, pt.s.min, planMinut(pt.kdo, pt.s.rid));
+  out.push({ ic:"🔴", tx:'<b>'+esc(pt.jm)+' trénuje</b> — '+esc(pt.s.rid)+' · '+pt.s.hot+'/'+pt.s.cel,
+    kdy: (zp === null ? pt.s.min+" min" : (zp === 0 ? "poslední série" : "~"+zp+" min do konce")), tab:"trenink" });
+ }
 
  const ted = new Date(), nyni = ted.getHours()*60 + ted.getMinutes();
  const dow = todayIdx + 1, iso = dateOfWeekday(todayIdx);
@@ -4278,16 +4329,31 @@ function spoluPanel(){
   +'<div class="sp-h">🤜 Trénujete spolu'+(cerstvy?' <span class="ziv">● živě</span>':' <span class="dim" style="font-weight:400">· neozval se chvíli</span>')+'</div>'
   +'<div class="sp-grid">'
   +'<div class="sp-os"><b>Ty</b><span>'+t.hot+'/'+t.cel+' sérií</span><i>'+fmt(t.obj)+' kg</i>'
-  +'<div class="sp-bar"><s style="width:'+pctJa+'%"></s></div></div>'
+  +'<div class="sp-bar"><s style="width:'+pctJa+'%"></s></div>'
+  +'<u>'+esc(zbyvaText(t.hot, t.cel, t.min, planMinut(me, state.sess.rid), false))+'</u></div>'
   +'<div class="sp-os"><b>'+esc(druhy.jm || BASE_T[o].name)+'</b><span>'+(druhy.hot||0)+'/'+(druhy.cel||0)+' sérií</span>'
   +'<i>'+fmt(druhy.obj||0)+' kg</i>'
-  +'<div class="sp-bar v"><s style="width:'+pctOn+'%"></s></div></div>'
+  +'<div class="sp-bar v"><s style="width:'+pctOn+'%"></s></div>'
+  +'<u>'+esc(zbyvaText(druhy.hot, druhy.cel, druhy.min, planMinut(o, druhy.rid), false))+'</u></div>'
   +'</div>'
   +'<div class="sp-skore '+(rozdil>0?"vedes":(rozdil<0?"prohravas":""))+'">'
   +(rozdil === 0 ? "Nerozhodně. Někdo musí přitlačit. 👀"
     : (rozdil > 0 ? esc(spoluHlaska("vedes", o)) + " <b>+" + fmt(rozdil) + " kg</b>"
                   : esc(spoluHlaska("vede", o)) + " <b>−" + fmt(-rozdil) + " kg</b>"))
   +'</div>'
+  + (()=>{
+      const zJa = zbyvaMin(t.hot, t.cel, t.min, planMinut(me, state.sess.rid));
+      const zOn = zbyvaMin(druhy.hot, druhy.cel, druhy.min, planMinut(o, druhy.rid));
+      if (zJa === null || zOn === null) return "";
+      const jm = esc(druhy.jm || BASE_T[o].name);
+      const r = Math.abs(zJa - zOn);
+      const txt = r <= 3
+        ? "Skončíte skoro naráz — kolem <b>" + casZa(Math.max(zJa, zOn)) + "</b>. Kdo bude čekat, ten uklízí kotouče."
+        : (zJa < zOn
+           ? "Ty končíš kolem <b>" + casZa(zJa) + "</b>, " + jm + " asi o <b>" + r + " min</b> později. Zbyde ti čas na protažení. Nebo na chvástání."
+           : jm + " končí kolem <b>" + casZa(zOn) + "</b>, ty asi o <b>" + r + " min</b> později. Bude tě sledovat. Nebo si mezitím dá shake.");
+      return '<div class="sp-cas">⏳ ' + txt + '</div>';
+    })()
   +(tik ? '<div class="sp-tik">💬 '+esc(tik)+'</div>' : '')
   + spoluFeed()
   +'</div>';
@@ -4312,6 +4378,170 @@ function spoluCvik(i){
  return '<div class="sp-cvik"><b>'+esc(jm)+'</b>'
   + sety.map(x=>'<span>'+fmt(x[0])+'×'+x[1]+'</span>').join("")
   +'</div>';
+}
+
+/* ================= DOPORUČENÁ VÁHA NA CVIK =================
+   Číslo je násobek tělesné váhy pro jednu pracovní sérii 8–10 opakování
+   u začátečníka. [muž, žena, krok zaokrouhlení, poznámka].
+   "ruka" = váha jedné jednoručky, "guma" = odpor gumy, ne kila.
+   Je to odhad pro první sérii, ne rozkaz — pravda je vždycky v tom, co uzvedneš. */
+const VAHY = {
+ bench:[0.60,0.32,2.5], dbbench:[0.22,0.11,1,"ruka"], chestpressm:[0.55,0.32,2.5],
+ pecdeck:[0.30,0.18,2.5], inclinedb:[0.19,0.10,1,"ruka"], cablefly:[0.14,0.09,2.5,"ruka"],
+ latpd:[0.55,0.38,2.5], cablerow:[0.55,0.38,2.5], bentrow:[0.50,0.32,2.5], csrow:[0.45,0.30,2.5],
+ ohp:[0.40,0.22,2.5], shpressdb:[0.16,0.09,1,"ruka"], latraise:[0.08,0.05,1,"ruka"],
+ cablelat:[0.07,0.045,2.5,"ruka"], facepull:[0.18,0.13,2.5], shrugdb:[0.28,0.16,2,"ruka"],
+ curlbb:[0.25,0.15,2.5], curldb:[0.11,0.065,1,"ruka"], hammer:[0.12,0.07,1,"ruka"],
+ tripush:[0.25,0.17,2.5], ohtri:[0.18,0.12,2.5],
+ squat:[0.80,0.55,2.5], hacksquat:[0.70,0.50,2.5], goblet:[0.25,0.18,2], sumodb:[0.28,0.22,2],
+ legpress:[1.40,1.00,5], legext:[0.40,0.30,2.5],
+ rdl:[0.65,0.48,2.5], rdldb:[0.22,0.16,2,"ruka"], deadlift:[0.95,0.70,2.5],
+ lyingcurl:[0.30,0.22,2.5], seatcurl:[0.32,0.24,2.5],
+ bulg:[0.15,0.10,2,"ruka"], lungedb:[0.15,0.10,2,"ruka"],
+ hipthrust:[0.70,0.60,2.5], kickback:[0.10,0.09,2.5], cablecrunch:[0.30,0.22,2.5],
+ calf:[0.60,0.45,5], seatedcalf:[0.45,0.35,2.5],
+ kbswing:[0.20,0.14,2], stepup:[0.12,0.09,2,"ruka"]
+};
+const VAHY_GUMA = ["bandrow","bandpress","bandabd","bandkick","monster"];
+const VAHY_TELO = ["pushup","pullup","assistpull","dip","invrow","glbridge","backext","plank",
+ "hangraise","sideplank","deadbug","hollow","superman","bwsquat","inclinepush","pikepush",
+ "burpee","mtnclimb","jumpsquat","jumpjack"];
+
+const ZKUSENOST = [["zac","Začátečník — první měsíce",0.85],
+                   ["str","Mírně pokročilý — rok tréninku",1.1],
+                   ["pok","Pokročilý — vím, co dělám",1.4]];
+function zkusKoef(who){
+ const v = nast("zkus_" + who, "zac");
+ const z = ZKUSENOST.find(x => x[0] === v);
+ return z ? z[2] : 1;
+}
+function telVaha(who){
+ const arr = wtArr(who);
+ if (arr && arr.length){
+  const p = arr.slice().sort((a,b)=>a.d.localeCompare(b.d)).pop();
+  if (p && p.kg) return p.kg;
+ }
+ return who === "v" ? 64 : 94.5;
+}
+function doporucVaha(who, exId){
+ if (VAHY_GUMA.indexOf(exId) >= 0) return { guma:true };
+ if (VAHY_TELO.indexOf(exId) >= 0) return { telo:true };
+ const k = VAHY[exId];
+ if (!k) return null;
+ const bw = telVaha(who);
+ const zaklad = bw * (who === "v" ? k[1] : k[0]) * zkusKoef(who);
+ const krok = k[2] || 2.5;
+ const kg = Math.max(krok, Math.round(zaklad / krok) * krok);
+ return { kg: kg, ruka: k[3] === "ruka" };
+}
+/* krátký text do řádku série */
+function doporucKratky(who, exId){
+ const d = doporucVaha(who, exId);
+ if (!d) return "";
+ if (d.telo) return "vlastní váha";
+ if (d.guma) return "guma";
+ return "🎯 " + fmt(d.kg) + (d.ruka ? " kg/ruka" : " kg");
+}
+function doporucVeta(who, exId){
+ const d = doporucVaha(who, exId);
+ if (!d) return "";
+ if (d.telo) return "Tenhle cvik jede na vlastní váhu — přidávej opakování, ne kila.";
+ if (d.guma) return "Guma: vyber odpor, u kterého poslední dvě opakování pálí, ale technika drží.";
+ return "Nikdy jsi to tu nezapsal" + rod(who, "", "a") + ". Podle tvojí váhy "
+  + String(telVaha(who)).replace(".", ",") + " kg zkus začít na <b>" + fmt(d.kg) + " kg</b>"
+  + (d.ruka ? " v každé ruce" : "") + ". Je to jen odhad — <b>první sérii udělej lehčí</b> a podle pocitu "
+  + "přidej. Když poslední opakování nejde čistě, ubereš.";
+}
+
+/* ---- doporučená váha, která se hýbe s tím, jak trénuješ ----
+   Nikdy jsi to nedělal  → odhad z tělesné váhy.
+   Dal jsi všechny série na horní hranici → přidáme.
+   Nedosáhl jsi ani na spodní hranici     → ubereme.
+   Dlouho jsi u toho nebyl                → ubereme, síla mezitím odešla. */
+function dalsiVaha(who, exId, presc){
+ const sess = logGet(who, exId);
+ const iso = new Date().toISOString().slice(0,10);
+ const minule = sess.filter(x => x.d !== iso).slice(-1)[0];
+ if (!minule || !minule.s.length){
+  const d = doporucVaha(who, exId);
+  if (!d || !d.kg) return null;
+  return { kg: d.kg, ruka: !!d.ruka, smer: "start",
+           duvod: "první série — odhad podle tvojí váhy" };
+ }
+ const kg = topSet(minule.s)[0];
+ if (!kg) return null;
+ const tg = repTarget(presc);
+ const krok = incFor(exId);
+ const pauza = daysBetween(minule.d, iso);
+
+ // dlouhá pauza u cviku — začneme níž, ať to není hrdinství
+ if (pauza >= 42) return { kg: zaokr(kg * 0.85, krok), ruka:false, smer:"dolu",
+   duvod: "u tohohle cviku jsi nebyl " + Math.round(pauza/7) + " týdnů — ubereme 15 %, do dvou tréninků to doženeš" };
+ if (pauza >= 21) return { kg: zaokr(kg * 0.92, krok), ruka:false, smer:"dolu",
+   duvod: "tři týdny pauzy u tohohle cviku — ubereme 8 % a rozjedeme to znovu" };
+
+ if (!tg) return { kg: kg, ruka:false, smer:"stejne", duvod: "jako minule — a přidej opakování" };
+
+ const vsechny = minule.s.length >= tg.sets;
+ const nahore  = minule.s.every(x => x[1] >= tg.hi);
+ const pod     = minule.s.filter(x => x[1] < tg.lo).length;
+
+ if (vsechny && nahore) return { kg: zaokr(kg + krok, krok), ruka:false, smer:"nahoru",
+   duvod: "minule všechny série na horní hranici — zasloužíš si přidat " + fmt(krok) + " kg" };
+ if (pod >= 2) return { kg: zaokr(kg - krok, krok), ruka:false, smer:"dolu",
+   duvod: "minule ti " + pod + " série spadly pod " + tg.lo + " opakování — ubereme a uděláme to čistě" };
+ return { kg: kg, ruka:false, smer:"stejne",
+   duvod: "drž váhu a dotlač to na " + tg.sets + "× " + tg.hi + " — pak přidáš" };
+}
+function zaokr(v, krok){
+ const k = krok || 2.5;
+ return Math.max(k, Math.round(v / k) * k);
+}
+const SMER_IC = { start:"🎯", nahoru:"⬆️", dolu:"⬇️", stejne:"➡️" };
+function dalsiVahaText(who, exId, presc){
+ const d = dalsiVaha(who, exId, presc);
+ if (!d){
+  const z = doporucVaha(who, exId);
+  if (z && z.telo) return '<div class="dopbox">Tenhle cvik jede na vlastní váhu — přidávej opakování, ne kila.</div>';
+  if (z && z.guma) return '<div class="dopbox">Guma: vyber odpor, u kterého poslední dvě opakování pálí, ale technika drží.</div>';
+  return "";
+ }
+ return '<div class="dopbox '+d.smer+'">'+(SMER_IC[d.smer]||"🎯")+' Dneska zkus <b>'+fmt(d.kg)+' kg</b>'
+  +(d.ruka?" v každé ruce":"")+' <span class="dim">— '+esc(d.duvod)+'</span></div>';
+}
+
+/* ---- odhad, kolik tréninku ještě zbývá ----
+   Do šesté série se opíráme hlavně o plán tréninku, pak čím dál víc
+   o skutečné tempo. Jinak by první série s dlouhou pauzou hodila nesmysl. */
+function planMinut(who, rid){
+ const r = (ROUTINES[who] || []).find(x => x.id === rid);
+ return r ? r.min : null;
+}
+function zbyvaMin(hot, cel, min, planMin){
+ hot = +hot || 0; cel = +cel || 0; min = +min || 0;
+ if (cel <= 0) return null;
+ const zbyva = Math.max(0, cel - hot);
+ if (!zbyva) return 0;
+ const planT = (planMin || cel * 2.6) / cel;          // minut na sérii podle plánu
+ let tempo = planT;
+ if (hot >= 1 && min >= 1){
+  const realT = min / hot;
+  const w = Math.min(1, hot / 6);                     // váha reality roste s počtem sérií
+  tempo = realT * w + planT * (1 - w);
+ }
+ tempo = Math.max(0.6, Math.min(6, tempo));           // ať to neuletí ani jedním směrem
+ return Math.max(1, Math.round(zbyva * tempo));
+}
+function casZa(min){
+ if (min === null || min === undefined) return "";
+ const d = new Date(Date.now() + min * 60000);
+ return dvoj(d.getHours()) + ":" + dvoj(d.getMinutes());
+}
+function zbyvaText(hot, cel, min, planMin, dlouhy){
+ const z = zbyvaMin(hot, cel, min, planMin);
+ if (z === null) return "";
+ if (z === 0) return "poslední série";
+ return "zbývá ~" + z + " min" + (dlouhy ? " · konec " + casZa(z) : "");
 }
 
 /* ================= SPOLEČNÝ TRÉNINK V REÁLNÉM ČASE =================
@@ -4548,10 +4778,9 @@ function startSession(who, rid, bud){
    const min = minulaLekce(who, exId);
    const bmin = bud ? budMinula(bud, exId) : null;
    const n = plannedSets(e[1]);
-   const mk = (m) => Array.from({length:n}, (_,j) => ({
-     kg: m && m.s[j] ? m.s[j][0] : (m && m.s.length ? m.s[m.s.length-1][0] : ""),
-     reps: "", done: false
-   }));
+   const dop = dalsiVaha(who, exId, e[1]);
+   const start = (dop && dop.kg) ? dop.kg : "";
+   const mk = (m) => Array.from({length:n}, () => ({ kg: start, reps: "", done: false }));
    return {
     id: exId, popis: e[1], pauza: e[3], klic: rid+"|"+i,
     sets: mk(min), bsets: bud ? mk(bmin) : []
@@ -4642,7 +4871,9 @@ function renderMini(){
   const pct = Math.round(ty.hot / Math.max(1, ty.cel) * 100);
   el.innerHTML = '<span class="mb-ic">🏋️</span>'
    +'<span class="mb-t"><span class="mb-n">'+esc(r.title)+'</span>'
-   +'<span class="mb-s">'+t.hot+'/'+t.cel+' sérií'+(t.obj?' · '+fmt(t.obj)+' kg':'')
+   +'<span class="mb-s">'+t.hot+'/'+t.cel+' sérií'
+   + (()=>{ const z = zbyvaText(ty.hot, ty.cel, ty.min, planMinut(s0.who, s0.rid), false);
+            return z ? ' · '+z : (t.obj?' · '+fmt(t.obj)+' kg':''); })()
    +(s0.bud?' · s '+esc(sKym(s0.bud)):'')+'</span></span>'
    +'<span class="mb-c">'+dvoj(Math.floor(t.min/60))+":"+dvoj(t.min%60)+'</span>'
    +'<span class="mb-go">Zpět</span>'
@@ -4666,6 +4897,7 @@ function renderSession(){
  const r = ROUTINES[who].find(x => x.id === s0.rid) || { title: s0.rid };
  const t = sessSoucty(kdo);
  const tTy = sessSoucty("ty"), tBud = duo ? sessSoucty("bud") : null;
+ const planM = planMinut(who, s0.rid);
  document.body.style.overflow = "hidden";
  o.hidden = false;
 
@@ -4673,7 +4905,11 @@ function renderSession(){
   const E = EX[x.id] || { n: x.id, m: "", i: "machine", t: "" };
   const min = kdo === "bud" ? budMinula(s0.bud, x.id) : minulaLekce(who, x.id);
   const rady = sessSets(i, kdo).map((p,j)=>{
-   const mp = min && min.s[j] ? (fmt(min.s[j][0])+" kg × "+min.s[j][1]) : "—";
+   const dp = (j === 0 && kdo !== "bud") ? dalsiVaha(who, x.id, x.popis) : null;
+   const mp = min && min.s[j]
+     ? (fmt(min.s[j][0])+" kg × "+min.s[j][1])
+     : (dp ? '<span class="dopor '+dp.smer+'">'+(SMER_IC[dp.smer]||"🎯")+" "+fmt(dp.kg)+' kg</span>'
+           : (j === 0 && kdo !== "bud" ? '<span class="dopor">'+esc(doporucKratky(who, x.id))+'</span>' : "—"));
    return '<div class="setrow'+(p.done?" done":"")+'">'
     +'<span class="n">'+(j+1)+'</span>'
     +'<span class="prev">'+mp+'</span>'
@@ -4729,7 +4965,8 @@ function renderSession(){
   '<div class="sess-head">'
   +'<div class="t"><div class="nm">'+esc(r.title)+(duo?' <span class="duobadge">🤜 s '+esc(sKym(s0.bud))+'</span>':'')+'</div>'
   +'<div class="mt">'+t.hot+'/'+t.cel+' sérií'+(t.obj?' · '+fmt(t.obj)+' kg objem':'')
-  +(duo?' · zapisuješ za '+esc(sessJmeno(kdo)):'')+'</div></div>'
+  +(duo?' · zapisuješ za '+esc(sessJmeno(kdo)):'')+'</div>'
+  +'<div class="zb">'+esc(zbyvaText(tTy.hot, tTy.cel, tTy.min, planMinut(who, s0.rid), true))+'</div></div>'
   +'<div class="clock" id="sessClock">'+dvoj(Math.floor(t.min/60))+":"+dvoj(t.min%60)+'</div>'
   +'<button class="mini" data-sess="mini" type="button" title="Minimalizovat">▾ Skrýt</button>'
   +'<button class="ghost" data-sess="zrus" type="button">Zrušit</button></div>'
@@ -4895,6 +5132,7 @@ function exRow(rid, e, i){
   +'<span class="exname"><span class="n">'+esc(x.n)+'</span><br><span class="m">'+esc(x.m)+' · <span class="en">'+esc(x.en||"")+'</span></span></span>'
   +'<span class="exsets"><span class="s">'+esc(e[1])+'</span><br><span class="r">RPE '+e[2]+' · pauza '+e[3]+'</span></span>'
   +'</summary><p class="extip">'+esc(x.t)+sel+'</p>'
+  + dalsiVahaText(state.trWho, chosenId, e[1])
   + logBox(state.trWho, chosenId, e[1], e[3])
   +'</details>';
 }
@@ -5006,19 +5244,38 @@ function sparStatyCard(){
 
 function routineCard(r){
  const serie = r.ex.reduce((a,e)=>{ const m = String(e[1]).match(/^(\d+)\s*×/); return a + (m ? +m[1] : 1); }, 0);
- return '<div class="card"><div class="rhead"><h3>'+esc(r.title)+'</h3>'
-  +'<span class="rmeta">'+r.ex.length+' cviků · '+serie+' sérií · ~'+r.min+' min</span></div>'
+ const je = favR().indexOf(r.id) >= 0;
+ const kolikrat = (state.hist || []).filter(h => h.rid === r.id).length;
+ return '<div class="card'+(je?" oblib":"")+'"><div class="rhead"><h3>'
+  +'<button class="star" data-favr="'+r.id+'" title="Oblíbený trénink" type="button">'+(je?"★":"☆")+'</button> '
+  +esc(r.title)+'</h3>'
+  +'<span class="rmeta">'+r.ex.length+' cviků · '+serie+' sérií · ~'+r.min+' min'
+  +(kolikrat?' · <b>'+kolikrat+'×</b> odtrénováno':'')+'</span></div>'
   +'<p class="who" style="margin-bottom:10px"><span class="tpill">'+TYP_LABEL[r.typ]+'</span> '+esc(r.tip)+'</p>'
   +'<button class="act" data-start="'+r.id+'" type="button" style="width:100%;margin-bottom:10px">▶︎ Spustit trénink</button>'
   + r.ex.map((e,i)=>exRow(r.id,e,i)).join("") + '</div>';
 }
 const TR_TIME = [["all","Vše"],[20,"⏱ do 20 min"],[30,"⏱ do 30 min"],[45,"⏱ do 45 min"],[999,"⏱ mám čas"]];
-const TR_TYP  = [["all","Vše"],["sila","🏋️ Síla"],["kardio","🏃 Kardio"],["doma","🏠 Doma"],["mobilita","🧘 Mobilita"]];
+const TR_TYP  = [["all","Vše"],["fav","⭐ Oblíbené"],["sila","🏋️ Síla"],["kardio","🏃 Kardio"],["doma","🏠 Doma"],["mobilita","🧘 Mobilita"]];
 
+function favR(){ return store.get("favR", []); }
+function favRTgl(id){
+ const a = favR().slice(), i = a.indexOf(id);
+ if (i >= 0) a.splice(i,1); else a.push(id);
+ store.set("favR", a);
+ if (window.sync && sync.on) sync.pushFavR();
+ return i < 0;
+}
 function trList(who){
- return ROUTINES[who].filter(r =>
+ const f = favR();
+ const out = ROUTINES[who].filter(r =>
    (state.trTime === "all" || r.min <= state.trTime) &&
-   (state.trTyp  === "all" || r.typ === state.trTyp));
+   (state.trTyp  === "all" || (state.trTyp === "fav" ? f.indexOf(r.id) >= 0 : r.typ === state.trTyp)));
+ // oblíbené nahoru, jinak pořadí zůstává
+ return out.sort((a,b)=>{
+  const fa = f.indexOf(a.id) < 0 ? 1 : 0, fb = f.indexOf(b.id) < 0 ? 1 : 0;
+  return fa - fb;
+ });
 }
 
 function trReco(who){
@@ -5073,7 +5330,8 @@ function renderTrenink(){
     +' <span>'+ROUTINES[who].filter(r=>x[0]==="all"||r.min<=x[0]).length+'</span></button>').join("")
   + '</div><div class="chips">'
   + TR_TYP.map(x=>'<button class="chip'+(state.trTyp===x[0]?" on":"")+'" data-trtyp="'+x[0]+'">'+x[1]
-    +' <span>'+ROUTINES[who].filter(r=>x[0]==="all"||r.typ===x[0]).length+'</span></button>').join("")
+    +' <span>'+ROUTINES[who].filter(r=> x[0]==="all" ? true
+        : (x[0]==="fav" ? favR().indexOf(r.id) >= 0 : r.typ===x[0])).length+'</span></button>').join("")
   + '</div>';
  const bezi = state.sess && state.sess.who === who
   ? '<div class="card" style="border-color:var(--s3)"><div class="rhead"><h3>▶︎ Trénink běží</h3>'
@@ -5803,6 +6061,10 @@ const sync = {
       if (state.tab === "dnes") renderDnes();
       renderNext();
     });
+    onValue(this._ref("favr"), snap => {
+      const v = snap.val();
+      if (Array.isArray(v)){ store.set("favR", v); if (state.tab === "trenink") renderTrenink(); }
+    });
     onValue(this._ref("favj"), snap => {
       const v = snap.val();
       if (Array.isArray(v)){ store.set("favJ", v); if (state.pick0) renderPick(); }
@@ -5895,6 +6157,7 @@ const sync = {
   pushFeed(m){ if (this.on) this._set("feed/"+m.id.replace(/[.#$/\[\]]/g,"_"), m); },
   pushFavs(){ this._set("favs", store.get("favs", [])); },
   pushFavJ(){ this._set("favj", store.get("favJ", [])); },
+  pushFavR(){ this._set("favr", store.get("favR", [])); },
   spoluSet(obj){ this._set("spolu", obj); },
   spoluSet2(klic, val){ this._set("spolu/" + klic, val); },
   pushWeek(){ this._set("week", state.week); },
@@ -5929,6 +6192,7 @@ const sync = {
     if (state.sess){
       const a = sessSoucty("ty");
       se = { rid: String(state.sess.rid).slice(0,20), hot: a.hot, cel: a.cel, min: a.min,
+             zb: zbyvaMin(a.hot, a.cel, a.min, planMinut(state.sess.who, state.sess.rid)),
              bud: state.sess.bud ? sKym(state.sess.bud) : null, kdo: state.sess.who,
              jm: (BASE_T[state.sess.who] || {}).name || "" };
     }
@@ -6042,7 +6306,9 @@ function peerTrenink(){
  const w = window.sync ? sync.peerW : null;
  if (!w || !w.sess) return null;
  const stari = w.kdy ? Math.round((Date.now() - new Date(w.kdy).getTime())/60000) : 999;
- return { s: w.sess, jm: w.jm || "Druhý", stari: stari, cerstve: stari <= 12 };
+ const me = store.get("meId", null);
+ return { s: w.sess, jm: w.jm || "Druhý", stari: stari, cerstve: stari <= 12,
+          kdo: w.sess.kdo || (me === "p" ? "v" : "p") };
 }
 function peerTreninkRadek(){
  const t = peerTrenink();
@@ -6050,7 +6316,9 @@ function peerTreninkRadek(){
  const pct = Math.round(t.s.hot * 100 / Math.max(1, t.s.cel));
  return '<div class="livetr'+(t.cerstve ? " on" : "")+'">'
   +'<div class="lt-head"><b>'+(t.cerstve ? "🔴 " : "⏸ ")+esc(t.jm)+' '+(t.cerstve ? "právě trénuje" : "trénovala")+'</b>'
-  +'<span class="rmeta">'+esc(t.s.rid)+' · '+t.s.min+' min'+(t.s.bud ? ' · s '+esc(t.s.bud) : '')+'</span></div>'
+  +'<span class="rmeta">'+esc(t.s.rid)+' · '+t.s.min+' min'+(t.s.bud ? ' · s '+esc(t.s.bud) : '')
+  +(t.cerstve ? ' · '+esc(zbyvaText(t.s.hot, t.s.cel, t.s.min, planMinut(t.kdo, t.s.rid), true)) : '')
+  +'</span></div>'
   +'<div class="sbar" style="margin:7px 0 4px"><i style="width:'+pct+'%"></i><span>'
   + t.s.hot+' / '+t.s.cel+' sérií</span></div>'
   +'<div class="dim" style="font-size:12px">'
@@ -6551,12 +6819,17 @@ function renderNastaveniTab(){
   +'<div class="nblok"><div class="nh">💪 Pepulus</div>'
   + dnyPicker("p") + casTreninku("p")
   + nRow("Minimum týdně", nSel("mintr_p", MIN_TR.p, [[2,"2 tréninky"],[3,"3 tréninky"],[4,"4 tréninky"],[5,"5 tréninků"],[6,"6 tréninků"]]))
+  + nRow("Zkušenost", nSel("zkus_p", "zac", ZKUSENOST.map(z=>[z[0],z[1]])), "Podle toho se počítá doporučená váha")
   +'</div>'
   +'<div class="nblok"><div class="nh">✨ Verune</div>'
   + dnyPicker("v") + casTreninku("v")
   + nRow("Minimum týdně", nSel("mintr_v", MIN_TR.v, [[2,"2 tréninky"],[3,"3 tréninky"],[4,"4 tréninky"],[5,"5 tréninků"]]))
+  + nRow("Zkušenost", nSel("zkus_v", "zac", ZKUSENOST.map(z=>[z[0],z[1]])), "Podle toho se počítá doporučená váha")
   +'</div>'
-  +'<div class="hint">Ťukni na den, ať ho přidáš nebo ubereš. Čas se dá přepsat u každého dne zvlášť.</div></div>'
+  +'<div class="hint">Ťukni na den, ať ho přidáš nebo ubereš. Čas se dá přepsat u každého dne zvlášť.</div>'
+  +'<div class="note"><b>Doporučená váha</b> se u cviků, které jsi ještě nikdy nezapsal, spočítá z tvojí '
+  +'poslední váhy, pohlaví a téhle zkušenosti. Je to odhad pro první sérii — jakmile něco zapíšeš, '
+  +'appka přejde na tvoje skutečná čísla a odhad zmizí.</div></div>'
 
   /* --- schvalovani --- */
   +'<div class="card"><h3>⚖️ Schvalování změn</h3>'
@@ -6616,7 +6889,8 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">28</td></tr>'
+  +'<tr><td>Verze</td><td class="num">29</td></tr>'
+  +'<tr><td>Tréninků k výběru</td><td class="num">'+(ROUTINES.p.length+ROUTINES.v.length)+'</td></tr>'
   +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
   +'<tr><td>Receptů na večeře</td><td class="num">'+pc.rec+'</td></tr>'
@@ -7203,6 +7477,12 @@ document.addEventListener("click", e=>{
  if (e.target.id === "planFill"){ doplnPlan(); renderPlan(); renderDnes(); renderNext(); celebrate("📅"); return; }
  if (e.target.id === "planClear"){ vycistitPlan(); state.planDen = null; renderPlan(); renderDnes(); renderNext(); return; }
 
+ const fr = e.target.closest("[data-favr]");
+ if (fr){
+  const nova = favRTgl(fr.dataset.favr);
+  if (nova) celebrate("⭐");
+  renderTrenink(); return;
+ }
  const bp = e.target.closest("[data-budpick]");
  if (bp){
   const n = bp.dataset.budpick;
@@ -7397,7 +7677,7 @@ document.addEventListener("click", e=>{
                 "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist","plan","jidlo","shopHist","shopCasto","nakupDni","navrhy","schval","spizOdecist",
                 "n_prot_p","n_prot_v","n_water_p","n_water_v","n_casy","n_mintr_p","n_mintr_v",
                 "n_rozvrh_p","n_rozvrh_v","n_tren_p","n_tren_v","n_hlasky","n_zpravyAuto","n_konfety","n_stouch",
-                "favJ","parti","tlogB","spar"];
+                "favJ","parti","tlogB","spar","n_zkus_p","n_zkus_v","favR"];
   const dump = {};
   keys.forEach(k=>{ const v = store.get(k, null); if (v !== null) dump[k] = v; });
   const box = document.getElementById("dataBox");
