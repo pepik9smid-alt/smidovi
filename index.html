@@ -493,6 +493,42 @@
   .udal{display:inline-block;font-size:10.5px;font-weight:700;background:var(--accent-soft);
         color:var(--text-secondary);border-radius:99px;padding:1px 6px;vertical-align:1px}
   .udal.moc{background:rgba(235,104,52,.16);color:var(--s2)}
+  .spolu{margin:0 0 12px;padding:11px 12px;border-radius:13px;border:1px solid var(--border);
+        background:var(--surface-1)}
+  .spolu.on{border-color:var(--s1)}
+  .spolu .sp-h{font-size:14px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+  .spolu .ziv{font-size:10.5px;font-weight:700;color:#fff;background:var(--s3);border-radius:99px;padding:1px 7px}
+  .sp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .sp-os{min-width:0}
+  .sp-os b{display:block;font-size:13px;line-height:1.2}
+  .sp-os span{display:block;font-size:11.5px;color:var(--text-secondary);font-variant-numeric:tabular-nums}
+  .sp-os i{display:block;font-style:normal;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;
+        letter-spacing:-.3px;margin-top:1px}
+  .sp-bar{height:4px;border-radius:3px;background:var(--grid);overflow:hidden;margin-top:5px}
+  .sp-bar s{display:block;height:100%;background:var(--s1);text-decoration:none}
+  .sp-bar.v s{background:var(--s2)}
+  .sp-skore{margin-top:9px;font-size:12.5px;line-height:1.4;padding:7px 9px;border-radius:9px;
+        background:var(--page);border:1px solid var(--border)}
+  .sp-skore.vedes{border-color:var(--s3)}
+  .sp-skore.prohravas{border-color:var(--s2)}
+  .sp-tik{margin-top:7px;font-size:12.5px;line-height:1.4;color:var(--text-primary);
+        background:var(--accent-soft);border-radius:9px;padding:7px 9px}
+  .sp-feed{margin-top:8px;border-top:1px solid var(--grid);padding-top:6px}
+  .sp-feed div{font-size:11.5px;color:var(--text-secondary);line-height:1.45;margin-bottom:2px}
+  .sp-feed span{color:var(--muted);margin-right:6px;font-variant-numeric:tabular-nums}
+  .sp-cvik{margin-top:8px;padding-top:7px;border-top:1px dashed var(--grid);font-size:12px;
+        color:var(--text-secondary);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .sp-cvik b{color:var(--s2);font-size:12px}
+  .sp-cvik span{background:var(--accent-soft);border-radius:99px;padding:2px 8px;
+        font-variant-numeric:tabular-nums;color:var(--text-primary);font-weight:600}
+  .sp-cvik.cek{font-style:italic;opacity:.75}
+  .pozvanka{border-color:var(--s1);box-shadow:0 6px 20px rgba(42,120,214,.13)}
+  .zrus-ptl{margin:0 0 12px;padding:11px 12px;border-radius:13px;border:1px solid var(--s2);
+        background:var(--surface-1)}
+  .zrus-ptl .zp-t{font-size:13.5px;line-height:1.45;margin-bottom:9px}
+  .zrus-ptl .zp-t span{font-size:12.5px;color:var(--text-secondary)}
+  button.dang{background:var(--s2);border:1px solid var(--s2);color:#fff;border-radius:10px;
+        font:inherit;font-size:13.5px;font-weight:600;padding:9px 14px;cursor:pointer}
   .logbox{border-top:1px solid var(--grid);margin-top:9px;padding-top:9px}
   .logline{font-size:12.5px;color:var(--text-secondary);margin-bottom:6px}
   .logline b{color:var(--text-primary);font-variant-numeric:tabular-nums}
@@ -2189,6 +2225,8 @@ const state = {
  planDen: null,
  recOpen: false,
  resetPtl: false,
+ zrusPtl: false,
+ spoluTik: null,
  budName: "",
  sessMin: !!(store.get("session", null) || {}).min,
  pick0: null,
@@ -2879,6 +2917,7 @@ function renderDnes(){
   +'<div style="font-size:12.5px;color:var(--text-secondary)">Vaří: '+kdoSel+'</div></div></div>'
   +'<div class="grid2">'+personCard("p",iso)+personCard("v",iso)+'</div>'
   + odznakStrip()
+  + spoluPozvankaKarta()
   + tydenTreninkCard()
   + peerCard()
   +'<div class="note"><b>Přepínačem nahoře se dá skočit na kterýkoli den</b> — od včerejška po týden dopředu. '
@@ -4165,6 +4204,281 @@ function widgetCard(){
   +'aby v něm byla podepsaná jako ona. Uvidí pak na widgetu sebe i tebe.</div></div>';
 }
 
+/* --- reakce na to, co udělal ten druhý (hlášky se generují lokálně) --- */
+let spoluPosl = { hot: -1, in: false };
+function spoluReakce(pred, ted){
+ const me = store.get("meId", null);
+ if (!me || !ted) return;
+ const o = me === "p" ? "v" : "p";
+ const b = ted[o];
+ if (!b) return;
+
+ if (b.in && !spoluPosl.in){
+  spoluPosl.in = true;
+  if (state.sess) celebrate("🤜");
+ }
+ if (!b.in) spoluPosl.in = false;
+
+ // nová série toho druhého
+ if (b.in && typeof b.hot === "number" && spoluPosl.hot >= 0 && b.hot > spoluPosl.hot){
+  const posl = spoluPosledniSerie(b);
+  state.spoluTik = { tx: spoluHlaska("serie", o, { kg: posl ? fmt(posl[0]) : "?", op: posl ? posl[1] : "?" }),
+                     t: Date.now() };
+  if (state.sess) renderSession();
+ }
+ if (typeof b.hot === "number") spoluPosl.hot = b.hot;
+}
+function spoluPosledniSerie(b){
+ if (!b || !b.sety) return null;
+ const klice = Object.keys(b.sety).sort((x,y)=>(+y)-(+x));
+ for (const k of klice){
+  const a = b.sety[k];
+  if (a && a.length) return a[a.length-1];
+ }
+ return null;
+}
+function spoluSetyCviku(b, i){
+ if (!b || !b.sety) return [];
+ return b.sety[i] || b.sety[String(i)] || [];
+}
+
+/* --- panel v běžícím tréninku --- */
+function spoluPanel(){
+ const me = store.get("meId", null);
+ if (!me || !state.sess) return "";
+ const o = me === "p" ? "v" : "p";
+ const d = spoluBezi();
+ const druhy = spoluDruhyJe();
+
+ if (!spoluMozne())
+  return '<div class="spolu"><div class="sp-h">🤜 Společný trénink</div>'
+   +'<div class="dim" style="font-size:12.5px">Nejdřív propojte telefony rodinným kódem — pak se k sobě '
+   +'můžete během tréninku připojit a vidět série jeden druhého živě.</div></div>';
+
+ if (!druhy){
+  const pozvano = d && d.pozvanka && d.pozvanka.od === me;
+  return '<div class="spolu"><div class="sp-h">🤜 Společný trénink</div>'
+   +'<div class="dim" style="font-size:12.5px;margin-bottom:8px">'
+   +(pozvano ? 'Pozvánka odeslaná — ' + esc(BASE_T[o].name) + ' ji uvidí v appce. Zatím makej sám.'
+             : 'Zavolej ' + esc(BASE_T[o].name) + ' k činkám. Uvidíte série jeden druhého živě a na konci se vyhlásí vítěz.')
+   +'</div>'
+   +'<button class="'+(pozvano?"ghost":"act")+' small" data-spolu="pozvi" type="button">'
+   +(pozvano ? '↻ Poslat pozvánku znovu' : '✉️ Pozvat ' + esc(koho(o)))
+   +'</button></div>';
+ }
+
+ const t = sessSoucty("ty");
+ const rozdil = (t.obj || 0) - (druhy.obj || 0);
+ const pctJa = Math.round(t.hot * 100 / Math.max(1, t.cel));
+ const pctOn = Math.round((druhy.hot || 0) * 100 / Math.max(1, druhy.cel || 1));
+ const cerstvy = druhy.kdy ? (Date.now() - new Date(druhy.kdy).getTime()) < 5*60000 : false;
+ const tik = (state.spoluTik && Date.now() - state.spoluTik.t < 90000) ? state.spoluTik.tx : "";
+
+ return '<div class="spolu on">'
+  +'<div class="sp-h">🤜 Trénujete spolu'+(cerstvy?' <span class="ziv">● živě</span>':' <span class="dim" style="font-weight:400">· neozval se chvíli</span>')+'</div>'
+  +'<div class="sp-grid">'
+  +'<div class="sp-os"><b>Ty</b><span>'+t.hot+'/'+t.cel+' sérií</span><i>'+fmt(t.obj)+' kg</i>'
+  +'<div class="sp-bar"><s style="width:'+pctJa+'%"></s></div></div>'
+  +'<div class="sp-os"><b>'+esc(druhy.jm || BASE_T[o].name)+'</b><span>'+(druhy.hot||0)+'/'+(druhy.cel||0)+' sérií</span>'
+  +'<i>'+fmt(druhy.obj||0)+' kg</i>'
+  +'<div class="sp-bar v"><s style="width:'+pctOn+'%"></s></div></div>'
+  +'</div>'
+  +'<div class="sp-skore '+(rozdil>0?"vedes":(rozdil<0?"prohravas":""))+'">'
+  +(rozdil === 0 ? "Nerozhodně. Někdo musí přitlačit. 👀"
+    : (rozdil > 0 ? esc(spoluHlaska("vedes", o)) + " <b>+" + fmt(rozdil) + " kg</b>"
+                  : esc(spoluHlaska("vede", o)) + " <b>−" + fmt(-rozdil) + " kg</b>"))
+  +'</div>'
+  +(tik ? '<div class="sp-tik">💬 '+esc(tik)+'</div>' : '')
+  + spoluFeed()
+  +'</div>';
+}
+function spoluFeed(){
+ const d = spoluBezi();
+ const u = d && Array.isArray(d.udalosti) ? d.udalosti.slice(-3).reverse() : [];
+ if (!u.length) return "";
+ return '<div class="sp-feed">'+u.map(x=>{
+   const m = Math.max(0, Math.round((Date.now() - new Date(x.t).getTime())/60000));
+   return '<div><span>'+(m<1?"teď":"před "+m+" min")+'</span>'+esc(x.tx)+'</div>';
+ }).join("")+'</div>';
+}
+/* pruh se sériemi toho druhého pod každým cvikem */
+function spoluCvik(i){
+ const druhy = spoluDruhyJe();
+ if (!druhy) return "";
+ const sety = spoluSetyCviku(druhy, i);
+ const jm = druhy.jm || "Druhý";
+ if (!sety.length)
+  return '<div class="sp-cvik cek"><b>'+esc(jm)+'</b> tady ještě nic nemá.</div>';
+ return '<div class="sp-cvik"><b>'+esc(jm)+'</b>'
+  + sety.map(x=>'<span>'+fmt(x[0])+'×'+x[1]+'</span>').join("")
+  +'</div>';
+}
+
+/* ================= SPOLEČNÝ TRÉNINK V REÁLNÉM ČASE =================
+   Ve Firebase žije jedna větev "spolu": kdo trénuje, jaké má série,
+   pozvánka a krátký proud událostí. Oba do ní píšou svoje a čtou toho druhého. */
+
+const SPOLU_HLASKY = {
+ serie: [
+  "{jm} dal{a} {kg} × {op}. Tvoje řada, ať to není trapné.",
+  "{jm}: {kg} × {op} hotovo. Zatím to vypadá, že tam nejsi jen na kafe.",
+  "{jm} odbavil{a} {kg} × {op}. Činka nekouše.",
+  "{jm}: {kg} × {op}. Zapsáno, nedá se to vzít zpět.",
+  "{jm} má za sebou {kg} × {op}. Nikdo se nedívá. Kromě appky. Ta se dívá pořád. 👀"
+ ],
+ vede: [
+  "{jm} tě přetáhl{a} v objemu. Tohle si necháš líbit?",
+  "{jm} vede. Zatím. Odveta je jedna série daleko.",
+  "Pozor, {jm} ti utíká. Přidej, nebo se smiř s tabulkou."
+ ],
+ vedes: [
+  "Vedeš. {jm} zatím tvoří atmosféru. 😏",
+  "Máš navrch. Drž si to, kronika je nemilosrdná.",
+  "Vedeš v objemu — a {jm} to vidí na svém telefonu. Krásný pocit, viď."
+ ],
+ pripoj: [
+  "{jm} se přidal{a}! Od téhle chvíle se to počítá oběma. 🤜🤛",
+  "{jm} je ve hře. Teď už není kam couvnout.",
+  "{jm} dorazil{a}. Dvě činky, jedna kronika."
+ ],
+ konec: [
+  "{jm} skončil{a}. Ty ještě ne — tak ať to za to stojí.",
+  "{jm} to zabalil{a}. Poslední slovo máš ty.",
+  "{jm} dotrénoval{a}. Zbytek je na tobě."
+ ],
+ pozvi: [
+  "Hoď sebou, {jm} už se rozcvičuje.",
+  "{jm} tě zve na společný trénink. Výmluvy se přijímají do zahájení.",
+  "{jm} startuje trénink a chce tě u toho."
+ ]
+};
+function spoluHlaska(druh, who, extra){
+ const jm = (BASE_T[who] || {}).name || "Druhý";
+ const pool = SPOLU_HLASKY[druh] || [];
+ const i = Math.floor(Math.random() * pool.length);
+ let t = pool[i] || "";
+ t = t.replace(/\{jm\}/g, jm).replace(/\{a\}/g, rod(who, "", "a"));
+ Object.keys(extra || {}).forEach(k => { t = t.replace(new RegExp("\\{"+k+"\\}", "g"), extra[k]); });
+ return t;
+}
+
+/* 4. pád (koho) — jsou jen dvě jména, tak je nebudeme hádat regulárním výrazem */
+function koho(w){ return w === "v" ? "Verunku" : "Pepula"; }
+function spoluData(){ return (window.sync && sync.spolu) ? sync.spolu : null; }
+function spoluBezi(){
+ const d = spoluData();
+ if (!d || d.stav !== "bezi") return null;
+ const stari = d.kdy ? (Date.now() - new Date(d.kdy).getTime()) / 60000 : 0;
+ return stari > 180 ? null : d;   // po třech hodinách to bereme jako zapomenuté
+}
+function spoluJaJsem(){
+ const d = spoluBezi(), me = store.get("meId", null);
+ return !!(d && me && d[me] && d[me].in);
+}
+function spoluDruhyJe(){
+ const d = spoluBezi(), me = store.get("meId", null);
+ if (!d || !me) return null;
+ const o = me === "p" ? "v" : "p";
+ return (d[o] && d[o].in) ? Object.assign({ kdo: o }, d[o]) : null;
+}
+function spoluMozne(){
+ return !!(window.sync && sync.on && store.get("meId", null) && store.get("famId", null));
+}
+
+/* --- zápis do sdílené větve --- */
+function spoluZaloz(rid){
+ if (!spoluMozne()) return;
+ const me = store.get("meId");
+ const d = spoluBezi();
+ if (d && d.rid === rid) { spoluMojeSety(); return; }   // už běží, jen se přidám
+ sync.spoluSet({
+  id: "s" + Date.now(), rid: rid, od: me, zac: new Date().toISOString(),
+  stav: "bezi", kdy: new Date().toISOString(),
+  p: null, v: null, pozvanka: null, udalosti: []
+ });
+ spoluMojeSety();
+}
+function spoluMojeSety(){
+ if (!spoluMozne() || !state.sess) return;
+ const me = store.get("meId");
+ const t = sessSoucty("ty");
+ const sety = {};
+ state.sess.ex.forEach((x, i) => {
+  const hot = x.sets.filter(q => q.done).map(q => [(+q.kg || 0), (+q.reps || 0)]);
+  if (hot.length) sety[i] = hot;
+ });
+ sync.spoluSet2(me, {
+  in: true, jm: BASE_T[me].name, rid: state.sess.rid,
+  hot: t.hot, cel: t.cel, obj: t.obj, min: t.min,
+  sety: sety, kdy: new Date().toISOString()
+ });
+ sync.spoluSet2("kdy", new Date().toISOString());
+}
+function spoluUdalost(tx){
+ if (!spoluMozne()) return;
+ const d = spoluData() || {};
+ const u = (Array.isArray(d.udalosti) ? d.udalosti : []).concat([
+   { t: new Date().toISOString(), kdo: store.get("meId"), tx: String(tx).slice(0, 130) }
+ ]).slice(-8);
+ sync.spoluSet2("udalosti", u);
+}
+function spoluOdejdi(){
+ if (!spoluMozne()) return;
+ const me = store.get("meId");
+ const d = spoluData();
+ if (!d) return;
+ sync.spoluSet2(me, Object.assign({}, d[me] || {}, { in: false, kdy: new Date().toISOString() }));
+ const o = me === "p" ? "v" : "p";
+ if (!(d[o] && d[o].in)) sync.spoluSet2("stav", "konec");
+}
+
+/* --- pozvánky --- */
+function spoluPozvi(){
+ if (!spoluMozne() || !state.sess) return;
+ const me = store.get("meId"), o = me === "p" ? "v" : "p";
+ spoluZaloz(state.sess.rid);
+ sync.spoluSet2("pozvanka", { od: me, rid: state.sess.rid, cas: new Date().toISOString() });
+ pushMsg("pozv-" + Date.now(), "🤜",
+   BASE_T[me].name + " tě zve na společný trénink",
+   spoluHlaska("pozvi", me) + " Trénink " + state.sess.rid + " — v Tréninku máš tlačítko Přidat se.");
+ spoluUdalost(BASE_T[me].name + " " + rod(me, "pozval", "pozvala") + " " + BASE_T[o].name);
+ syncDot(); renderSession();
+}
+function spoluPozvanka(){
+ const d = spoluBezi();
+ const me = store.get("meId", null);
+ if (!d || !me || !d.pozvanka) return null;
+ if (d.pozvanka.od === me) return null;
+ if (spoluJaJsem()) return null;
+ const stari = (Date.now() - new Date(d.pozvanka.cas).getTime()) / 60000;
+ if (stari > 90) return null;
+ return d.pozvanka;
+}
+function spoluPrijmi(){
+ const d = spoluBezi();
+ if (!d) return;
+ const me = store.get("meId", null);
+ if (!me) return;
+ const rid = (ROUTINES[me].find(x => x.id === d.rid) ? d.rid : ROUTINES[me][0].id);
+ if (state.sess && state.sess.rid !== rid) cancelSession();
+ if (!state.sess) startSession(me, rid, null);
+ state.sess.spolu = true; saveSess();
+ sync.spoluSet2("pozvanka", null);
+ spoluMojeSety();
+ spoluUdalost(spoluHlaska("pripoj", me));
+ pushMsg("spolu-in-" + d.id + "-" + me, "🤜", BASE_T[me].name + " se přidal" + rod(me, "", "a") + " k tréninku",
+   "Od téhle chvíle vidíte série jeden druhého živě. Ať vyhraje ten poctivější. 🏛️");
+ celebrate("🤜"); syncDot();
+ renderSession(); renderTrenink(); renderDnes();
+}
+function spoluOdmitni(){
+ if (!spoluMozne()) return;
+ const me = store.get("meId");
+ sync.spoluSet2("pozvanka", null);
+ spoluUdalost(BASE_T[me].name + " tentokrát pasuje. Prý regenerace. 😴");
+ renderTrenink(); renderDnes();
+}
+
 /* ---- sparing: trénink s parťákem ---- */
 /* 7. pád (s kým) — Radek → s Radkem, Jana → s Janou. Není to dokonalá čeština,
    ale je to nekonečně lepší než „s Radek".                                    */
@@ -4247,6 +4561,7 @@ function startSession(who, rid, bud){
  state.sessMin = false;
  store.set("session", state.sess);
  if (window.sync && sync.on) sync.pushWidget();
+ if (spoluBezi() && spoluDruhyJe()) { state.sess.spolu = true; saveSess(); spoluMojeSety(); }
  renderSession();
 }
 function sessKdo(){ return (state.sess && state.sess.akt === "bud") ? "bud" : "ty"; }
@@ -4260,6 +4575,8 @@ function sessJmeno(kdo){
 }
 function saveSess(){ store.set("session", state.sess); }
 function cancelSession(){
+ if (spoluJaJsem()) spoluOdejdi();
+ state.zrusPtl = false;
  state.sess = null; state.sessMin = false; store.set("session", null);
  if (window.sync && sync.on) sync.pushWidget();
  const o = document.getElementById("sessOverlay");
@@ -4287,6 +4604,7 @@ function sessSoucty(kdo){
 
 /* ---- minimalizovaný trénink: plovoucí lišta ---- */
 let miniTick = null;
+let zrusTik = null;
 function sessMinimalizuj(){
  if (!state.sess) return;
  state.sessMin = true;
@@ -4383,6 +4701,7 @@ function renderSession(){
    + rady
    +'<button class="addset" data-addsess="'+i+'" type="button">+ Přidat sérii</button>'
    + duoMini
+   + spoluCvik(i)
    +'<div class="hint" style="margin-top:6px">'+esc(E.t)+'</div>'
    +'</div>';
  }).join("");
@@ -4414,8 +4733,17 @@ function renderSession(){
   +'<div class="clock" id="sessClock">'+dvoj(Math.floor(t.min/60))+":"+dvoj(t.min%60)+'</div>'
   +'<button class="mini" data-sess="mini" type="button" title="Minimalizovat">▾ Skrýt</button>'
   +'<button class="ghost" data-sess="zrus" type="button">Zrušit</button></div>'
+  + (state.zrusPtl
+     ? '<div class="zrus-ptl"><div class="zp-t"><b>Fakt zrušit trénink?</b><br>'
+       +'<span>'+(sessSoucty("ty").hot
+          ? 'Přijdeš o <b>'+sessSoucty("ty").hot+' zapsaných sérií</b> a nic se neuloží do deníku. Tohle se vrátit nedá.'
+          : 'Zatím tu nic zapsaného není, takže o nic nepřijdeš.')+'</span></div>'
+       +'<div class="wrow" style="margin:0"><button class="act small" data-sess="zrusne" type="button">Ne, pokračuju</button>'
+       +'<button class="dang" data-sess="zrus" type="button">Ano, zrušit</button></div></div>'
+     : '')
   +'<div class="sess-bar"><i style="width:'+Math.round(t.hot/Math.max(1,t.cel)*100)+'%"></i></div>'
   + prepinac
+  + spoluPanel()
   + telo
   +'<div class="sess-foot">'
   +'<button class="ghost" data-sess="pauza" type="button">⏱ Pauza '+esc(sessPauza())+'</button>'
@@ -4488,6 +4816,11 @@ function finishSession(){
  osobaky.forEach((o,i)=> pushMsg("pr-"+who+"-"+new Date().toISOString().slice(0,10)+"-"+i, "🏆",
    "Osobní rekord — "+BASE_T[who].name, o+". Tohle je ten důkaz, že to funguje."));
 
+ if (spoluJaJsem()){
+  spoluUdalost(spoluHlaska("konec", who) + " (" + t.hot + " sérií, " + fmt(t.obj) + " kg)");
+  spoluOdejdi();
+ }
+ state.zrusPtl = false;
  state.sess = null; state.sessMin = false; store.set("session", null);
  renderMini();
  const el = document.getElementById("sessOverlay");
@@ -4776,7 +5109,7 @@ function renderTrenink(){
  const tip = who==="p"
   ? '<div class="note"><b>Dvojitá progrese:</b> stejná váha, přidávej opakování. Horní hranice ve všech sériích → +2,5 kg (horní tělo) / +5 kg (dolní) a znovu. U každého cviku jde vybrat varianta — když je nářadí obsazené nebo něco nesedí. Deload každý 7. týden: poloviční série.</div>'
   : '<div class="note"><b>Neboj se činek:</b> silový trénink u ženy = pevné tvary, ne „chlapské svaly" — na ty nejsou hormony, nestane se to omylem. U každého cviku jde vybrat varianta. Váhy zapisuj do Hevy: síla nahoru = postava se mění, i když váha stojí.</div>';
- document.getElementById("tab-trenink").innerHTML = tgl + bezi + peerTreninkBox() + head + trReco(who) + sparingCard(who) + hledejEx + nalez + filtry + list + histCard(who) + rekordy(who) + tip
+ document.getElementById("tab-trenink").innerHTML = tgl + spoluPozvankaKarta() + bezi + peerTreninkBox() + head + trReco(who) + sparingCard(who) + hledejEx + nalez + filtry + list + histCard(who) + rekordy(who) + tip
   + '<div class="note"><b>Deník máš přímo tady.</b> Rozklikni cvik, zapiš kg a opakování — appka si pamatuje, '
   + 'co jsi zvedal(a) minule, a sama řekne, kdy přidat. Tlačítko s časem spustí odpočinek mezi sériemi.</div>';
 }
@@ -5406,6 +5739,7 @@ const FB = window.PEVE_FIREBASE || null;   // config se doplní v firebase-confi
 const sync = {
   on: false, db: null, uid: null, fam: null, me: null,
   peerW: null,            // živý balíček druhého (trénink, jídlo, voda)
+  spolu: null,            // společný trénink v reálném čase
   status: "off",            // off | connecting | live | error
   peer: null,               // živý přehled druhého
   _mine: {},                // co jsem naposled odeslal (proti smyčkám)
@@ -5460,6 +5794,15 @@ const sync = {
       if (state.notif) renderZpravy();
     });
     // oblíbené
+    onValue(this._ref("spolu"), snap => {
+      const pred = this.spolu;
+      this.spolu = snap.val();
+      spoluReakce(pred, this.spolu);
+      if (state.sess) renderSession();
+      if (state.tab === "trenink") renderTrenink();
+      if (state.tab === "dnes") renderDnes();
+      renderNext();
+    });
     onValue(this._ref("favj"), snap => {
       const v = snap.val();
       if (Array.isArray(v)){ store.set("favJ", v); if (state.pick0) renderPick(); }
@@ -5552,6 +5895,8 @@ const sync = {
   pushFeed(m){ if (this.on) this._set("feed/"+m.id.replace(/[.#$/\[\]]/g,"_"), m); },
   pushFavs(){ this._set("favs", store.get("favs", [])); },
   pushFavJ(){ this._set("favj", store.get("favJ", [])); },
+  spoluSet(obj){ this._set("spolu", obj); },
+  spoluSet2(klic, val){ this._set("spolu/" + klic, val); },
   pushWeek(){ this._set("week", state.week); },
   pushShop(){ this._set("shop", state.shop); },
   pushRec(){ this._set("recepty", store.get("myRecipes", [])); },
@@ -5714,7 +6059,27 @@ function peerTreninkRadek(){
        : (pct >= 40 ? "Půlka za ní. Teď je ta chvíle nasadit si boty."
           : "Právě začala. Můžeš se přidat, nebo se pak dívat na statistiky."))
     : "Naposledy se ozvala před "+t.stari+" min — nejspíš už dotrénovala.")
-  +'</div></div>';
+  +'</div>'
+  +(t.cerstve && !spoluJaJsem()
+    ? '<div class="wrow" style="margin:9px 0 0"><button class="act small" data-spolu="pridej" type="button">'
+      +'🤜 Přidat se k tréninku</button></div>' : '')
+  +'</div>';
+}
+
+function spoluPeerRid(){
+ const w = window.sync ? sync.peerW : null;
+ return w && w.sess ? w.sess.rid : null;
+}
+function spoluPozvankaKarta(){
+ const pz = spoluPozvanka();
+ if (!pz) return "";
+ const jm = (BASE_T[pz.od] || {}).name || "Druhý";
+ return '<div class="card pozvanka"><div class="rhead"><h3>🤜 Pozvánka na společný trénink</h3>'
+  +'<span class="rmeta">'+esc(pz.rid)+'</span></div>'
+  +'<p class="who"><b>'+esc(jm)+'</b> tě zve k činkám. Když se přidáš, uvidíte série jeden druhého '
+  +'živě a na konci se sečte, kdo měl větší objem. Výmluvy jdou napsat až potom.</p>'
+  +'<div class="wrow" style="margin:0"><button class="act" data-spolu="prijmi" type="button">💪 Jdu do toho</button>'
+  +'<button class="ghost" data-spolu="odmitni" type="button">Teď ne</button></div></div>';
 }
 
 function peerTreninkBox(){
@@ -6251,7 +6616,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">27</td></tr>'
+  +'<tr><td>Verze</td><td class="num">28</td></tr>'
   +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
   +'<tr><td>Receptů na večeře</td><td class="num">'+pc.rec+'</td></tr>'
@@ -6877,7 +7242,9 @@ document.addEventListener("click", e=>{
    if (!reps){ rEl.focus(); return; }
    set.kg = parseFloat(String(kgEl.value).replace(",", ".")) || 0;
    set.reps = reps; set.done = true;
-   saveSess(); if (window.sync && sync.on) sync.pushWidget();
+   saveSess();
+   if (window.sync && sync.on) sync.pushWidget();
+   if (spoluJaJsem()) spoluMojeSety();
    renderSession();
    startTimer(parseMin(state.sess.ex[i].pauza), state.sess.ex[i].pauza);
   } else {
@@ -6892,13 +7259,39 @@ document.addEventListener("click", e=>{
   sety.push({ kg: posl.kg, reps: "", done: false });
   saveSess(); renderSession(); return;
  }
+ const sp = e.target.closest("[data-spolu]");
+ if (sp){
+  const a = sp.dataset.spolu;
+  if (a === "pozvi") spoluPozvi();
+  else if (a === "prijmi") spoluPrijmi();
+  else if (a === "odmitni") spoluOdmitni();
+  else if (a === "pridej"){
+   const d = spoluBezi() || {};
+   if (!d.stav){ // druhý trénuje sólo — založíme společný podle jeho tréninku
+    const w = spoluPeerRid();
+    if (w) { const me = store.get("meId","p");
+      if (!state.sess) startSession(me, (ROUTINES[me].find(x=>x.id===w) ? w : ROUTINES[me][0].id), null);
+      state.sess.spolu = true; saveSess(); spoluZaloz(state.sess.rid);
+      spoluUdalost(spoluHlaska("pripoj", me)); celebrate("🤜"); renderSession(); }
+   } else spoluPrijmi();
+  }
+  return;
+ }
  const sa = e.target.closest("[data-sakt]");
  if (sa && state.sess){ state.sess.akt = sa.dataset.sakt; saveSess(); renderSession(); return; }
  const sx = e.target.closest("[data-sess]");
  if (sx){
   const a = sx.dataset.sess;
   if (a === "konec") finishSession();
-  else if (a === "zrus") cancelSession();
+  else if (a === "zrus"){
+   if (state.zrusPtl){ state.zrusPtl = false; cancelSession(); }
+   else {
+    state.zrusPtl = true; renderSession();
+    if (zrusTik) clearTimeout(zrusTik);
+    zrusTik = setTimeout(()=>{ state.zrusPtl = false; if (state.sess) renderSession(); }, 8000);
+   }
+  }
+  else if (a === "zrusne"){ state.zrusPtl = false; if (zrusTik) clearTimeout(zrusTik); renderSession(); }
   else if (a === "mini") sessMinimalizuj();
   else if (a === "pokrac") sessObnov();
   else if (a === "pauza"){ const p0 = sessPauza(); startTimer(parseMin(p0), p0); }
