@@ -493,6 +493,23 @@
   .udal{display:inline-block;font-size:10.5px;font-weight:700;background:var(--accent-soft);
         color:var(--text-secondary);border-radius:99px;padding:1px 6px;vertical-align:1px}
   .udal.moc{background:rgba(235,104,52,.16);color:var(--s2)}
+  .dlazdice{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .dl{background:var(--surface-1);border:1px solid var(--border);border-radius:11px;padding:9px 8px;
+        text-align:center;min-width:0}
+  .dl .i{display:block;font-size:15px;line-height:1.1}
+  .dl b{display:block;font-size:16px;font-weight:700;letter-spacing:-.4px;margin:2px 0 1px;
+        font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dl .p{display:block;font-size:10.5px;color:var(--text-secondary);line-height:1.2}
+  .partie{margin-top:4px}
+  .pt{display:flex;align-items:center;gap:9px;margin-bottom:6px;font-size:12.5px}
+  .pt .n{flex:0 0 62px;color:var(--text-secondary)}
+  .pt .b{flex:1;height:9px;border-radius:5px;background:var(--grid);overflow:hidden}
+  .pt .b i{display:block;height:100%;border-radius:5px}
+  .pt .v{flex:0 0 44px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+  .card.profil.ja{border-color:var(--s1)}
+  .pinp{width:130px;padding:8px 10px;font-size:15px;border-radius:9px;border:1px solid var(--border);
+        background:var(--surface-1);color:var(--text-primary);font-family:inherit}
+  .nnum .pinp{width:78px;border:0;background:transparent;padding:6px 2px;text-align:right;font-weight:700;font-size:14.5px}
   .card.oblib{border-color:#f0a500}
   .rhead h3 .star{background:none;border:0;font-size:17px;line-height:1;cursor:pointer;
         color:var(--muted);padding:0 2px 0 0;vertical-align:-1px}
@@ -2270,17 +2287,119 @@ const STAPLES = {
 };
 
 /* ============ targets (dynamic) ============ */
+/* ================= PROFILY =================
+   Appka drží dva sloty: "p" (ten, kdo appku založil) a "v" (parťák).
+   Kdo v nich sedí, určuje profil — jméno, pohlaví, míry a cíl.
+   Z profilu se počítá úplně všechno ostatní.                        */
+
+const CILE = [
+ ["nabrat",  "Nabrat svaly",  "+12 % kalorií", 1.12, 2.1],
+ ["drzet",   "Zpevnit / držet váhu", "výdej = příjem", 1.00, 1.95],
+ ["zhubnout","Zhubnout tuk",  "−18 % kalorií", 0.82, 2.2]
+];
+const AKTIVITY = [
+ [1.30, "Sedavá práce, cvičím 2× týdně"],
+ [1.42, "Sedavá práce, cvičím 3–4× týdně"],
+ [1.55, "Na nohou nebo cvičím 5× týdně"],
+ [1.70, "Fyzická práce a k tomu tréninky"]
+];
+const SADY = [
+ ["silova",    "💪 Silová (tlaky, tahy, dřepy)", "Klasické dělené tréninky — hrudník, záda, nohy, ramena. Cíl je zvedat víc."],
+ ["tvarovani", "✨ Tvarování (nohy a zadek)",    "Celotělové tréninky, kde tři čtvrtiny objemu jdou na nohy a hýždě."]
+];
+
+const PROFIL_DEF = {
+ p: { jm:"Pepulus", pohl:"m", vek:34, vyska:190, vaha:94.5, cil:"nabrat", akt:1.42, sada:"silova", rucne:{kcal:3150, prot:200} },
+ v: { jm:"Verune",  pohl:"z", vek:28, vyska:165, vaha:64,   cil:"drzet",  akt:1.42, sada:"tvarovani", rucne:{kcal:1900, prot:125} }
+};
+function profil(who){
+ const ulo = store.get("profil_" + who, null);
+ const zaklad = PROFIL_DEF[who] || PROFIL_DEF.p;
+ return Object.assign({}, zaklad, ulo || {});
+}
+function profilSet(who, data){
+ const stara = profil(who).vaha;
+ const p0 = Object.assign({}, profil(who), data || {});
+ store.set("profil_" + who, p0);
+ if (data && data.vaha && data.vaha !== stara) vahaZapis(who, data.vaha);
+ if (window.sync && sync.on) sync.pushProfil(who);
+ return p0;
+}
+function profilHotovy(who){ return !!store.get("profil_" + who, null); }
+
+/* váhu z profilu rovnou zapíšeme i do vážení, ať appka nepočítá ze dvou různých čísel */
+function vahaZapis(who, kg){
+ try {
+  const iso = new Date().toISOString().slice(0,10);
+  const arr = (wtArr(who) || []).filter(x => x.d !== iso).concat([{ d: iso, kg: kg }]);
+  arr.sort((a,b)=>a.d.localeCompare(b.d));
+  if (who === "p"){ state.wtP = arr; store.set("wtP", arr); }
+  else { state.wtV = arr; store.set("wtV", arr); }
+ } catch(e){}
+}
+
+/* aktuální tělesná váha: poslední vážení, jinak z profilu */
+function vahaTed(who){
+ try {
+  const arr = wtArr(who);
+  if (arr && arr.length){
+   const p0 = arr.slice().sort((a,b)=>a.d.localeCompare(b.d)).pop();
+   if (p0 && p0.kg) return p0.kg;
+  }
+ } catch(e){}
+ return profil(who).vaha || 75;
+}
+
+/* Mifflin–St Jeor → denní výdej → cíl */
+function bmr(pr, kg){
+ return Math.round(10*kg + 6.25*(pr.vyska||175) - 5*(pr.vek||30) + (pr.pohl === "z" ? -161 : 5));
+}
+function vypocty(who){
+ const pr = profil(who);
+ const kg = vahaTed(who);
+ const c = CILE.find(x => x[0] === pr.cil) || CILE[1];
+ const vydej = Math.round(bmr(pr, kg) * (pr.akt || 1.42));
+ let kcal = Math.round(vydej * c[3] / 10) * 10;
+ const podlaha = pr.pohl === "z" ? 1500 : 1800;
+ if (kcal < podlaha) kcal = podlaha;
+ const prot = Math.round(kg * c[4] / 5) * 5;
+ const tuky = Math.round(kcal * 0.25 / 9 / 5) * 5;
+ const sach = Math.max(0, Math.round((kcal - prot*4 - tuky*9) / 4 / 5) * 5);
+ const voda = Math.max(1500, Math.round(kg * 34 / 250) * 250);
+ return { bmr: bmr(pr, kg), vydej, kcal, prot, tuky, sach, voda,
+          minKcal: Math.round(kcal * 0.87 / 10) * 10, kg, cil: c };
+}
+/* uživatel si může čísla přepsat ručně — to má vždycky přednost */
+function cilKcal(who){
+ const r = store.get("kcal_" + who, null);
+ if (r) return r;
+ const pr = profil(who);
+ if (!profilHotovy(who) && pr.rucne) return pr.rucne.kcal;
+ return vypocty(who).kcal;
+}
+function cilProt(who){
+ const r = nast("prot_" + who, null);
+ if (r) return r;
+ const pr = profil(who);
+ if (!profilHotovy(who) && pr.rucne) return pr.rucne.prot;
+ return vypocty(who).prot;
+}
+function jmeno(who){ return profil(who).jm || (who === "v" ? "Parťák" : "Já"); }
+function zena(who){ return profil(who).pohl === "z"; }
+function sadaTreninku(who){ return profil(who).sada === "tvarovani" ? "v" : "p"; }
+function rutiny(who){ return ROUTINES[sadaTreninku(who)] || ROUTINES.p; }
+
+/* BASE_T zůstává jako fasáda — čte se z profilu, takže zbytek appky
+   nemusel měnit ani řádek. */
 const BASE_T = {
- p:{ name:"Pepulus", kcal:3150, prot:200 },
- v:{ name:"Verune", kcal:1900, prot:125 }
+ get p(){ return { name: jmeno("p"), kcal: cilKcal("p"), prot: cilProt("p") }; },
+ get v(){ return { name: jmeno("v"), kcal: cilKcal("v"), prot: cilProt("v") }; }
 };
 /* nast(klic, vychozi) — jedno misto pro vsechna uzivatelska nastaveni */
 function nast(k, def){ const v = store.get("n_"+k, null); return (v === null || v === undefined) ? def : v; }
 function nastSet(k, v){ store.set("n_"+k, v); }
 function target(who){
- return { name:BASE_T[who].name,
-          prot: nast("prot_"+who, BASE_T[who].prot),
-          kcal: store.get("kcal_"+who, BASE_T[who].kcal) };
+ return { name: jmeno(who), prot: cilProt(who), kcal: cilKcal(who) };
 }
 
 /* ============ state ============ */
@@ -2306,7 +2425,7 @@ const state = {
  water: store.get("water", {}),
  trTyp: "all",
  recFilter: "all",
- wtP: store.get("wtP", [{d:"2026-08-08",kg:94.5}]),
+ wtP: store.get("wtP", store.get("profil_p", null) ? [] : [{d:"2026-08-08",kg:94.5}]),
  wtV: store.get("wtV", []),
  mrP: store.get("mrP", []),
  mrV: store.get("mrV", []),
@@ -2339,12 +2458,14 @@ const state = {
  budName: "",
  sessMin: !!(store.get("session", null) || {}).min,
  pick0: null,
+ prTik: null,
  spar: store.get("spar", []),
  fotoP: store.get("fotoP", []),
  fotoV: store.get("fotoV", [])
 };
 
-const WATER_T = { p: 3000, v: 2200 };
+const WATER_T = new Proxy({}, { get: (t, w) => (w === "p" || w === "v")
+  ? (profilHotovy(w) ? vypocty(w).voda : (w === "p" ? 3000 : 2200)) : undefined });
 const GLASS = 250;
 function waterCil(who){ return nast("water_"+who, WATER_T[who]); }
 function waterGet(who, iso){ return state.water[iso+"|"+who] || 0; }
@@ -2385,7 +2506,13 @@ const fmt = n => n.toLocaleString("cs-CZ");
 const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 /* ============ Jídelní plán podle dnů ============ */
-const KDO = { p:["💪","Pepulus","kv-p"], v:["✨","Verune","kv-v"], s:["👫","Spolu","kv-s"], o:["🌯","Venku / koupené","kv-o"] };
+function kdoMapa(){
+ return { p:["💪", jmeno("p"), "kv-p"], v:["✨", jmeno("v"), "kv-v"],
+          s:["👫","Spolu","kv-s"], o:["🌯","Venku / koupené","kv-o"] };
+}
+const KDO = new Proxy({}, { get: (t, k) => kdoMapa()[k], has: (t,k) => k in kdoMapa(),
+                            ownKeys: () => Object.keys(kdoMapa()),
+                            getOwnPropertyDescriptor: () => ({ enumerable:true, configurable:true }) });
 function isoDnes(){ const d = new Date(); return d.getFullYear()+"-"+dvoj(d.getMonth()+1)+"-"+dvoj(d.getDate()); }
 function isoPlus(n){ const d = new Date(); d.setDate(d.getDate()+n); return d.getFullYear()+"-"+dvoj(d.getMonth()+1)+"-"+dvoj(d.getDate()); }
 function wdOf(iso){ const d = new Date(iso+"T12:00:00"); return (d.getDay()+6)%7; }
@@ -2520,7 +2647,7 @@ function hlaskaCard(){
 }
 
 /* ---- schvalování změn ---- */
-function rod(w, muz, zena){ return w === "v" ? zena : muz; }
+function rod(w, muz, zenskyTvar){ return zena(w) ? zenskyTvar : muz; }
 function schvalovaniZap(){
  return store.get("schval", true) && window.sync && sync.on && !!store.get("meId", null);
 }
@@ -4046,7 +4173,7 @@ function vycistitPlan(){
  if (window.sync && sync.on) sync.pushPlan();
 }
 function selRutin(who, iso, vybrano){
- const opts = ROUTINES[who].map(r =>
+ const opts = rutiny(who).map(r =>
    '<option value="'+r.id+'"'+(r.id===vybrano?" selected":"")+'>'+esc(r.id+" — "+r.title.split(" — ").slice(1).join(" — ")||r.title)+'</option>').join("");
  return '<select data-planset="'+who+'|'+iso+'">'
   +'<option value=""'+(!vybrano?" selected":"")+'>— volno —</option>'+opts+'</select>';
@@ -4276,6 +4403,51 @@ function widgetSkript(){
   .replace("__DB__", (FB && FB.databaseURL) || "")
   .replace("__WEB__", location.origin + location.pathname);
 }
+/* ---- karta profilu v Nastavení ---- */
+function profilCard(who){
+ const pr = profil(who);
+ const v = vypocty(who);
+ const rucneK = store.get("kcal_" + who, null);
+ const rucneP = nast("prot_" + who, null);
+ const jeJa = store.get("meId", null) === who;
+ return '<div class="card profil'+(jeJa?" ja":"")+'"><div class="rhead"><h3>'
+  +(who === "p" ? "💪 " : "✨ ")+esc(pr.jm)+(jeJa?' <span class="tpill">to jsi ty</span>':'')+'</h3>'
+  +'<span class="rmeta">'+(zena(who)?"žena":"muž")+' · '+pr.vek+' let · '+pr.vyska+' cm</span></div>'
+  + nRow("Jméno", '<input type="text" class="pinp" data-pr="'+who+'|jm" value="'+esc(pr.jm)+'" maxlength="16">')
+  + nRow("Pohlaví", '<div class="dnyp">'
+     + [["m","Muž"],["z","Žena"]].map(x=>'<button class="'+(pr.pohl===x[0]?"on":"")+'" data-prs="'+who+'|pohl|'+x[0]+'" type="button">'+x[1]+'</button>').join("")
+     +'</div>', "Ovlivní výpočet i doporučené váhy")
+  + nRow("Věk", '<span class="nnum"><input type="number" class="pinp" data-pr="'+who+'|vek" value="'+pr.vek+'" min="14" max="90" inputmode="numeric"><i>let</i></span>')
+  + nRow("Výška", '<span class="nnum"><input type="number" class="pinp" data-pr="'+who+'|vyska" value="'+pr.vyska+'" min="130" max="220" inputmode="numeric"><i>cm</i></span>')
+  + nRow("Váha", '<span class="nnum"><input type="number" class="pinp" data-pr="'+who+'|vaha" value="'+pr.vaha+'" min="35" max="250" step="0.1" inputmode="decimal"><i>kg</i></span>',
+      "Startovní. Dál se bere poslední vážení v Průběhu.")
+  + nRow("Cíl", '<select data-prsel="'+who+'|cil">'
+     + CILE.map(c=>'<option value="'+c[0]+'"'+(pr.cil===c[0]?" selected":"")+'>'+esc(c[1])+' ('+esc(c[2])+')</option>').join("")
+     +'</select>')
+  + nRow("Kolik se hýbeš", '<select data-prsel="'+who+'|akt">'
+     + AKTIVITY.map(a=>'<option value="'+a[0]+'"'+(String(pr.akt)===String(a[0])?" selected":"")+'>'+esc(a[1])+'</option>').join("")
+     +'</select>')
+  + nRow("Sada tréninků", '<select data-prsel="'+who+'|sada">'
+     + SADY.map(x=>'<option value="'+x[0]+'"'+(pr.sada===x[0]?" selected":"")+'>'+esc(x[1])+'</option>').join("")
+     +'</select>', esc((SADY.find(x=>x[0]===pr.sada)||SADY[0])[2]))
+  +'<div class="nblok" style="margin-top:12px"><div class="nh">🧮 Co z toho appka spočítala</div>'
+  +'<table><tbody>'
+  +'<tr><td>Klidový výdej</td><td class="num">'+fmt(v.bmr)+' kcal</td></tr>'
+  +'<tr><td>Celkový denní výdej</td><td class="num">'+fmt(v.vydej)+' kcal</td></tr>'
+  +'<tr><td><b>Denní cíl</b></td><td class="num"><b>'+fmt(cilKcal(who))+' kcal</b>'
+    +(rucneK?' <span class="dim">(ručně)</span>':'')+'</td></tr>'
+  +'<tr><td>Bílkoviny</td><td class="num">'+cilProt(who)+' g'+(rucneP?' <span class="dim">(ručně)</span>':'')+'</td></tr>'
+  +'<tr><td>Tuky · sacharidy</td><td class="num">'+v.tuky+' g · ~'+v.sach+' g</td></tr>'
+  +'<tr><td>Nikdy pod</td><td class="num">'+fmt(v.minKcal)+' kcal</td></tr>'
+  +'<tr><td>Pitný režim</td><td class="num">'+(v.voda/1000).toLocaleString("cs-CZ")+' l</td></tr>'
+  +'</tbody></table>'
+  +((rucneK||rucneP) ? '<div class="wrow" style="margin-top:8px">'
+     +'<button class="ghost" data-prreset="'+who+'" type="button">Vrátit se k vypočítaným číslům</button></div>' : '')
+  +'<div class="hint">Počítá se podle Mifflin–St Jeor z tvojí výšky, váhy, věku a pohlaví, '
+  +'vynásobí se pohybem a upraví podle cíle. Když si čísla přepíšeš výš v <b>Cíle a čísla</b>, '
+  +'má tvoje hodnota přednost.</div></div></div>';
+}
+
 function widgetStav(){
  const on = window.sync && sync.on;
  const kdy = window.sync && sync._lastW ? sync._lastW : null;
@@ -4487,25 +4659,18 @@ const ZKUSENOST = [["zac","Začátečník — první měsíce",0.85],
                    ["str","Mírně pokročilý — rok tréninku",1.1],
                    ["pok","Pokročilý — vím, co dělám",1.4]];
 function zkusKoef(who){
- const v = nast("zkus_" + who, "zac");
+ const v = nast("zkus_" + who, profil(who).zkus || "zac");
  const z = ZKUSENOST.find(x => x[0] === v);
  return z ? z[2] : 1;
 }
-function telVaha(who){
- const arr = wtArr(who);
- if (arr && arr.length){
-  const p = arr.slice().sort((a,b)=>a.d.localeCompare(b.d)).pop();
-  if (p && p.kg) return p.kg;
- }
- return who === "v" ? 64 : 94.5;
-}
+function telVaha(who){ return vahaTed(who); }
 function doporucVaha(who, exId){
  if (VAHY_GUMA.indexOf(exId) >= 0) return { guma:true };
  if (VAHY_TELO.indexOf(exId) >= 0) return { telo:true };
  const k = VAHY[exId];
  if (!k) return null;
  const bw = telVaha(who);
- const zaklad = bw * (who === "v" ? k[1] : k[0]) * zkusKoef(who);
+ const zaklad = bw * (zena(who) ? k[1] : k[0]) * zkusKoef(who);
  const krok = k[2] || 2.5;
  const kg = Math.max(krok, Math.round(zaklad / krok) * krok);
  return { kg: kg, ruka: k[3] === "ruka" };
@@ -4872,7 +5037,7 @@ function dalsiVahaText(who, exId, presc){
    Do šesté série se opíráme hlavně o plán tréninku, pak čím dál víc
    o skutečné tempo. Jinak by první série s dlouhou pauzou hodila nesmysl. */
 function planMinut(who, rid){
- const r = (ROUTINES[who] || []).find(x => x.id === rid);
+ const r = (rutiny(who) || []).find(x => x.id === rid);
  return r ? r.min : null;
 }
 function zbyvaMin(hot, cel, min, planMin){
@@ -5047,7 +5212,7 @@ function spoluPrijmi(){
  if (!d) return;
  const me = store.get("meId", null);
  if (!me) return;
- const rid = (ROUTINES[me].find(x => x.id === d.rid) ? d.rid : ROUTINES[me][0].id);
+ const rid = (rutiny(me).find(x => x.id === d.rid) ? d.rid : rutiny(me)[0].id);
  if (state.sess && state.sess.rid !== rid) cancelSession();
  if (!state.sess) startSession(me, rid, null);
  state.sess.spolu = true; saveSess();
@@ -5125,7 +5290,7 @@ function sparUloz(z){
 }
 
 function startSession(who, rid, bud){
- const r = ROUTINES[who].find(x => x.id === rid);
+ const r = rutiny(who).find(x => x.id === rid);
  if (!r) return;
  bud = bud ? partiPridej(bud) : null;
  state.sess = {
@@ -5227,7 +5392,7 @@ function renderMini(){
  const kresli = ()=>{
   if (!state.sess || !state.sessMin){ renderMini(); return; }
   const s0 = state.sess;
-  const r = (ROUTINES[s0.who] || []).find(x => x.id === s0.rid) || { title: s0.rid };
+  const r = (rutiny(s0.who) || []).find(x => x.id === s0.rid) || { title: s0.rid };
   const t = sessSoucty(sessKdo());
   const ty = sessSoucty("ty");
   const pct = Math.round(ty.hot / Math.max(1, ty.cel) * 100);
@@ -5256,7 +5421,7 @@ function renderSession(){
  const s0 = state.sess, who = s0.who;
  const duo = !!s0.bud;
  const kdo = sessKdo();
- const r = ROUTINES[who].find(x => x.id === s0.rid) || { title: s0.rid };
+ const r = rutiny(who).find(x => x.id === s0.rid) || { title: s0.rid };
  const t = sessSoucty(kdo);
  const tTy = sessSoucty("ty"), tBud = duo ? sessSoucty("bud") : null;
  const planM = planMinut(who, s0.rid);
@@ -5539,7 +5704,7 @@ function sparingCard(who){
       + '</div>' : '')
   +'<div class="wrow" style="margin-top:10px">'
   +'<select id="budRid" style="flex:1;min-width:160px;width:auto">'
-  + ROUTINES[who].map(r=>'<option value="'+r.id+'">'+esc(r.title)+' · ~'+r.min+' min</option>').join("")
+  + rutiny(who).map(r=>'<option value="'+r.id+'">'+esc(r.title)+' · ~'+r.min+' min</option>').join("")
   +'</select>'
   +'<button class="act small" id="budStart" type="button">▶︎ Spustit ve dvou</button></div>'
   + shrn
@@ -5616,6 +5781,171 @@ function sparStatyCard(){
   +'<div class="hint">Kámošovy série se ukládají mimo tvůj deník — tvoje rekordy zůstávají tvoje.</div></div>';
 }
 
+/* ================= MOJE ČÍSLA (spodek Tréninku) ================= */
+const PARTIE = [
+ ["Nohy",    /kvadric|hamstring|lýtk|hýžd|stehn|nohy/i, "#2a78d6"],
+ ["Záda",    /zád|široký|trapéz/i,                      "#1baf7a"],
+ ["Prsa",    /prsa/i,                                   "#eb6834"],
+ ["Ramena",  /ramen/i,                                  "#8b5cf6"],
+ ["Paže",    /biceps|triceps|předlokt/i,                "#f0a500"],
+ ["Střed",   /břich|střed|páteř|bedra/i,                "#0ea5b7"],
+ ["Ostatní", /./,                                       "#8b8f98"]
+];
+function partieCviku(exId){
+ const m = (EX[exId] || {}).m || "";
+ const p0 = PARTIE.find(x => x[1].test(m));
+ return p0 ? p0[0] : "Ostatní";
+}
+function odhad1RM(kg, reps){
+ if (!kg || !reps) return 0;
+ if (reps === 1) return kg;
+ return Math.round(kg * (1 + reps / 30) * 2) / 2;   // Epley
+}
+function cislaObdobi(){ return nast("statObd", 90); }
+
+function treninkStat(who){
+ const hist = (state.hist || []).filter(x => x.who === who);
+ const all = logAll();
+ const dnu = cislaObdobi();
+ const hranice = dnu === 0 ? "0000-00-00" : isoPlus(-dnu);
+ const h = hist.filter(x => x.d >= hranice);
+
+ const partie = {};
+ let serie = 0, objem = 0;
+ Object.keys(all).filter(k => k.indexOf(who + "|") === 0).forEach(k => {
+  const ex = k.split("|")[1];
+  const pt = partieCviku(ex);
+  all[k].forEach(se => {
+   if (se.d < hranice) return;
+   se.s.forEach(x => {
+    serie++;
+    partie[pt] = (partie[pt] || 0) + 1;
+    if (x[0]) objem += x[0] * x[1];
+   });
+  });
+ });
+ const minuty = h.reduce((a,x)=>a+(x.min||0), 0);
+ const dny = new Set(h.map(x=>x.d)).size;
+ const denVTydnu = {};
+ h.forEach(x => { const d = new Date(x.d+"T12:00:00").getDay(); denVTydnu[d] = (denVTydnu[d]||0)+1; });
+ let nejDen = null, nejP = 0;
+ Object.keys(denVTydnu).forEach(d => { if (denVTydnu[d] > nejP){ nejP = denVTydnu[d]; nejDen = +d; } });
+ const DAYFULL2 = ["neděle","pondělí","úterý","středa","čtvrtek","pátek","sobota"];
+ return { treninku: h.length, dny, serie, objem: Math.round(objem), minuty,
+          prumer: h.length ? Math.round(minuty / h.length) : 0,
+          partie, nejDen: nejDen === null ? null : DAYFULL2[nejDen], hist: h };
+}
+
+function dlazdice(ic, cis, popis){
+ return '<div class="dl"><span class="i">'+ic+'</span><b>'+cis+'</b><span class="p">'+esc(popis)+'</span></div>';
+}
+function partieBar(partie){
+ const cel = Object.keys(partie).reduce((a,k)=>a+partie[k], 0);
+ if (!cel) return '<div class="dim" style="font-size:12.5px">Zatím není z čeho počítat — zapiš pár sérií.</div>';
+ const radky = PARTIE.map(x=>x[0]).filter(n => partie[n]).map(n => {
+  const pct = Math.round(partie[n]*100/cel);
+  const barva = (PARTIE.find(x=>x[0]===n)||[])[2] || "#8b8f98";
+  return '<div class="pt"><span class="n">'+esc(n)+'</span>'
+   +'<span class="b"><i style="width:'+pct+'%;background:'+barva+'"></i></span>'
+   +'<span class="v">'+pct+' %</span></div>';
+ }).join("");
+ return '<div class="partie">'+radky+'</div>';
+}
+function topCviky(who){
+ const all = logAll();
+ const dnu = cislaObdobi();
+ const hranice = dnu === 0 ? "0000-00-00" : isoPlus(-dnu);
+ const out = [];
+ Object.keys(all).filter(k => k.indexOf(who + "|") === 0).forEach(k => {
+  const ex = k.split("|")[1];
+  let obj = 0, ser = 0;
+  all[k].forEach(se => { if (se.d < hranice) return;
+    se.s.forEach(x => { ser++; if (x[0]) obj += x[0]*x[1]; }); });
+  if (ser) out.push({ ex, obj: Math.round(obj), ser });
+ });
+ return out.filter(x => x.obj > 0).sort((a,b)=>b.obj-a.obj).slice(0,5);
+}
+function rekordySeznam(who){
+ const all = logAll();
+ const rows = Object.keys(all).filter(k => k.indexOf(who+"|") === 0).map(k => {
+  const ex = k.split("|")[1];
+  if (rezim(ex, "") !== "kg") return null;
+  let best = null, bestD = null, best1 = 0, best1D = null, objem = 0, ser = 0;
+  all[k].forEach(x => x.s.forEach(p0 => {
+   ser++; objem += (p0[0]||0)*(p0[1]||0);
+   if (!best || p0[0] > best[0]) { best = p0; bestD = x.d; }
+   const o = odhad1RM(p0[0], p0[1]);
+   if (o > best1){ best1 = o; best1D = x.d; }
+  }));
+  if (!best || !best[0]) return null;
+  return { ex, best, d: bestD, orm: best1, ormD: best1D, objem: Math.round(objem), ser };
+ }).filter(Boolean);
+ const sort = nast("rekSort", "kg");
+ rows.sort((a,b)=> sort === "1rm" ? b.orm - a.orm
+                 : (sort === "abc" ? String((EX[a.ex]||{}).n).localeCompare(String((EX[b.ex]||{}).n))
+                 : b.best[0] - a.best[0]));
+ return rows;
+}
+
+function cislaCard(who){
+ const st = treninkStat(who);
+ const rows = rekordySeznam(who);
+ const pocet = nast("rekPocet", 10);
+ const ukaz1 = nast("ukaz1rm", true);
+ const obd = cislaObdobi();
+ const obdLab = obd === 0 ? "za celou dobu" : "za posledních " + obd + " dní";
+ const top = topCviky(who);
+
+
+ return '<h2>Moje čísla</h2>'
+  +'<div class="card"><div class="rhead"><h3>📊 Souhrn</h3>'
+  +'<span class="rmeta">'+esc(obdLab)+'</span></div>'
+  +'<div class="chips" style="margin-bottom:10px">'
+  + [[30,"30 dní"],[90,"90 dní"],[365,"rok"],[0,"vše"]].map(x=>
+      '<button class="chip'+(obd===x[0]?" on":"")+'" data-statobd="'+x[0]+'" type="button">'+x[1]+'</button>').join("")
+  +'</div>'
+  +'<div class="dlazdice">'
+  + dlazdice("🏋️", st.treninku, st.treninku === 1 ? "trénink" : (st.treninku < 5 ? "tréninky" : "tréninků"))
+  + dlazdice("🔢", fmt(st.serie), "sérií")
+  + dlazdice("⚖️", fmt(st.objem), "kg objemu")
+  + dlazdice("⏱", Math.round(st.minuty/60) + " h", "v posilovně")
+  + dlazdice("📏", st.prumer + "′", "průměrný trénink")
+  + dlazdice("📅", st.nejDen || "—", "nejčastější den")
+  +'</div></div>'
+
+  +'<div class="card"><h3>🎯 Na čem makáš</h3>'
+  +'<p class="who">Rozložení sérií podle partií. Když je něco pod 10 %, buď to zanedbáváš, nebo to prostě nepotřebuješ tolik.</p>'
+  + partieBar(st.partie)
+  + (top.length ? '<h4 style="margin:14px 0 4px;font-size:13.5px">Top 5 cviků podle objemu</h4>'
+     +'<table><tbody>'+ top.map((t,i)=>'<tr><td>'+(i+1)+'. '+esc((EX[t.ex]||{n:t.ex}).n)+'</td>'
+        +'<td class="num">'+fmt(t.obj)+' kg</td><td class="num dim">'+t.ser+' '+(t.ser===1?'série':(t.ser<5?'série':'sérií'))+'</td></tr>').join("")
+     +'</tbody></table>' : '')
+  +'</div>'
+
+  + histCard(who)
+
+  +'<div class="card"><div class="rhead"><h3>🏆 Osobní rekordy</h3>'
+  +'<span class="rmeta">'+rows.length+' cviků</span></div>'
+  +'<p class="who">Nejtěžší zapsaná série a odhad maximálky na jedno opakování. '
+  +'Cviky na vlastní váhu, výdrže a kardio se sem nepočítají — tam se rekord neměří v kilech.</p>'
+  + (rows.length
+     ? '<table><thead><tr><th>Cvik</th><th class="num">Rekord</th>'
+       + (ukaz1 ? '<th class="num">1RM</th>' : '') + '<th class="num">Kdy</th></tr></thead><tbody>'
+       + rows.slice(0, pocet === 0 ? rows.length : pocet).map(r=>
+          '<tr><td>'+esc((EX[r.ex]||{n:r.ex}).n)+'</td>'
+          +'<td class="num">'+fmt(r.best[0])+' kg × '+r.best[1]+'</td>'
+          + (ukaz1 ? '<td class="num" style="color:var(--s3);font-weight:700">'+fmt(r.orm)+'</td>' : '')
+          +'<td class="num dim">'+czDate(r.d)+'</td></tr>').join("")
+       +'</tbody></table>'
+     : '<div class="dim" style="font-size:12.5px">Zatím žádný rekord — zapiš pár sérií s činkou a objeví se tady.</div>')
+  +'<div class="nblok" style="margin-top:12px"><div class="nh">⚙️ Jak to zobrazit</div>'
+  + nRow("Řadit podle", nSel("rekSort", "kg", [["kg","Nejtěžší série"],["1rm","Odhad maximálky"],["abc","Abecedy"]]))
+  + nRow("Kolik ukázat", nSel("rekPocet", 10, [[5,"5"],[10,"10"],[20,"20"],[0,"všechny"]]))
+  + nRow("Odhad maximálky", nTgl("ukaz1rm", true, "Ukazovat", "Skrýt"), "Epleyho vzorec: kg × (1 + opakování ÷ 30)")
+  +'<div class="hint">Odhad maximálky je počítaný, ne změřený — u vyšších opakování nadhodnocuje. '
+  +'Ber ho jako ukazatel trendu, ne jako číslo, se kterým máš jít na tyč.</div></div></div>';
+}
+
 function routineCard(r){
  const serie = r.ex.reduce((a,e)=>{ const m = String(e[1]).match(/^(\d+)\s*×/); return a + (m ? +m[1] : 1); }, 0);
  const je = favR().indexOf(r.id) >= 0;
@@ -5643,7 +5973,7 @@ function favRTgl(id){
 }
 function trList(who){
  const f = favR();
- const out = ROUTINES[who].filter(r =>
+ const out = rutiny(who).filter(r =>
    (state.trTime === "all" || r.min <= state.trTime) &&
    (state.trTyp  === "all" || (state.trTyp === "fav" ? f.indexOf(r.id) >= 0 : r.typ === state.trTyp)));
  // oblíbené nahoru, jinak pořadí zůstává
@@ -5655,7 +5985,7 @@ function trList(who){
 
 function trReco(who){
  const t = state.trTime;
- const vse = ROUTINES[who];
+ const vse = rutiny(who);
  const naplan = planDne(isoZ(new Date()))[who];
  const hlavni = (naplan && vse.find(r => r.id === naplan))
    || (who === "p" ? vse.find(r => r.id === QUEUE[state.queue])
@@ -5702,16 +6032,16 @@ function renderTrenink(){
  }
  const filtry = '<div class="chips">'
   + TR_TIME.map(x=>'<button class="chip'+(state.trTime===x[0]?" on":"")+'" data-trtime="'+x[0]+'">'+x[1]
-    +' <span>'+ROUTINES[who].filter(r=>x[0]==="all"||r.min<=x[0]).length+'</span></button>').join("")
+    +' <span>'+rutiny(who).filter(r=>x[0]==="all"||r.min<=x[0]).length+'</span></button>').join("")
   + '</div><div class="chips">'
   + TR_TYP.map(x=>'<button class="chip'+(state.trTyp===x[0]?" on":"")+'" data-trtyp="'+x[0]+'">'+x[1]
-    +' <span>'+ROUTINES[who].filter(r=> x[0]==="all" ? true
+    +' <span>'+rutiny(who).filter(r=> x[0]==="all" ? true
         : (x[0]==="fav" ? favR().indexOf(r.id) >= 0 : r.typ===x[0])).length+'</span></button>').join("")
   + '</div>';
  const bezi = state.sess && state.sess.who === who
   ? '<div class="card" style="border-color:var(--s3)"><div class="rhead"><h3>▶︎ Trénink běží</h3>'
     +'<span class="rmeta">'+sessSoucty().hot+'/'+sessSoucty().cel+' sérií · '+sessSoucty().min+' min</span></div>'
-    +'<p class="who">'+esc((ROUTINES[who].find(x=>x.id===state.sess.rid)||{title:""}).title)+'</p>'
+    +'<p class="who">'+esc((rutiny(who).find(x=>x.id===state.sess.rid)||{title:""}).title)+'</p>'
     +'<div class="wrow" style="margin:0"><button class="act small" data-sess="pokrac" type="button">Pokračovat v tréninku</button>'
     +'<button class="ghost" data-sess="zrus" type="button">Zahodit</button></div></div>'
   : "";
@@ -5723,7 +6053,7 @@ function renderTrenink(){
   const hits = Object.keys(EX).filter(k => (EX[k].n+" "+EX[k].en+" "+EX[k].m).toLowerCase().indexOf(eq) >= 0);
   nalez = '<div class="card"><h3>🔍 Nalezené cviky ('+hits.length+')</h3>'
    + (hits.length ? hits.map(k=>{
-       const kde = ROUTINES[who].filter(r => r.ex.some(e => e[0] === k)).map(r => r.id);
+       const kde = rutiny(who).filter(r => r.ex.some(e => e[0] === k)).map(r => r.id);
        return '<details class="ex"><summary>'
         +'<span class="exic"><svg viewBox="0 0 24 24" aria-hidden="true">'+(ICO[EX[k].i]||ICO.machine)+'</svg></span>'
         +'<span class="exname"><span class="n">'+esc(EX[k].n)+'</span><br><span class="m">'+esc(EX[k].m)
@@ -5749,7 +6079,7 @@ function renderTrenink(){
  const tip = who==="p"
   ? '<div class="note"><b>Dvojitá progrese:</b> stejná váha, přidávej opakování. Horní hranice ve všech sériích → +2,5 kg (horní tělo) / +5 kg (dolní) a znovu. U každého cviku jde vybrat varianta — když je nářadí obsazené nebo něco nesedí. Deload každý 7. týden: poloviční série.</div>'
   : '<div class="note"><b>Neboj se činek:</b> silový trénink u ženy = pevné tvary, ne „chlapské svaly" — na ty nejsou hormony, nestane se to omylem. U každého cviku jde vybrat varianta. Váhy zapisuj do Hevy: síla nahoru = postava se mění, i když váha stojí.</div>';
- document.getElementById("tab-trenink").innerHTML = tgl + spoluPozvankaKarta() + bezi + peerTreninkBox() + head + trReco(who) + sparingCard(who) + hledejEx + nalez + filtry + strecTip + list + histCard(who) + rekordy(who) + tip
+ document.getElementById("tab-trenink").innerHTML = tgl + spoluPozvankaKarta() + bezi + peerTreninkBox() + head + trReco(who) + sparingCard(who) + hledejEx + nalez + filtry + strecTip + list + cislaCard(who) + tip
   + '<div class="note"><b>Deník máš přímo tady.</b> Rozklikni cvik, zapiš kg a opakování — appka si pamatuje, '
   + 'co jsi zvedal(a) minule, a sama řekne, kdy přidat. Tlačítko s časem spustí odpočinek mezi sériemi.</div>';
 }
@@ -6443,6 +6773,16 @@ const sync = {
       if (state.tab === "dnes") renderDnes();
       renderNext();
     });
+    onValue(this._ref("profil"), snap => {
+      const v = snap.val() || {};
+      let zmena = false;
+      ["p","v"].forEach(w => {
+        if (v[w] && JSON.stringify(v[w]) !== JSON.stringify(store.get("profil_"+w, null))){
+          store.set("profil_"+w, v[w]); zmena = true;
+        }
+      });
+      if (zmena) renderAll();
+    });
     onValue(this._ref("favr"), snap => {
       const v = snap.val();
       if (Array.isArray(v)){ store.set("favR", v); if (state.tab === "trenink") renderTrenink(); }
@@ -6540,6 +6880,7 @@ const sync = {
   pushFavs(){ this._set("favs", store.get("favs", [])); },
   pushFavJ(){ this._set("favj", store.get("favJ", [])); },
   pushFavR(){ this._set("favr", store.get("favR", [])); },
+  pushProfil(w){ this._set("profil/" + w, store.get("profil_" + w, null)); },
   spoluSet(obj){ this._set("spolu", obj); },
   spoluSet2(klic, val){ this._set("spolu/" + klic, val); },
   pushWeek(){ this._set("week", state.week); },
@@ -7024,7 +7365,8 @@ function renderZpravy(){
 }
 
 /* ---- týdenní vyhodnocení + série ---- */
-const MIN_KCAL = { p:2800, v:1600 };
+const MIN_KCAL = new Proxy({}, { get: (t, w) => (w === "p" || w === "v")
+  ? (profilHotovy(w) ? vypocty(w).minKcal : (w === "p" ? 2800 : 1600)) : undefined });
 function isoDaysAgo(n){ const d = new Date(); d.setDate(d.getDate()-n); return d.toISOString().slice(0,10); }
 
 function dayTotals(who, iso){
@@ -7172,6 +7514,10 @@ function renderNastaveniTab(){
 
   + pairCard()
 
+  +'<h2>Profily</h2>'
+  + profilCard("p")
+  + profilCard("v")
+
   /* --- cíle a čísla --- */
   +'<div class="card"><h3>🎯 Cíle a čísla</h3>'
   +'<p class="who">Denní kalorie a bílkoviny. Kalorie se dají měnit i v Průběhu tlačítkem podle tempa váhy — '
@@ -7271,7 +7617,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">30</td></tr>'
+  +'<tr><td>Verze</td><td class="num">31</td></tr>'
   +'<tr><td>Tréninků k výběru</td><td class="num">'+(ROUTINES.p.length+ROUTINES.v.length)+'</td></tr>'
   +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
@@ -7374,6 +7720,16 @@ document.addEventListener("input", e=>{
   saveSess();
   return;
  }
+ if (e.target.dataset && e.target.dataset.pr !== undefined){
+  const q = e.target.dataset.pr.split("|");
+  const cis = ["vek","vyska","vaha"].indexOf(q[1]) >= 0;
+  let v = cis ? parseFloat(String(e.target.value).replace(",", ".")) : String(e.target.value).slice(0,16);
+  if (cis && (!v || isNaN(v))) return;
+  profilSet(q[0], { [q[1]]: v });
+  clearTimeout(state.prTik);
+  state.prTik = setTimeout(()=>{ renderAll(); }, 900);
+  return;
+ }
  if (e.target.id === "pickQ" && state.pick0){
   state.pick0.q = e.target.value; state.pick0.qFocus = true; renderPick(); return;
  }
@@ -7419,6 +7775,11 @@ document.addEventListener("change", e=>{
  else if (t.dataset.rem !== undefined){
    const sel = remSel(); sel[t.dataset.rem] = t.checked;
    state.rem = sel; store.set("rem", sel); renderNastaveniTab();
+ }
+ else if (t.dataset.prsel !== undefined){
+   const q = t.dataset.prsel.split("|");
+   profilSet(q[0], { [q[1]]: (q[1] === "akt" ? parseFloat(t.value) : t.value) });
+   renderAll();
  }
  else if (t.dataset.nsel !== undefined){
    const v = t.value;
@@ -7801,6 +8162,18 @@ document.addEventListener("click", e=>{
     || (!root.getAttribute("data-theme") && window.matchMedia("(prefers-color-scheme: dark)").matches)) ? "Světlý" : "Tmavý";
   renderNastaveniTab(); return;
  }
+ const prs = e.target.closest("[data-prs]");
+ if (prs){
+  const q = prs.dataset.prs.split("|");
+  profilSet(q[0], { [q[1]]: q[2] });
+  renderAll(); return;
+ }
+ const prr = e.target.closest("[data-prreset]");
+ if (prr){
+  const w = prr.dataset.prreset;
+  store.set("kcal_" + w, null); store.set("n_prot_" + w, null);
+  renderAll(); return;
+ }
  if (e.target.id === "widPush"){
   const ok = !!(window.sync && sync.pushWidget());
   renderNastaveniTab();
@@ -7860,6 +8233,8 @@ document.addEventListener("click", e=>{
  if (e.target.id === "planFill"){ doplnPlan(); renderPlan(); renderDnes(); renderNext(); celebrate("📅"); return; }
  if (e.target.id === "planClear"){ vycistitPlan(); state.planDen = null; renderPlan(); renderDnes(); renderNext(); return; }
 
+ const so = e.target.closest("[data-statobd]");
+ if (so){ nastSet("statObd", +so.dataset.statobd); renderTrenink(); return; }
  const fr = e.target.closest("[data-favr]");
  if (fr){
   const nova = favRTgl(fr.dataset.favr);
@@ -7934,7 +8309,7 @@ document.addEventListener("click", e=>{
    if (!d.stav){ // druhý trénuje sólo — založíme společný podle jeho tréninku
     const w = spoluPeerRid();
     if (w) { const me = store.get("meId","p");
-      if (!state.sess) startSession(me, (ROUTINES[me].find(x=>x.id===w) ? w : ROUTINES[me][0].id), null);
+      if (!state.sess) startSession(me, (rutiny(me).find(x=>x.id===w) ? w : rutiny(me)[0].id), null);
       state.sess.spolu = true; saveSess(); spoluZaloz(state.sess.rid);
       spoluUdalost(spoluHlaska("pripoj", me)); celebrate("🤜"); renderSession(); }
    } else spoluPrijmi();
@@ -8061,7 +8436,7 @@ document.addEventListener("click", e=>{
                 "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist","plan","jidlo","shopHist","shopCasto","nakupDni","navrhy","schval","spizOdecist",
                 "n_prot_p","n_prot_v","n_water_p","n_water_v","n_casy","n_mintr_p","n_mintr_v",
                 "n_rozvrh_p","n_rozvrh_v","n_tren_p","n_tren_v","n_hlasky","n_zpravyAuto","n_konfety","n_stouch",
-                "favJ","parti","tlogB","spar","n_zkus_p","n_zkus_v","favR"];
+                "favJ","parti","tlogB","spar","n_zkus_p","n_zkus_v","favR","profil_p","profil_v"];
   const dump = {};
   keys.forEach(k=>{ const v = store.get(k, null); if (v !== null) dump[k] = v; });
   const box = document.getElementById("dataBox");
