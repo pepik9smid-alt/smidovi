@@ -1470,6 +1470,7 @@ Script.complete();
 </script>
 <div class="cook" id="cookOverlay" hidden></div>
 <div class="cook" id="onbOverlay" hidden></div>
+<div class="cook" id="pozvOverlay" hidden></div>
 <div class="tbar" id="timerBar" hidden></div>
 <button class="minibar" id="miniBar" type="button" hidden></button>
 
@@ -1514,12 +1515,25 @@ const store = {
 
 /* Pozvánku z odkazu vyřídíme hned tady, dřív než se cokoli vykreslí —
    jinak by appka stihla založit zprávy se jmény původních majitelů. */
+window.POZVANKA_KOLIZE = null;
 (function pozvankaHned(){
  const CISTY = { jm:"", pohl:"m", vek:30, vyska:178, vaha:80, cil:"drzet", akt:1.42, sada:"silova" };
  try {
   const q = new URLSearchParams(location.search);
   const kod = q.get("kod"), kdo = q.get("kdo");
-  if (store.get("famId", null)) return;
+  const mam = store.get("famId", null);
+  if (mam){
+   /* V tomhle telefonu už nějaká appka běží. Mlčky ignorovat pozvánku je
+      to nejhorší, co se dá udělat — člověk pak kouká na cizí profil a neví proč. */
+   const jeNova = q.get("nova") === "1";
+   const jinyKod = kod && /^[A-Z0-9-]{15,30}$/i.test(kod) && kod.toUpperCase() !== String(mam).toUpperCase();
+   if (jeNova || jinyKod){
+    window.POZVANKA_KOLIZE = { nova: jeNova, kod: kod ? kod.toUpperCase() : null,
+                               kdo: (kdo === "p" || kdo === "v") ? kdo : null,
+                               jm: (q.get("jm") || "").slice(0,16) };
+   }
+   return;
+  }
 
   if (kod && /^[A-Z0-9-]{15,30}$/i.test(kod)){
    store.set("solo", false);
@@ -3663,6 +3677,62 @@ function chybi(r){
 }
 
 /* ---- průvodce prvním spuštěním ---- */
+/* ---- pozvánka dorazila do telefonu, kde už něco je ---- */
+function renderPozvanka(){
+ const o = document.getElementById("pozvOverlay");
+ const z = window.POZVANKA_KOLIZE;
+ if (!z){ o.hidden = true; o.innerHTML = ""; document.body.style.overflow = ""; return; }
+ document.body.style.overflow = "hidden";
+ o.hidden = false;
+ const kdoJsem = jmeno(store.get("meId", "p") || "p");
+ o.innerHTML = '<div class="chead"><h2 class="brand sm"><span class="wm">PEVE<span>FIT</span></span></h2></div>'
+  + (z.nova
+     ? '<div class="cstep">Pozvánka na vlastní appku</div>'
+       +'<p class="ctext">Někdo ti poslal odkaz na <b>vlastní appku s vlastním profilem</b>. '
+       +'Jenže v tomhle telefonu už jedna appka běží — je nastavená na <b>'+esc(kdoJsem)+'</b>'
+       + (z.jm ? ' a pozvánka je pro <b>'+esc(z.jm)+'</b>' : '') + '.</p>'
+       +'<div class="note"><b>Začít načisto</b> smaže z tohohle telefonu úplně všechno — '
+       +'jídelníček, deník, vážení i propojení. Data toho druhého, s kým jsi byl propojený, '
+       +'zůstanou u něj v pořádku.</div>'
+       +'<div class="cnav" style="flex-direction:column;align-items:stretch;gap:8px">'
+       +'<button class="act" data-pozv="nova" type="button">Začít načisto jako '+esc(z.jm || "nový člověk")+'</button>'
+       +'<button class="ghost" data-pozv="nechat" type="button">Nechat, jak to je</button></div>'
+     : '<div class="cstep">Pozvánka do jiné rodiny</div>'
+       +'<p class="ctext">Tenhle odkaz tě zve k propojení s jiným telefonem, '
+       +'ale ty už propojený jsi.</p>'
+       +'<div class="code">'+esc(z.kod)+'</div>'
+       +'<div class="note">Když se přepojíš, tvoje data v telefonu zůstanou a od té chvíle '
+       +'se budou držet s novou rodinou. Ze staré se odpojíš.</div>'
+       +'<div class="cnav" style="flex-direction:column;align-items:stretch;gap:8px">'
+       +'<button class="act" data-pozv="prepojit" type="button">Přepojit se</button>'
+       +'<button class="ghost" data-pozv="nechat" type="button">Nechat, jak to je</button></div>');
+ window.scrollTo(0,0);
+}
+function pozvankaVyres(co){
+ const z = window.POZVANKA_KOLIZE;
+ window.POZVANKA_KOLIZE = null;
+ try { history.replaceState(null, "", location.pathname); } catch(e){}
+ if (!z || co === "nechat"){ renderPozvanka(); return; }
+ if (co === "prepojit" && z.kod){
+  store.set("famId", z.kod);
+  if (z.kdo) store.set("meId", z.kdo);
+  store.set("solo", false);
+  location.reload();
+  return;
+ }
+ if (co === "nova"){
+  // čistý start znamená opravdu čistý — jinak by prosakovala cizí data
+  try {
+   const k = [];
+   for (let i = 0; i < localStorage.length; i++){
+    const n = localStorage.key(i);
+    if (n && n.indexOf("pv_") === 0) k.push(n);
+   }
+   k.forEach(n => localStorage.removeItem(n));
+  } catch(e){}
+  location.href = location.pathname + "?nova=1" + (z.jm ? "&jm=" + encodeURIComponent(z.jm) : "");
+ }
+}
 function openOnb(){ state.onb = 0; renderOnb(); }
 function closeOnb(){
  state.onb = null; store.set("onb", true);
@@ -9079,7 +9149,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">40</td></tr>'
+  +'<tr><td>Verze</td><td class="num">41</td></tr>'
   +'<tr><td>Tréninků k výběru</td><td class="num">'+(ROUTINES.p.length+ROUTINES.v.length)+'</td></tr>'
   +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
@@ -9365,6 +9435,8 @@ document.addEventListener("click", e=>{
  if (gb){ const g = gb.dataset.grp; showTab(lastSub[g] || GROUPS[g].tabs[0][0]); return; }
  const sb = e.target.closest("#subnav button");
  if (sb){ showTab(sb.dataset.tab); return; }
+ const pz = e.target.closest("[data-pozv]");
+ if (pz){ pozvankaVyres(pz.dataset.pozv); return; }
  const ob = e.target.closest("[data-onb]");
  if (ob){
   const a = ob.dataset.onb;
@@ -10189,7 +10261,8 @@ renderMini();
  } catch(e){ showTab("dnes"); }
 })();
 renderNastaveni();
-if (!store.get("onb", false)) openOnb();
+renderPozvanka();
+if (!window.POZVANKA_KOLIZE && !store.get("onb", false)) openOnb();
 if (store.get("famId", null) && store.get("meId", null)) sync.start();
 
 /* offline režim */
