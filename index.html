@@ -514,6 +514,10 @@
   .pt .b i{display:block;height:100%;border-radius:5px}
   .pt .v{flex:0 0 44px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
   .skryte{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+  .chips.venku{max-height:132px;overflow-y:auto;flex-wrap:wrap;
+    -webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+    mask-image:linear-gradient(to bottom,#000 88%,transparent);
+    -webkit-mask-image:linear-gradient(to bottom,#000 88%,transparent)}
   .voda.spanek{margin-top:6px}
   .spq{display:inline-flex;gap:4px;margin-left:8px}
   .spq button{background:var(--surface-1);border:1px solid var(--border);border-radius:9px;
@@ -2700,6 +2704,8 @@ const state = {
  pairTik: null,
  soloPtl: false,
  jinyKod: false,
+ venkuId: null,
+ venkuMin: 0,
  soloTik: null,
  spar: store.get("spar", []),
  fotoP: store.get("fotoP", []),
@@ -2725,6 +2731,130 @@ function vodaRow(who, iso){
 }
 
 const SUPPS = [["cr","Kreatin 5 g"],["d3","Vitamin D3 2000 IU"],["om","Omega-3"]];
+
+/* ================= MÍSTO FITKA VEN =================
+   Když je venku čtyřicet, posilovna je trest. Tohle není výmluva —
+   pohyb je pohyb a appka ho počítá jako trénink. Jen si o tom vede
+   poctivou evidenci, ať se z výjimky nestane pravidlo.              */
+
+/* MET = kolikrát víc energie než v klidu. kcal = MET × kg × hodiny */
+const VENKU = [
+ { id:"brusle",   ic:"🛼", n:"Kolečkové brusle",  met:8.5, min:60,
+   tip:"Hodina bruslí je energeticky jako slušný silový trénink. Zadek a stehna to poznají." },
+ { id:"kolo",     ic:"🚴", n:"Kolo",              met:8.0, min:75,
+   tip:"Do kopce se to počítá dvakrát. Rovina v sedle je spíš procházka." },
+ { id:"beh",      ic:"🏃", n:"Běh",               met:8.3, min:40,
+   tip:"Po běhu si dej protažení lýtek a kyčlí — jinak to zítra ucítíš v zádech." },
+ { id:"chuze",    ic:"🚶", n:"Rychlá chůze",      met:4.3, min:60,
+   tip:"Nejpodceňovanější věc v celé appce. Hodina chůze denně mění postavu potichu." },
+ { id:"turistika",ic:"🥾", n:"Turistika",         met:6.0, min:120,
+   tip:"Kopce jsou dřepy v přestrojení. Celý den v terénu je plnohodnotný trénink nohou." },
+ { id:"plavani",  ic:"🏊", n:"Plavání",           met:7.0, min:45,
+   tip:"Nejlepší volba, když je vedro nebo když tě něco bolí. Klouby si oddychnou." },
+ { id:"koupani",  ic:"🏖️", n:"Koupák a voda",     met:4.0, min:90,
+   tip:"Šlapání vody a hraní si v bazénu se počítá. Ležení na dece ne. 😏" },
+ { id:"tenis",    ic:"🎾", n:"Tenis",             met:7.3, min:60,
+   tip:"Sprinty na krátkou vzdálenost — pro nohy tvrdší, než to vypadá." },
+ { id:"badminton",ic:"🏸", n:"Badminton",         met:5.5, min:60,
+   tip:"Ideální, když si chcete zahrát a nechcete umřít." },
+ { id:"fotbal",   ic:"⚽", n:"Fotbal",            met:7.0, min:75,
+   tip:"Pozor na rozehřátí — natažené zadní stehno je klasika." },
+ { id:"squash",   ic:"🎯", n:"Squash",            met:11.0, min:45,
+   tip:"Nejtvrdší věc v tomhle seznamu. Čtyřicet minut squashe je pořádná dávka." },
+ { id:"lezeni",   ic:"🧗", n:"Lezení / bouldr",   met:8.0, min:90,
+   tip:"Záda, předloktí a střed těla. Nejblíž k silovému tréninku z celého seznamu." },
+ { id:"paddle",   ic:"🏄", n:"Paddleboard",       met:6.0, min:75,
+   tip:"Střed těla makáme celou dobu, i když to tak nevypadá." },
+ { id:"kajak",    ic:"🛶", n:"Kajak / loď",       met:5.0, min:90,
+   tip:"Záda a ramena. Po vodě se ujede daleko, aniž bys to cítil." },
+ { id:"koloběžka",ic:"🛴", n:"Koloběžka",         met:6.0, min:60,
+   tip:"Střídej nohy, jinak z toho budeš mít křivého panáčka." },
+ { id:"led",      ic:"⛸️", n:"Brusle na ledě",    met:7.0, min:60,
+   tip:"Zimní varianta koleček. Stejné svaly, jiná sezóna." },
+ { id:"bezky",    ic:"🎿", n:"Běžky",             met:9.0, min:90,
+   tip:"Celé tělo naráz. V zimě nejlepší, co se dá venku dělat." },
+ { id:"zahrada",  ic:"🪴", n:"Práce na zahradě",  met:4.5, min:120,
+   tip:"Rýč a kolečko jsou legitimní železo. Jen se u toho nezapomeň napít." },
+ { id:"tanec",    ic:"💃", n:"Tanec",             met:5.5, min:60,
+   tip:"Sranda, co se počítá. A na rozdíl od posilovny u toho hraje muzika." },
+ { id:"schody",   ic:"🪜", n:"Schody / kopec",    met:8.0, min:30,
+   tip:"Třicet minut do kopce dá nohám zabrat víc než leckterý den v posilovně." }
+];
+function venkuById(id){ return VENKU.find(x => x.id === id) || null; }
+function venkuKcal(who, id, min){
+ const a = venkuById(id);
+ if (!a) return 0;
+ return Math.round(a.met * vahaTed(who) * (min / 60) * 1.05);
+}
+/* kolikrát po sobě se místo fitka šlo ven */
+function venkuVRade(who){
+ const h = (state.hist || []).filter(x => x.who === who)
+   .slice().sort((a,b)=>a.d.localeCompare(b.d));
+ let n = 0;
+ for (let i = h.length - 1; i >= 0; i--){
+  if (h[i].zdroj === "venku") n++; else break;
+ }
+ return n;
+}
+function venkuCelkem(who){ return (state.hist || []).filter(x => x.who === who && x.zdroj === "venku").length; }
+
+function venkuZapis(who, id, min){
+ const a = venkuById(id);
+ if (!a || !min) return null;
+ const iso = isoDnes();
+ const kcal = venkuKcal(who, id, min);
+ state.hist = (state.hist || []).concat([{ d: iso, who: who, rid: a.n, min: Math.round(min),
+   sets: 0, obj: 0, kcal: kcal, zdroj: "venku", vid: a.id }]);
+ store.set("hist", state.hist);
+ return { kcal: kcal, nazev: a.n };
+}
+
+/* ---------- počasí (Open-Meteo, bez klíče a bez účtu) ---------- */
+function pocasiUlozene(){
+ const c = store.get("pocasi", null);
+ if (!c || !c.kdy) return null;
+ return (Date.now() - c.kdy < 3 * 3600000) ? c : null;   // tři hodiny stačí
+}
+async function pocasiNacti(lat, lon){
+ const u = "https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon
+   + "&current=temperature_2m,precipitation,weather_code"
+   + "&daily=temperature_2m_max,precipitation_sum&timezone=auto&forecast_days=1";
+ const r = await fetch(u);
+ if (!r.ok) throw new Error("HTTP " + r.status);
+ const j = await r.json();
+ const c = {
+  kdy: Date.now(), lat: lat, lon: lon,
+  t: Math.round((j.current && j.current.temperature_2m) || 0),
+  tmax: Math.round((j.daily && j.daily.temperature_2m_max && j.daily.temperature_2m_max[0]) || 0),
+  srazky: (j.daily && j.daily.precipitation_sum && j.daily.precipitation_sum[0]) || 0,
+  kod: (j.current && j.current.weather_code) || 0
+ };
+ store.set("pocasi", c);
+ store.set("geo", { lat: lat, lon: lon });
+ return c;
+}
+async function pocasiZjisti(){
+ const g = store.get("geo", null);
+ if (g && g.lat) return await pocasiNacti(g.lat, g.lon);
+ const poz = await new Promise((ok, ne) => {
+  if (!navigator.geolocation) return ne(new Error("Prohlížeč neumí polohu."));
+  navigator.geolocation.getCurrentPosition(ok, ne, { timeout: 9000, maximumAge: 3600000 });
+ });
+ return await pocasiNacti(Math.round(poz.coords.latitude * 100) / 100,
+                          Math.round(poz.coords.longitude * 100) / 100);
+}
+/* co na to počasí říct — a jestli to spíš táhne ven, nebo dovnitř */
+function pocasiRada(c){
+ if (!c) return null;
+ const t = c.tmax || c.t, d = c.srazky || 0;
+ if (d >= 5)  return { ven:false, txt:"Venku leje ("+Math.round(d)+" mm). Dneska má posilovna jasnou výhodu." };
+ if (t >= 30) return { ven:true,  txt:"Venku je "+t+" °C. V posilovně se dneska nedá dýchat — vem to k vodě nebo na brusle večer, až to poleví." };
+ if (t >= 26) return { ven:true,  txt:"Venku "+t+" °C a sucho. Škoda takový den protrpět mezi činkami." };
+ if (t >= 16) return { ven:true,  txt:"Venku "+t+" °C, ideální počasí na pohyb pod širákem." };
+ if (t >= 6)  return { ven:false, txt:"Venku "+t+" °C — dá se, ale vezmi si vrstvu navíc." };
+ if (t >= -5) return { ven:false, txt:"Venku "+t+" °C. Zima na kolečka, ale led a běžky mají sezónu." };
+ return { ven:false, txt:"Venku "+t+" °C. Tohle je počasí na halu." };
+}
 
 /* ================= SPÁNEK =================
    Sval neroste v posilovně — roste v posteli. Zapisuje se ráno jedním
@@ -6433,10 +6563,13 @@ function histCard(who){
  if (!h.length) return "";
  return '<div class="card"><h3>Poslední tréninky</h3>'
   +'<table><thead><tr><th>Kdy</th><th>Co</th><th class="num">Série</th><th class="num">Čas</th><th class="num">Objem</th></tr></thead><tbody>'
-  + h.map(x=>'<tr><td>'+czDate(x.d)+'</td><td>'+(x.zdroj==="watch"?'⌚ ':'')+esc(x.rid)+'</td>'
-    +'<td class="num">'+(x.sets||"—")+'</td>'
-    +'<td class="num">'+x.min+'′</td>'
-    +'<td class="num">'+(x.zdroj==="watch" && !x.obj ? (x.kcal ? fmt(x.kcal)+' kcal' : '—') : fmt(x.obj)+' kg')+'</td></tr>').join("")
+  + h.map(x=>{
+     const ic = x.zdroj === "watch" ? "⌚ " : (x.zdroj === "venku" ? ((venkuById(x.vid)||{ic:"🌤️"}).ic + " ") : "");
+     return '<tr><td>'+czDate(x.d)+'</td><td>'+ic+esc(x.rid)+'</td>'
+      +'<td class="num">'+(x.sets||"—")+'</td>'
+      +'<td class="num">'+x.min+'′</td>'
+      +'<td class="num">'+(!x.obj ? (x.kcal ? fmt(x.kcal)+' kcal' : '—') : fmt(x.obj)+' kg')+'</td></tr>';
+    }).join("")
   +'</tbody></table>'
   +'<div class="hint">Objem = kg × opakování sečteno přes celý trénink. Když roste, rosteš i ty.</div></div>';
 }
@@ -6848,6 +6981,55 @@ function trReco(who){
   +'<div class="note" style="margin:0">'+esc(pick.tip)+'</div></div>';
 }
 
+/* Poctivá poznámka podle toho, kolikátý den v řadě se jde místo fitka ven.
+   Appka nikoho nekárá, ale ani nedělá, že si toho nevšimla. */
+function venkuPoznamka(who){
+ const n = venkuVRade(who);
+ if (n === 0) return "Vyměnit fitko za pohyb venku je pořád trénink. Zapíše se do historie, "
+   + "započítá do týdne i do odznaků.";
+ if (n === 1) return "Včera venku, dneska zas? Klidně — jen ať se z toho nestane jediná forma pohybu.";
+ if (n === 2) return "Dva výlety v řadě. Hlava si odpočala, ale činka ti začíná chybět — "
+   + "zítra by to chtělo něco těžkého.";
+ return pocet(n, "výlet", "výlety", "výletů") + " v řadě a žádné železo. "
+   + "Síla se ztrácí rychleji, než se získává — dej si nejbližší den silový trénink, "
+   + "klidně ten nejkratší. 💪";
+}
+function venkuCard(who){
+ const c = pocasiUlozene();
+ const rada = pocasiRada(c);
+ const vyb = state.venkuId ? venkuById(state.venkuId) : null;
+ const min = state.venkuMin || (vyb ? vyb.min : 60);
+ const kcal = vyb ? venkuKcal(who, vyb.id, min) : 0;
+ const celkem = venkuCelkem(who);
+
+ return '<div class="card"'+(rada && rada.ven ? ' style="border-color:var(--s2)"' : '')+'>'
+  +'<div class="rhead"><h3>🌤️ Nemusí to být fitko</h3>'
+  +'<span class="rmeta">'+(celkem ? pocet(celkem,"výlet","výlety","výletů")+' zapsáno' : 'pohyb je pohyb')+'</span></div>'
+  + (rada
+     ? '<div class="note"'+(rada.ven ? ' style="border-color:var(--s2)"' : '')+'>'
+       + (rada.ven ? '<b>☀️ ' : '<b>🏋️ ') + esc(rada.txt) + '</b></div>'
+     : '<div class="wrow" style="margin-top:2px">'
+       +'<button class="ghost" id="pocasiBtn" type="button">🌡️ Podívat se, jak je venku</button>'
+       +'<span class="dim" id="pocasiMsg" style="font-size:12.5px">Appka se jednou zeptá na polohu.</span></div>')
+  +'<p class="who" style="margin:10px 0 6px">'+esc(venkuPoznamka(who))+'</p>'
+  +'<div class="chips venku">'
+  + VENKU.map(a => '<button class="chip'+(vyb && vyb.id === a.id ? " on" : "")+'" '
+      +'data-venku="'+a.id+'" type="button">'+a.ic+' '+esc(a.n)+'</button>').join("")
+  +'</div>'
+  + (vyb
+     ? '<div class="nblok" style="margin-top:10px"><div class="nh">'+vyb.ic+' '+esc(vyb.n)+'</div>'
+       +'<div class="hint" style="margin-top:0">'+esc(vyb.tip)+'</div>'
+       +'<div class="voda" style="margin-top:8px">'
+       +'<button data-venkumin="-10" type="button" aria-label="Ubrat">−</button>'
+       +'<span class="lit" style="min-width:150px;text-align:center"><b>'+min+'</b> min · ~<b>'+fmt(kcal)+'</b> kcal</span>'
+       +'<button data-venkumin="10" type="button" aria-label="Přidat">+</button></div>'
+       +'<div class="wrow" style="margin-top:10px">'
+       +'<button class="act small" data-venkuzapis="'+vyb.id+'" type="button">Zapsat jako trénink</button>'
+       +'<button class="ghost" data-venku="" type="button">Zrušit výběr</button></div></div>'
+     : '<div class="hint">Ťukni na to, co jste dělali — appka dopočítá kalorie podle tvojí váhy a času.</div>')
+  +'</div>';
+}
+
 function renderTrenink(){
  const who = state.trWho;
  const tgl = solo() ? "" : '<div class="seg-toggle" style="margin-bottom:14px">'
@@ -6918,7 +7100,7 @@ function renderTrenink(){
  const tip = who==="p"
   ? '<div class="note"><b>Dvojitá progrese:</b> stejná váha, přidávej opakování. Horní hranice ve všech sériích → +2,5 kg (horní tělo) / +5 kg (dolní) a znovu. U každého cviku jde vybrat varianta — když je nářadí obsazené nebo něco nesedí. Deload každý 7. týden: poloviční série.</div>'
   : '<div class="note"><b>Neboj se činek:</b> silový trénink u ženy = pevné tvary, ne „chlapské svaly" — na ty nejsou hormony, nestane se to omylem. U každého cviku jde vybrat varianta. Váhy zapisuj do Hevy: síla nahoru = postava se mění, i když váha stojí.</div>';
- document.getElementById("tab-trenink").innerHTML = tgl + spoluPozvankaKarta() + bezi + peerTreninkBox() + head + trReco(who) + sparingCard(who) + hledejEx + nalez + filtry + strecTip + list + tip
+ document.getElementById("tab-trenink").innerHTML = tgl + spoluPozvankaKarta() + bezi + peerTreninkBox() + head + trReco(who) + venkuCard(who) + sparingCard(who) + hledejEx + nalez + filtry + strecTip + list + tip
   + '<div class="note"><b>Deník máš přímo tady.</b> Rozklikni cvik, zapiš kg a opakování — appka si pamatuje, '
   + 'co jsi zvedal(a) minule, a sama řekne, kdy přidat. Tlačítko s časem spustí odpočinek mezi sériemi.</div>'
   + '<div class="note" style="border-color:var(--s1)"><b>Rekordy, objem a statistiky</b> mají vlastní záložku '
@@ -9149,7 +9331,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">41</td></tr>'
+  +'<tr><td>Verze</td><td class="num">42</td></tr>'
   +'<tr><td>Tréninků k výběru</td><td class="num">'+(ROUTINES.p.length+ROUTINES.v.length)+'</td></tr>'
   +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
@@ -9871,6 +10053,45 @@ document.addEventListener("click", e=>{
  if (e.target.id === "planFill"){ doplnPlan(); renderPlan(); renderDnes(); renderNext(); celebrate("📅"); return; }
  if (e.target.id === "planClear"){ vycistitPlan(); state.planDen = null; renderPlan(); renderDnes(); renderNext(); return; }
 
+ const vch = e.target.closest("[data-venku]");
+ if (vch){
+  const id = vch.dataset.venku;
+  state.venkuId = (id && state.venkuId !== id) ? id : null;
+  const a = state.venkuId ? venkuById(state.venkuId) : null;
+  state.venkuMin = a ? a.min : 0;
+  renderTrenink(); return;
+ }
+ const vmn = e.target.closest("[data-venkumin]");
+ if (vmn){
+  const a = venkuById(state.venkuId);
+  const zaklad = state.venkuMin || (a ? a.min : 60);
+  state.venkuMin = Math.max(10, Math.min(480, zaklad + (+vmn.dataset.venkumin)));
+  renderTrenink(); return;
+ }
+ const vzp = e.target.closest("[data-venkuzapis]");
+ if (vzp){
+  const a = venkuById(vzp.dataset.venkuzapis);
+  const r0 = venkuZapis(state.trWho, vzp.dataset.venkuzapis, state.venkuMin || (a ? a.min : 60));
+  state.venkuId = null; state.venkuMin = 0;
+  if (r0){
+   pushMsg("venku-"+state.trWho+"-"+isoDnes()+"-"+(a?a.id:"x"), (a?a.ic:"🌤️"),
+     jmeno(state.trWho)+": "+r0.nazev,
+     "Zapsáno jako trénink — "+fmt(r0.kcal)+" kcal. Pohyb je pohyb, počítá se to do týdne i do odznaků.");
+   celebrate(a ? a.ic : "🌤️");
+  }
+  kontrolaOdznaku(); renderAll(); syncDot();
+  if (window.sync && sync.on) sync.pushStatus();
+  return;
+ }
+ if (e.target.id === "pocasiBtn"){
+  const m = document.getElementById("pocasiMsg");
+  if (m) m.textContent = "Zjišťuju…";
+  pocasiZjisti().then(()=>{ renderTrenink(); }).catch(err=>{
+   const m2 = document.getElementById("pocasiMsg");
+   if (m2) m2.textContent = "Nepovedlo se — počasí je jen bonus, výběr níž funguje i bez něj.";
+  });
+  return;
+ }
  const spk = e.target.closest("[data-spanek]");
  if (spk){
   const q = spk.dataset.spanek.split("|");
@@ -10101,7 +10322,7 @@ document.addEventListener("click", e=>{
                 "n_rozvrh_p","n_rozvrh_v","n_tren_p","n_tren_v","n_hlasky","n_zpravyAuto","n_konfety","n_stouch",
                 "favJ","parti","tlogB","spar","n_zkus_p","n_zkus_v","favR","profil_p","profil_v","ts1","cooked","shuffleN","odznaky",
                 "n_rekSort","n_rekPocet","n_ukaz1rm","n_statObd","stouch_p","stouch_v","parti","spanek",
-                "n_spanek_p","n_spanek_v","hzLast"]
+                "n_spanek_p","n_spanek_v","hzLast","pocasi","geo"]
    .concat(Object.keys(SDIL).map(k => "ts_" + k));
   const dump = {};
   keys.forEach(k=>{ const v = store.get(k, null); if (v !== null) dump[k] = v; });
