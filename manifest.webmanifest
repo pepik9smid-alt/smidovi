@@ -1,7 +1,7 @@
 {
   "name": "PEVE FIT",
   "short_name": "PEVE FIT",
-  "description": "Spolecny fitness plan Pepule a Verune",
+  "description": "Jidlo, treninky a pokrok na jednom miste",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

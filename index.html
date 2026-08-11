@@ -513,6 +513,7 @@
   .pt .b{flex:1;height:9px;border-radius:5px;background:var(--grid);overflow:hidden}
   .pt .b i{display:block;height:100%;border-radius:5px}
   .pt .v{flex:0 0 44px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+  .skryte{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
   .voda.spanek{margin-top:6px}
   .spq{display:inline-flex;gap:4px;margin-left:8px}
   .spq button{background:var(--surface-1);border:1px solid var(--border);border-radius:9px;
@@ -983,6 +984,146 @@
   <div id="tab-zpravy"></div>
 </div>
 <div class="sess" id="sessOverlay" hidden></div>
+<script type="text/plain" id="healthSrc">
+// PEVE FIT — most z Apple Health do appky
+// Scriptable · vygenerováno appkou. Nic tu nemusíš měnit.
+//
+// Volá se ze Zkratky akcí "Run Script" (Spustit skript) s parametrem:
+//   spanek 7.5          · hodiny, minuty i vteřiny — pozná si to samo
+//   vaha 94.2           · kilogramy
+//   trenink 52 480      · minuty a spálené kalorie (kalorie nepovinné)
+//   voda 1              · přidá sklenici
+// Když skript spustíš přímo ve Scriptable, zeptá se sám.
+
+const FAM = "__FAM__";
+const ME  = "__ME__";
+const KEY = "__KEY__";
+const DB  = "__DB__";
+
+/* ---------- vstupenka na server ---------- */
+async function token(){
+  const r = new Request("https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=" + KEY);
+  r.method = "POST";
+  r.headers = { "Content-Type": "application/json" };
+  r.body = JSON.stringify({ returnSecureToken: true });
+  const j = await r.loadJSON();
+  if (!j || !j.idToken) throw new Error("Server nepustil dovnitř. Zkontroluj připojení.");
+  return j.idToken;
+}
+
+/* ---------- odeslání lístečku ---------- */
+async function posli(obj){
+  const t = await token();
+  const r = new Request(DB + "/rodiny/" + FAM + "/inbox.json?auth=" + t);
+  r.method = "POST";
+  r.headers = { "Content-Type": "application/json" };
+  r.body = JSON.stringify(obj);
+  await r.loadJSON();
+}
+
+function dnesISO(){
+  const d = new Date();
+  const dv = n => (n < 10 ? "0" : "") + n;
+  return d.getFullYear() + "-" + dv(d.getMonth() + 1) + "-" + dv(d.getDate());
+}
+function cislo(x){
+  const n = parseFloat(String(x).replace(",", ".").replace(/[^\d.\-]/g, ""));
+  return isNaN(n) ? 0 : n;
+}
+
+/* Health posílá trvání někdy v sekundách, jindy v minutách nebo hodinách.
+   Radši si to přebereme tady, než aby to musel řešit člověk ve Zkratce. */
+function naHodiny(v){
+  if (v > 1000) return v / 3600;   // sekundy
+  if (v > 24)   return v / 60;     // minuty
+  return v;                        // rovnou hodiny
+}
+function naMinuty(v){
+  if (v > 600) return v / 60;      // sekundy
+  return v;
+}
+
+/* ---------- co přišlo ze Zkratky ---------- */
+function vstup(){
+  let p = args.shortcutParameter;
+  if (p && typeof p === "object") p = p.value !== undefined ? p.value : JSON.stringify(p);
+  if (p === undefined || p === null || String(p).trim() === ""){
+    if (args.plainTexts && args.plainTexts.length) p = args.plainTexts[0];
+  }
+  return String(p === undefined || p === null ? "" : p).trim();
+}
+
+async function zeptejSe(){
+  const a = new Alert();
+  a.title = "PEVE FIT — Health";
+  a.message = "Co poslat do appky? Například:\nspanek 7.5\nvaha 94.2\ntrenink 52 480";
+  a.addTextField("spanek 7.5");
+  a.addAction("Poslat");
+  a.addCancelAction("Zrušit");
+  const i = await a.presentAlert();
+  return i === 0 ? a.textFieldValue(0) : "";
+}
+
+/* Jedna zkratka může poslat víc věcí naráz — každou na svůj řádek
+   nebo oddělenou středníkem:  "spanek 7.5 ; vaha 94.2"            */
+async function main(){
+  let txt = vstup();
+  if (!txt && config.runsInApp) txt = await zeptejSe();
+  if (!txt) return "Nic k odeslání.";
+
+  const casti = txt.split(/[\n;]+/).map(x => x.trim()).filter(x => x !== "");
+  if (casti.length > 1){
+    const vysledky = [];
+    for (const cast of casti) vysledky.push(await jeden(cast));
+    return vysledky.join("\n");
+  }
+  return await jeden(txt);
+}
+
+async function jeden(txt){
+  const c = txt.split(/[\s,|]+/).filter(x => x !== "");
+  const typ = (c[0] || "").toLowerCase()
+    .replace(/[áà]/g, "a").replace(/[éě]/g, "e").replace(/í/g, "i")
+    .replace(/[óô]/g, "o").replace(/[úů]/g, "u").replace(/ý/g, "y");
+  const d = dnesISO();
+
+  if (typ.indexOf("span") === 0 || typ.indexOf("sleep") === 0){
+    const h = Math.round(naHodiny(cislo(c[1])) * 2) / 2;
+    if (h <= 0 || h > 14) return "Divná hodnota spánku: " + c[1];
+    await posli({ typ: "spanek", kdo: ME, d: d, h: h });
+    return "😴 Spánek " + String(h).replace(".", ",") + " h zapsán.";
+  }
+  if (typ.indexOf("vah") === 0 || typ.indexOf("weight") === 0){
+    const kg = Math.round(cislo(c[1]) * 10) / 10;
+    if (kg < 30 || kg > 250) return "Divná váha: " + c[1];
+    await posli({ typ: "vaha", kdo: ME, d: d, kg: kg });
+    return "⚖️ Váha " + String(kg).replace(".", ",") + " kg zapsána.";
+  }
+  if (typ.indexOf("tren") === 0 || typ.indexOf("workout") === 0){
+    const min = Math.round(naMinuty(cislo(c[1])));
+    const kcal = Math.round(cislo(c[2]));
+    if (min < 1 || min > 600) return "Divná délka tréninku: " + c[1];
+    const nazev = c[3] ? c.slice(3).join(" ").slice(0, 20) : "Z hodinek";
+    await posli({ typ: "trenink", kdo: ME, d: d, min: min, kcal: kcal, nazev: nazev });
+    return "🏋️ Trénink " + min + " min" + (kcal ? " · " + kcal + " kcal" : "") + " zapsán.";
+  }
+  return "Neznámý typ: " + (c[0] || "(prázdné)") + ". Zkus spanek / vaha / trenink.";
+}
+
+let hlaska;
+try { hlaska = await main(); }
+catch (e){ hlaska = "Nepovedlo se: " + (e && e.message ? e.message : e); }
+
+Script.setShortcutOutput(hlaska);
+if (config.runsInApp){
+  const a = new Alert();
+  a.title = "PEVE FIT";
+  a.message = hlaska;
+  a.addAction("OK");
+  await a.presentAlert();
+}
+Script.complete();
+</script>
 <script type="text/plain" id="widgetSrc">
 // PEVE FIT — widget na plochu a zamčenou obrazovku
 // Scriptable · vygenerováno appkou. Nic tu nemusíš měnit.
@@ -1374,22 +1515,31 @@ const store = {
 /* Pozvánku z odkazu vyřídíme hned tady, dřív než se cokoli vykreslí —
    jinak by appka stihla založit zprávy se jmény původních majitelů. */
 (function pozvankaHned(){
+ const CISTY = { jm:"", pohl:"m", vek:30, vyska:178, vaha:80, cil:"drzet", akt:1.42, sada:"silova" };
  try {
   const q = new URLSearchParams(location.search);
   const kod = q.get("kod"), kdo = q.get("kdo");
   if (store.get("famId", null)) return;
-  if (q.get("nova") === "1"){
-   store.set("solo", true);
-   store.set("meId", "p");
-   store.set("profil_v", null);
-   store.set("profil_p", { jm: (q.get("jm") || "").slice(0,16), pohl:"m", vek:30,
-                           vyska:178, vaha:80, cil:"drzet", akt:1.42, sada:"silova" });
-   store.set("onb", false);
-  } else if (kod && /^[A-Z0-9-]{15,30}$/i.test(kod)){
+
+  if (kod && /^[A-Z0-9-]{15,30}$/i.test(kod)){
    store.set("solo", false);
    store.set("famId", kod.toUpperCase());
    if (kdo === "p" || kdo === "v") store.set("meId", kdo);
    store.set("onb", true);
+   return;
+  }
+
+  /* Buď přišel s pozvánkou „měj vlastní appku", nebo si appku prostě otevřel
+     někdo úplně nový. V obou případech tu nemá co dělat cizí jméno — a platí
+     to i pro spuštění z plochy, které má vlastní úložiště a čistou adresu. */
+  const zna = store.get("meId", null) || store.get("profil_p", null)
+           || store.get("profil_v", null) || store.get("onb", false);
+  if (q.get("nova") === "1" || !zna){
+   store.set("solo", true);
+   store.set("meId", "p");
+   store.set("profil_v", null);
+   store.set("profil_p", Object.assign({}, CISTY, { jm: (q.get("jm") || "").slice(0,16) }));
+   store.set("onb", false);
   }
  } catch(e){}
 })();
@@ -2535,6 +2685,7 @@ const state = {
  prTik: null,
  pairTik: null,
  soloPtl: false,
+ jinyKod: false,
  soloTik: null,
  spar: store.get("spar", []),
  fotoP: store.get("fotoP", []),
@@ -3580,7 +3731,8 @@ function onbInstalKrok(){
        +'<li>1️⃣ Dole klepni na <b>Sdílet</b> <span style="font-size:16px">⬆️</span> (čtvereček se šipkou)</li>'
        +'<li>2️⃣ Sjeď dolů a vyber <b>Přidat na plochu</b></li>'
        +'<li>3️⃣ Potvrď <b>Přidat</b> — na ploše přibude ikona PEVE FIT</li>'
-       +'<li>4️⃣ <b>Zavři Safari a otevři appku z té ikony.</b> Tenhle průvodce v ní naskočí znovu — to je správně.</li></ul>'
+       +'<li>4️⃣ <b>Zavři Safari a otevři appku z té ikony.</b> Tenhle průvodce v ní naskočí znovu '
+       +'a znovu se zeptá na jméno — to je správně, appka z ikony si vede vlastní data.</li></ul>'
      : '<ul class="cing">'
        +'<li>1️⃣ Vpravo nahoře klepni na <b>⋮</b> (tři tečky)</li>'
        +'<li>2️⃣ Vyber <b>Přidat na plochu</b> nebo <b>Instalovat aplikaci</b></li>'
@@ -3653,8 +3805,15 @@ function renderOnb(){
   telo = '<div class="cstep">Propojení</div>'
    +'<p class="ctext">Když spojíte oba telefony, drží se stejně úplně všechno — jídlo, deník, váhy i nákup.</p>'
    + (fam
-      ? '<div class="note">Propojení je nastavené. Rodinný kód:</div><div class="code">'+esc(fam)+'</div>'
-        +'<p class="who">Ten samý kód musí být i ve druhém telefonu — nebo mu pošli pozvánku z Nastavení.</p>'
+      ? '<div class="note">Tohle je tvůj rodinný kód:</div><div class="code">'+esc(fam)+'</div>'
+        + (state.jinyKod
+           ? '<p class="who" style="margin:10px 0 4px">Vlož kód z druhého telefonu:</p>'
+             +'<div class="wrow"><input type="text" id="pairInput" placeholder="XXXXX-XXXXX-XXXXX-XXXXX" '
+             +'autocapitalize="characters" autocomplete="off" spellcheck="false" style="flex:1;min-width:170px;width:auto">'
+             +'<button class="act small" id="pairJoin" type="button">Propojit</button></div>'
+             +'<div class="hint" id="pairMsg"></div>'
+           : '<p class="who">Pošli ho tomu druhému, ať ho vloží u sebe — nebo mu z Nastavení pošli rovnou pozvánku. '
+             +'<button class="sh" id="jinyKod" type="button">Mám kód od něj →</button></p>')
       : '<div class="tset" style="gap:10px">'
         +'<button class="act" id="pairCreate" type="button">Vytvořit rodinný kód</button></div>'
         +'<p class="who" style="margin:14px 0 4px">Nebo vlož kód z druhého telefonu:</p>'
@@ -4784,6 +4943,67 @@ function widgetSkript(){
   .replace("__DB__", (FB && FB.databaseURL) || "")
   .replace("__WEB__", location.origin + location.pathname);
 }
+function healthSkript(){
+ const src = document.getElementById("healthSrc");
+ if (!src) return "";
+ return src.textContent
+  .replace("__FAM__", store.get("famId", "") || "")
+  .replace("__ME__", store.get("meId", "p") || "p")
+  .replace("__KEY__", (FB && FB.apiKey) || "")
+  .replace("__DB__", (FB && FB.databaseURL) || "");
+}
+/* Zkratku jde spustit z appky přes systémovou adresu shortcuts:// */
+function spustZkratku(jm){
+ try { location.href = "shortcuts://run-shortcut?name=" + encodeURIComponent(jm); } catch(e){}
+}
+const HZ_ZKRATKY = [
+ { id:"spanek",  jm:"Spánek do PEVE FIT",  ic:"😴", n:"Spánek každé ráno",
+   pod:"nejužitečnější — hodinky to měří líp než ty", min:"~3 min",
+   kroky:[
+    ["Najít vzorky zdraví", "Typ <b>Spánek</b> · filtr <b>Datum začátku je dnes</b> · seřadit podle <b>Datum začátku</b>"],
+    ["Vypočítat statistiku", "<b>Součet</b> z <b>Trvání</b>. <span class=\"dim\">Nemáš tuhle akci? Nevadí — pošli rovnou trvání první položky, skript si s tím poradí.</span>"],
+    ["Spustit skript", "Scriptable → skript <b>PEVE Health</b> → do pole <i>Parametr</i> napiš <code>spanek </code> a za to přetáhni výsledek z minulého kroku"]
+   ],
+   auto:"Automatizace → <b>Denní doba</b> → 9:00 → spustit tuhle zkratku, bez ptaní." },
+ { id:"rano",    jm:"Ráno do PEVE FIT",    ic:"🌅", n:"Spánek i váha jednou ranní zkratkou",
+   pod:"když chceš jen jednu automatizaci místo dvou", min:"~5 min",
+   kroky:[
+    ["Postav si obě zkratky výš", "nejdřív <b>Spánek</b> i <b>Váha</b> zvlášť, ať víš, že fungují"],
+    ["Text", "do jednoho textu dej <b>oba příkazy pod sebe</b>, každý na svůj řádek:<br>"
+     +"<code>spanek [trvání]</code><br><code>vaha [hodnota]</code><br>"
+     +"<span class=\"dim\">skript to rozdělí sám a pošle obojí</span>"],
+    ["Spustit skript", "Scriptable → <b>PEVE Health</b> → parametrem je ten text"]
+   ],
+   auto:"Jedna automatizace na <b>Denní doba 9:00</b> a máš vystaráno." },
+ { id:"vaha",    jm:"Váha do PEVE FIT",    ic:"⚖️", n:"Váha z chytré váhy",
+   pod:"poslední hodnota z Health rovnou do grafu", min:"~2 min",
+   kroky:[
+    ["Najít vzorky zdraví", "Typ <b>Hmotnost</b> · seřadit <b>sestupně</b> · <b>Limit 1</b>"],
+    ["Získat detaily vzorku zdraví", "<b>Hodnota</b>"],
+    ["Spustit skript", "Scriptable → <b>PEVE Health</b> → parametr <code>vaha </code> + ta hodnota"]
+   ],
+   auto:"Automatizace → <b>Denní doba</b> → neděle ráno. Appka počítá tempo z nedělního vážení." },
+ { id:"watchstart", jm:"Trénink na hodinkách", ic:"⌚", n:"Spustit trénink na hodinkách",
+   pod:"aby hodinky měřily tep, když cvičíš s appkou", min:"~2 min",
+   kroky:[
+    ["Nová zkratka", "pojmenuj ji přesně <b>Trénink na hodinkách</b> a přidej akci <b>Zahájit cvičení</b> "
+     +"(Start Workout) → typ <b>Silový trénink</b>"],
+    ["Přidat na hodinky", "v nastavení zkratky zapni <b>Zobrazit na Apple Watch</b>"],
+    ["Spouštět z hodinek", "Apple to spolehlivě spustí, jen když zkratku pustíš <b>přímo z hodinek</b> "
+     +"— z ciferníku nebo přes Siri („Zahaj silový trénink“). Tlačítko níž zkusí totéž z telefonu, "
+     +"ale záleží na verzi iOS."]
+   ],
+   auto:"Tohle není na automatizaci — spouštíš to ručně, když jdeš cvičit." },
+ { id:"trenink", jm:"Trénink do PEVE FIT", ic:"🏋️", n:"Trénink z Apple Watch",
+   pod:"po skončení se sám zapíše do historie", min:"~3 min",
+   kroky:[
+    ["Najít cvičení", "filtr <b>Datum začátku je dnes</b> · seřadit <b>sestupně</b> · <b>Limit 1</b>"],
+    ["Získat detaily cvičení", "postupně <b>Trvání</b> a <b>Aktivní energii</b>"],
+    ["Spustit skript", "Scriptable → <b>PEVE Health</b> → parametr <code>trenink </code> + trvání + mezera + aktivní energie"]
+   ],
+   auto:"Automatizace → <b>Cvičení</b> → <b>Když končí</b> → tahle zkratka, bez ptaní." }
+];
+
 /* ---- karta profilu v Nastavení ---- */
 /* Sám, nebo ve dvou. Přepínatelné kdykoli, nic se tím nemaže. */
 function parakCard(){
@@ -4865,6 +5085,100 @@ function widgetStav(){
   +'<span class="dim" style="font-size:12.5px">Pak ve Scriptable dej ▶︎ a musí to tam být.</span></div>'
   +'<div class="hint">Appka posílá sama: při startu i konci tréninku, po každé zapsané sérii, '
   +'po odškrtnutí jídla, po vodě — a pak ještě každou minutu, dokud je otevřená.</div></div>';
+}
+
+function healthCard(){
+ const fam = store.get("famId", null), me = store.get("meId", null) || "p";
+ const pripraveno = !!(fam && FB);
+ const posl = store.get("hzLast", null);
+ const urlAuth = "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=" + ((FB && FB.apiKey) || "");
+ const urlInbox = ((FB && FB.databaseURL) || "") + "/rodiny/" + (fam || "KOD") + "/inbox.json?auth=";
+ const kopie = (id, txt, lab) => '<button class="ghost" data-kopiruj="'+id+'" type="button">'+lab+'</button>'
+   + '<span class="skryte" id="'+id+'">'+esc(txt)+'</span>';
+
+ const zkratky = HZ_ZKRATKY.map(z =>
+  '<details class="ex"><summary>'
+  +'<span class="exic" style="font-size:19px">'+z.ic+'</span>'
+  +'<span class="exname"><span class="n">'+esc(z.n)+'</span><br><span class="m">'+esc(z.pod)+'</span></span>'
+  +'<span class="exsets"><span class="r">'+z.min+'</span></span></summary>'
+  +'<p class="who" style="margin:8px 0">Ve Zkratkách dej <b>+</b>, pojmenuj to přesně '
+  +'<b>'+esc(z.jm)+'</b> a přidej tyhle tři akce:</p>'
+  +'<table><tbody>'
+  + z.kroky.map((k,n)=>'<tr><td>'+(n+1)+'</td><td><b>'+k[0]+'</b><br><span class="dim">'+k[1]+'</span></td></tr>').join("")
+  +'<tr><td>▶</td><td><b>Ať to jede samo:</b> '+z.auto+'</td></tr>'
+  +'</tbody></table>'
+  + (z.id === "watchstart"
+     ? '<div class="nrow"><div class="nlab"><b>Tlačítko v tréninku</b>'
+       +'<span class="dim">Až spustíš trénink v appce, nabídne se ⌚</span></div>'
+       +'<div class="nctl">'+nTgl("watchBtn", false, "Ukazovat", "Skrýt")+'</div></div>'
+     : '')
+  +'<div class="wrow" style="margin-top:10px"><button class="act small" data-hzrun="'+esc(z.jm)+'" type="button">'
+  + z.ic + ' Spustit teď</button>'
+  +'<button class="ghost" data-kopiruj="hzJm-'+z.id+'" type="button">Kopírovat název</button>'
+  +'<span class="skryte" id="hzJm-'+z.id+'">'+esc(z.jm)+'</span></div>'
+  +'</details>').join("");
+
+ return '<div class="card"><h3>⌚ Apple Health a hodinky</h3>'
+  +'<p class="who">Do Apple Health se z webové appky dostat nejde — HealthKit umí jen nativní aplikace. '
+  +'Zkratka na iPhonu ale umí obojí: <b>přečíst Health a poslat to sem</b>. '
+  +'Veškerou práci odvede skript, který ti tu appka vygeneruje — ve Zkratkách pak jen naklikáš '
+  +'<b>tři akce</b> a je hotovo.</p>'
+  + (pripraveno ? '' :
+     '<div class="note"><b>Nejdřív si vytvoř rodinný kód</b> o kus výš — bez něj nemá skript kam posílat. 🔗</div>')
+  + (posl
+     ? '<div class="note" style="border-color:var(--s1)"><b>Funguje to.</b> Poslední záznam z Health: <b>'
+       + esc(posl.co) + '</b> — ' + esc(czDate(String(posl.kdy).slice(0,10))) + '.</div>'
+     : '<div class="hint">Až Zkratku poprvé spustíš, objeví se tady potvrzení, že záznam dorazil.</div>')
+
+  +'<div class="nblok" style="margin-top:12px"><div class="nh">🔁 Jak to poteče</div>'
+  +'<div class="hint" style="margin-top:0"><b>Appka si nic nebere — data přiletí k ní.</b> '
+  +'Webová appka běží, jen když ji máš otevřenou, takže sama nic spustit nemůže. '
+  +'Spouští to <b>iOS</b>:</div>'
+  +'<table style="margin-top:6px"><tbody>'
+  +'<tr><td>1</td><td>V nastavený čas (nebo po tréninku) spustí <b>iOS</b> zkratku — i když máš telefon v kapse.</td></tr>'
+  +'<tr><td>2</td><td>Zkratka přečte hodnotu z <b>Health</b> a pošle ji na náš server.</td></tr>'
+  +'<tr><td>3</td><td><b>Appka</b> si ji vyzvedne — hned, když je otevřená, jinak při dalším spuštění. '
+  +'A rovnou to doletí i do druhého telefonu.</td></tr>'
+  +'</tbody></table>'
+  +'<div class="hint">Žádná chytrost se v tom neděje — zkratka bere přesně tu jednu hodnotu, '
+  +'kterou jí určíš. Když telefon zrovna spí, iOS to může o pár minut posunout. Nic se neztratí.</div></div>'
+
+  +'<div class="nblok" style="margin-top:12px"><div class="nh">1️⃣ Jednou nahrát skript</div>'
+  +'<div class="hint" style="margin-top:0">Stejná appka jako u widgetu — <b>Scriptable</b>. '
+  +'Otevři ji, dej <b>+</b>, vlož skript a nahoře ho pojmenuj přesně <b>PEVE Health</b>. '
+  +'Tvůj rodinný kód už je uvnitř, nic se nevyplňuje.</div>'
+  +'<div class="wrow" style="margin-top:8px">'
+  +'<button class="act small" id="hzGet" type="button"'+(pripraveno?'':' disabled')+'>Zkopírovat skript</button>'
+  +'<button class="ghost" id="hzShare" type="button"'+(pripraveno?'':' disabled')+'>Poslat si ho</button></div>'
+  +'<div class="hint" id="hzMsg">Skript umí spánek, váhu i tréninky — jeden pro všechno.</div></div>'
+
+  +'<div class="nblok" style="margin-top:12px"><div class="nh">2️⃣ Postavit zkratky — tři akce na každou</div>'
+  +'<div class="hint" style="margin-top:0">Rozklikni si, co chceš. Skript si poradí s hodinami, '
+  +'minutami i vteřinami, takže se nikde nic nepřepočítává.</div>'
+  + zkratky
+  +'</div>'
+
+  +'<details class="ex" style="margin-top:10px"><summary>'
+  +'<span class="exic" style="font-size:19px">🧰</span><span class="exname"><span class="n">Bez Scriptable, natvrdo</span><br>'
+  +'<span class="m">když nechceš druhou appku — dva kroky Získat obsah URL</span></span>'
+  +'<span class="exsets"><span class="r">delší</span></span></summary>'
+  +'<table><tbody>'
+  +'<tr><td><b>1. Vstupenka</b><br><span class="dim">POST · tělo JSON · '
+  +'<code>returnSecureToken</code> = Ano</span></td><td class="num">'+kopie("hzUrl1", urlAuth, "URL")+'</td></tr>'
+  +'<tr><td><b>2. Odeslání</b><br><span class="dim">POST · na konec adresy přidej proměnnou '
+  +'<b>idToken</b> · tělem je text níž</span></td><td class="num">'+kopie("hzUrl2", urlInbox, "URL")+'</td></tr>'
+  +'<tr><td><b>Tělo</b></td><td class="num">'
+  + kopie("hzB1", '{"typ":"spanek","kdo":"'+me+'","h":0}', "spánek") + ' '
+  + kopie("hzB2", '{"typ":"vaha","kdo":"'+me+'","kg":0}', "váha") + ' '
+  + kopie("hzB3", '{"typ":"trenink","kdo":"'+me+'","nazev":"Z hodinek","min":0,"kcal":0}', "trénink")
+  +'</td></tr></tbody></table>'
+  +'<div class="hint">Tady si musíš hodiny přepočítat sám (Health dává vteřiny → ÷ 3600).</div></details>'
+
+  +'<div class="note" style="margin-top:12px"><b>Co tudy nepůjde:</b> zapisovat série z hodinek '
+  +'a živý pruh na zamčené obrazovce. Na to by musela být nativní appka z App Store — '
+  +'placený vývojářský účet a schvalování každé verze.</div>'
+  +'<div class="hint">Skript i adresy v sobě mají váš rodinný kód, takže je nikam nepřeposílej. '
+  +'Kdo je má, může do vaší appky psát.</div></div>';
 }
 
 function widgetCard(){
@@ -5936,6 +6250,9 @@ function renderSession(){
   +(duo?' · zapisuješ za '+esc(sessJmeno(kdo)):'')+'</div>'
   +'<div class="zb">'+esc(zbyvaText(tTy.hot, tTy.cel, tTy.min, planMinut(who, s0.rid), true))+'</div></div>'
   +'<div class="clock" id="sessClock">'+casTrvani(t.min)+'</div>'
+  + (nast("watchBtn", false)
+     ? '<button class="ghost" data-hzrun="Trénink na hodinkách" type="button" '
+       +'style="margin:0 0 8px">⌚ Spustit i na hodinkách</button>' : '')
   +'<button class="mini" data-sess="mini" type="button" title="Minimalizovat">▾ Skrýt</button>'
   +'<button class="ghost" data-sess="zrus" type="button">Zrušit</button></div>'
   + (state.zrusPtl
@@ -6046,8 +6363,10 @@ function histCard(who){
  if (!h.length) return "";
  return '<div class="card"><h3>Poslední tréninky</h3>'
   +'<table><thead><tr><th>Kdy</th><th>Co</th><th class="num">Série</th><th class="num">Čas</th><th class="num">Objem</th></tr></thead><tbody>'
-  + h.map(x=>'<tr><td>'+czDate(x.d)+'</td><td>'+esc(x.rid)+'</td><td class="num">'+x.sets+'</td>'
-    +'<td class="num">'+x.min+'′</td><td class="num">'+fmt(x.obj)+' kg</td></tr>').join("")
+  + h.map(x=>'<tr><td>'+czDate(x.d)+'</td><td>'+(x.zdroj==="watch"?'⌚ ':'')+esc(x.rid)+'</td>'
+    +'<td class="num">'+(x.sets||"—")+'</td>'
+    +'<td class="num">'+x.min+'′</td>'
+    +'<td class="num">'+(x.zdroj==="watch" && !x.obj ? (x.kcal ? fmt(x.kcal)+' kcal' : '—') : fmt(x.obj)+' kg')+'</td></tr>').join("")
   +'</tbody></table>'
   +'<div class="hint">Objem = kg × opakování sečteno přes celý trénink. Když roste, rosteš i ty.</div></div>';
 }
@@ -7452,6 +7771,23 @@ const sync = {
       if (zmena){ renderAll(); syncDot(); }
       Object.keys(SDIL).forEach(k => sdilPosli(k));
     });
+    // lísteček z Apple Health (poslaný Zkratkou)
+    onValue(this._ref("inbox"), snap => {
+      const v = snap.val();
+      if (!v || typeof v !== "object") return;
+      let neco = null;
+      Object.keys(v).forEach(k => {
+        let popis = null;
+        try { popis = inboxZpracuj(v[k]); } catch(e){}
+        if (popis) neco = popis;
+        this._set("inbox/" + k, null);      // lísteček je vyřízený
+      });
+      if (neco){
+        store.set("hzLast", { kdy: new Date().toISOString(), co: neco });
+        kontrolaOdznaku();
+        renderAll(); syncDot();
+      }
+    });
     onValue(this._ref("sdil1"), snap => {
       const v = snap.val() || {};
       let zmena = false;
@@ -7917,6 +8253,14 @@ function pairCard(){
      +(sync.err ? ' <span class="dim">('+esc(String(sync.err).slice(0,90))+')</span>' : '')+'</div>' : '')
    +'<p class="who" style="margin-bottom:2px">Rodinný kód — v obou telefonech musí být stejný:</p>'
    +'<div class="code">'+esc(fam)+'</div>'
+   + (state.jinyKod
+      ? '<p class="who" style="margin:10px 0 4px">Vlož kód z druhého telefonu — tenhle se přepíše:</p>'
+        +'<div class="wrow"><input type="text" id="pairInput" placeholder="XXXXX-XXXXX-XXXXX-XXXXX" '
+        +'autocapitalize="characters" autocomplete="off" spellcheck="false" style="flex:1;min-width:170px;width:auto">'
+        +'<button class="act small" id="pairJoin" type="button">Propojit</button></div>'
+        +'<div class="hint" id="pairMsg">Tvoje data zůstanou — jen se od téhle chvíle budou držet s tím druhým.</div>'
+      : '<div class="wrow" style="margin-top:8px"><button class="sh" id="jinyKod" type="button">'
+        +'Mám kód z druhého telefonu →</button></div>')
    +'<div class="wrow"><button class="act small" id="pairCopy" type="button">Poslat kód '+esc(koho(druhy(me)))+'</button>'
    +'<button class="ghost" id="pairReset" type="button">'+(conf?'Fakt odpojit?':'Odpojit')+'</button></div>'
    +'<div class="hint">Sdílí se úplně všechno kromě fotek: zprávy, oblíbené, jídelníček, nákup, '
@@ -8125,6 +8469,53 @@ function renderNastaveni(){
   if (state.notif) renderZpravy();
   if (state.tab === "dnes") renderDnes();
   if (state.tab === "nastaveni") renderNastaveniTab();
+}
+
+/* ================= SCHRÁNKA PRO APPLE HEALTH =================
+   Web se do HealthKitu nedostane — to umí jen nativní appky. Zkratka
+   na iPhonu ale umí obojí: přečíst Health a poslat požadavek na server.
+   Nechává tedy v databázi lísteček a appka si ho přebere a zaúčtuje.  */
+
+function inboxPopis(z){
+ if (z.typ === "spanek")  return "spánek " + String(z.h).replace(".", ",") + " h";
+ if (z.typ === "vaha")    return "váha " + String(z.kg).replace(".", ",") + " kg";
+ if (z.typ === "trenink") return "trénink " + (z.nazev || "z hodinek") + " · " + (z.min || 0) + " min";
+ return z.typ || "záznam";
+}
+function inboxZpracuj(z){
+ if (!z || typeof z !== "object" || !z.typ) return null;
+ const kdo = (z.kdo === "p" || z.kdo === "v") ? z.kdo : (store.get("meId", "p") || "p");
+ const d = /^\d{4}-\d{2}-\d{2}$/.test(String(z.d || "")) ? z.d : isoDnes();
+
+ if (z.typ === "spanek"){
+  const h = parseFloat(z.h);
+  if (!h || isNaN(h) || h <= 0 || h > 14) return null;
+  spanekSet(kdo, d, h, z.q ? +z.q : undefined);
+  return inboxPopis({ typ:"spanek", h: Math.round(h*2)/2 });
+ }
+ if (z.typ === "vaha"){
+  const kg = Math.round(parseFloat(z.kg) * 10) / 10;
+  if (!kg || isNaN(kg) || kg < 30 || kg > 250) return null;
+  const arr = (wtArr(kdo) || []).filter(x => x.d !== d).concat([{ d: d, kg: kg }])
+    .sort((a,b)=>a.d.localeCompare(b.d));
+  if (kdo === "p"){ state.wtP = arr; store.set("wtP", arr); }
+  else { state.wtV = arr; store.set("wtV", arr); }
+  return inboxPopis({ typ:"vaha", kg: kg });
+ }
+ if (z.typ === "trenink"){
+  const min0 = Math.round(+z.min);
+  if (!min0 || isNaN(min0) || min0 < 1 || min0 > 600) return null;
+  const min = Math.min(300, min0);
+  const nazev = String(z.nazev || "Trénink z hodinek").slice(0, 20);
+  const kcal = Math.max(0, Math.round(+z.kcal || 0));
+  const uz = (state.hist || []).some(x => x.who === kdo && x.d === d && x.rid === nazev);
+  if (uz) return null;
+  state.hist = (state.hist || []).concat([{ d: d, who: kdo, rid: nazev, min: min,
+    sets: 0, obj: 0, kcal: kcal, zdroj: "watch" }]);
+  store.set("hist", state.hist);
+  return inboxPopis({ typ:"trenink", nazev: nazev, min: min });
+ }
+ return null;
 }
 
 /* ---------- pozvánky odkazem ----------
@@ -8665,6 +9056,7 @@ function renderNastaveniTab(){
   +'</div>'
 
   + widgetCard()
+  + healthCard()
 
   + remCard()
 
@@ -8687,7 +9079,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">38</td></tr>'
+  +'<tr><td>Verze</td><td class="num">40</td></tr>'
   +'<tr><td>Tréninků k výběru</td><td class="num">'+(ROUTINES.p.length+ROUTINES.v.length)+'</td></tr>'
   +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
@@ -9149,6 +9541,7 @@ document.addEventListener("click", e=>{
   if (!store.get("meId", null)) store.set("meId", "p");
   renderAll(); renderOnb(); return;
  }
+ if (e.target.id === "jinyKod"){ state.jinyKod = true; renderNastaveniTab(); renderOnb(); return; }
  if (e.target.id === "pairCreate"){
   store.set("famId", newFamCode());
   if (state.onb !== null){ renderOnb(); sync.start(); return; }
@@ -9162,8 +9555,26 @@ document.addEventListener("click", e=>{
    msg.style.color = "var(--s2)"; return;
   }
   store.set("famId", raw.match(/.{1,5}/g).join("-"));
+  store.set("solo", false);
+  state.jinyKod = false;
   if (state.onb !== null){ renderOnb(); sync.start(); return; }
   renderZpravy(); renderNastaveni(); sync.start(); return;
+ }
+ const hzr = e.target.closest("[data-hzrun]");
+ if (hzr){ spustZkratku(hzr.dataset.hzrun); return; }
+ if (e.target.id === "hzGet" || e.target.id === "hzShare"){
+  const t = healthSkript();
+  const m = document.getElementById("hzMsg");
+  if (e.target.id === "hzShare"){ shareText(t); return; }
+  kopiruj(t);
+  if (m) m.textContent = "Zkopírováno ✓ — teď to vlož ve Scriptable do nového skriptu a pojmenuj ho PEVE Health.";
+  return;
+ }
+ const kop = e.target.closest("[data-kopiruj]");
+ if (kop){
+  const el = document.getElementById(kop.dataset.kopiruj);
+  if (el){ kopiruj(el.textContent); hlaskaMini(kop, "Zkopírováno ✓"); }
+  return;
  }
  if (e.target.id === "pozviParak" || e.target.id === "kopirParak"){
   const u = odkazParak();
@@ -9618,7 +10029,7 @@ document.addEventListener("click", e=>{
                 "n_rozvrh_p","n_rozvrh_v","n_tren_p","n_tren_v","n_hlasky","n_zpravyAuto","n_konfety","n_stouch",
                 "favJ","parti","tlogB","spar","n_zkus_p","n_zkus_v","favR","profil_p","profil_v","ts1","cooked","shuffleN","odznaky",
                 "n_rekSort","n_rekPocet","n_ukaz1rm","n_statObd","stouch_p","stouch_v","parti","spanek",
-                "n_spanek_p","n_spanek_v"]
+                "n_spanek_p","n_spanek_v","hzLast"]
    .concat(Object.keys(SDIL).map(k => "ts_" + k));
   const dump = {};
   keys.forEach(k=>{ const v = store.get(k, null); if (v !== null) dump[k] = v; });
@@ -9757,14 +10168,15 @@ renderMini();
  try {
   const q = new URLSearchParams(location.search);
   const kod = q.get("kod"), kdo = q.get("kdo");
-  if (q.get("nova") === "1" && !store.get("famId", null)){
-   store.set("famId", newFamCode());     // vlastní rodina, ať se dá později přidat parťák
-   history.replaceState(null, "", location.pathname);
+  if (!store.get("famId", null) && solo()){
+   store.set("famId", newFamCode());     // vlastní prostor, ať jde později přidat parťák
    renderAll();
   } else if (kod || q.get("nova")){
-   history.replaceState(null, "", location.pathname);
    renderAll();
   }
+  // adresu uklidíme, až když appka běží z ikony — jinak by se pozvánka
+  // ztratila právě ve chvíli, kdy si ji člověk přidává na plochu
+  if ((kod || q.get("nova")) && jeNainstalovana()) history.replaceState(null, "", location.pathname);
  } catch(e){}
 })();
 (function deepLink(){
