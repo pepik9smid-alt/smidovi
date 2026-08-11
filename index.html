@@ -508,6 +508,11 @@
   .pt .b{flex:1;height:9px;border-radius:5px;background:var(--grid);overflow:hidden}
   .pt .b i{display:block;height:100%;border-radius:5px}
   .pt .v{flex:0 0 44px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+  .voda.spanek{margin-top:6px}
+  .spq{display:inline-flex;gap:4px;margin-left:8px}
+  .spq button{background:var(--surface-1);border:1px solid var(--border);border-radius:9px;
+    padding:4px 8px;font-size:15px;cursor:pointer;line-height:1;opacity:.55;transition:opacity .12s}
+  .spq button.on{opacity:1;border-color:var(--s3);box-shadow:0 0 0 1.5px var(--s3) inset}
   .card.profil.ja{border-color:var(--s1)}
   .pinp{width:130px;padding:8px 10px;font-size:15px;border-radius:9px;border:1px solid var(--border);
         background:var(--surface-1);color:var(--text-primary);font-family:inherit}
@@ -2551,6 +2556,83 @@ function vodaRow(who, iso){
 
 const SUPPS = [["cr","Kreatin 5 g"],["d3","Vitamin D3 2000 IU"],["om","Omega-3"]];
 
+/* ================= SPÁNEK =================
+   Sval neroste v posilovně — roste v posteli. Zapisuje se ráno jedním
+   ťuknutím: kolik hodin a jak to bylo. Sdílí se jako všechno ostatní.  */
+function spanekCil(who){ return nast("spanek_" + who, 8); }
+function spanekGet(who, iso){
+ const z = (store.get("spanek", {}) || {})[iso + "|" + who];
+ return z && z.h ? z : null;
+}
+function spanekSet(who, iso, h, q){
+ const all = store.get("spanek", {}) || {};
+ const k = iso + "|" + who;
+ if (h === null){ delete all[k]; }
+ else {
+  const st0 = all[k] || {};
+  all[k] = { h: Math.max(0, Math.min(14, Math.round(h * 2) / 2)),
+             q: (q !== undefined ? q : st0.q) || null };
+ }
+ store.set("spanek", all);
+}
+function spanekQ(who, iso, q){
+ const z = spanekGet(who, iso);
+ if (!z) return;
+ spanekSet(who, iso, z.h, q);
+}
+const SPANEK_Q = [[1,"😵","rozlámaný"],[2,"😐","šlo to"],[3,"😴","jako miminko"]];
+/* posledních N dní se záznamem */
+function spanekDny(who, n){
+ const out = [];
+ for (let i = 0; i < n; i++){
+  const iso = isoPlus(-i);
+  const z = spanekGet(who, iso);
+  out.push({ iso: iso, h: z ? z.h : null, q: z ? z.q : null });
+ }
+ return out;
+}
+function spanekPrumer(who, n){
+ const dny = spanekDny(who, n).filter(x => x.h);
+ if (dny.length < 2) return null;
+ return Math.round(dny.reduce((a,x)=>a+x.h,0) / dny.length * 10) / 10;
+}
+/* kolik nocí v řadě splněný cíl */
+function spanekSerie(who){
+ let n = 0;
+ for (let i = 0; i < 120; i++){
+  const z = spanekGet(who, isoPlus(-i));
+  if (z && z.h >= spanekCil(who)) n++;
+  else if (i === 0) continue;      // dnešek se ještě může dopsat
+  else break;
+ }
+ return n;
+}
+function spanekVeta(who){
+ const pr = spanekPrumer(who, 7);
+ if (pr === null) return "Zapisuj pár dní a appka ti řekne, jak na tom jsi.";
+ const cil = spanekCil(who);
+ if (pr >= cil) return "Průměr " + String(pr).replace(".", ",") + " h — přesně tak se staví postava. Držet.";
+ if (pr >= cil - 0.5) return "Průměr " + String(pr).replace(".", ",") + " h — kousek pod cílem. Půlhodina dřív do postele to srovná.";
+ if (pr >= cil - 1.5) return "Průměr " + String(pr).replace(".", ",") + " h — tělo dostává míň, než potřebuje. Regenerace i síla jedou na dluh.";
+ return "Průměr " + String(pr).replace(".", ",") + " h — tohle je málo na trénink i na hubnutí. Spánek je první věc k opravě, ne poslední.";
+}
+/* rychlé zapsání: −/+ po půl hodině + jak ses vyspal */
+function spanekRow(who, iso){
+ const z = spanekGet(who, iso);
+ const cil = spanekCil(who);
+ const h = z ? z.h : null;
+ const lab = h === null ? "—" : String(h).replace(".", ",");
+ return '<div class="voda spanek">'
+  +'<button data-spanek="'+who+'|'+iso+'|-0.5" type="button" aria-label="Ubrat">−</button>'
+  +'<span class="lit" style="min-width:104px;text-align:center">😴 <b>'+lab+'</b> / '+String(cil).replace(".",",")+' h</span>'
+  +'<button data-spanek="'+who+'|'+iso+'|0.5" type="button" aria-label="Přidat">+</button>'
+  + (z ? '<span class="spq">'+SPANEK_Q.map(x=>
+      '<button class="'+(z.q===x[0]?"on":"")+'" data-spq="'+who+'|'+iso+'|'+x[0]+'" type="button" title="'+x[2]+'">'+x[1]+'</button>').join("")+'</span>'
+     : '<span class="dim" style="font-size:12px">kolik hodin dneska?</span>')
+  +'</div>';
+}
+
+
 function buildSelect(key, day, opts, idx){
  const home = [], out = [];
  opts.forEach((o,i)=>{
@@ -2672,7 +2754,10 @@ const HLASKY = {
   "Bílkoviny nebo výmluvy. Obojí se do dne nevejde.",
   "Statistiky nelžou, jenom občas trapně mlčí. 📊",
   "Neděle bez nákupu je pondělí s pumpou. 🌯",
-  "Cvičí se i ve dnech, kdy se nechce. Hlavně v těch."
+  "Cvičí se i ve dnech, kdy se nechce. Hlavně v těch.",
+  "Hodina spánku navíc udělá pro sílu víc než jakýkoli suplement. A je zadarmo.",
+  "Nevyspalý mozek hlásí hlad, i když chce spát. Nevěřte mu a zhasněte.",
+  "Večerka je taky trénink. Jen se u ní nepotíte."
  ],
  v: [
   "Verune, hip thrust je jediný cvik, kde přidávat kila znamená lepší džíny. ✨",
@@ -2740,7 +2825,10 @@ const HLASKY_SOLO = [
  "{o}, vaření dopředu je jediný trik, co fakt funguje. Zbytek je marketing.",
  "{o}, když se ti dneska nechce, udělej aspoň rozehřívačku. Většinou zůstaneš.",
  "{o}, kdo si zapíše váhu, ten ji jednou uvidí klesat na grafu. Ostatní hádají.",
- "{o}, sval neroste v posilovně. Roste, když spíš a když jíš. Posilovna je jen pozvánka."
+ "{o}, sval neroste v posilovně. Roste, když spíš a když jíš. Posilovna je jen pozvánka.",
+ "{o}, hodina spánku navíc udělá pro sílu víc než jakýkoli suplement.",
+ "{o}, večerka je taky trénink. Jen se u ní nepotíš.",
+ "{o}, nevyspalý mozek hlásí hlad, i když chce spát. Nevěř mu a jdi do postele."
 ];
 function hlaskaDne(){
  const me = store.get("meId", null);
@@ -3231,6 +3319,7 @@ function personCard(who, iso){
         + (state.sugOpen === who+"|"+iso ? sugHtml(restK, restP) : '') + '</div>'
       : '')
   + rows
+  + spanekRow(who, iso)
   +'<div style="margin-top:10px;padding-top:9px;border-top:1px solid var(--baseline)">'
   +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">Suplementy — každý den</div>'
   + '<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px"></div>'.slice(0,0)
@@ -3454,33 +3543,88 @@ function onbProfilForm(){
      : '<div class="hint" style="margin-top:12px">Vyplň aspoň jméno, výšku, váhu a věk — bez toho nemá appka z čeho počítat.</div>');
 }
 
+/* Běží appka z ikony na ploše, nebo jen v prohlížeči? Na iPhonu má appka
+   z ikony vlastní úložiště — proto instalace musí být PRVNÍ krok, jinak
+   by nové nastavení zůstalo v Safari a ikona by startovala načisto.     */
+function jeNainstalovana(){
+ try {
+  return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches)
+    || window.navigator.standalone === true;
+ } catch(e){ return false; }
+}
+function jeIphone(){ return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
+
+/* pořadí kroků se skládá podle situace */
+function onbKroky(){
+ const k = ["vitej"];
+ if (!jeNainstalovana()) k.push("instal");
+ k.push("profil");                     // v režimu pro dva = výběr, kdo drží telefon
+ k.push(solo() ? "parak" : "pair");
+ k.push("hotovo");
+ return k;
+}
+
+function onbInstalKrok(){
+ const ip = jeIphone();
+ return '<div class="cstep">Nejdřív si appku nainstaluj</div>'
+  +'<p class="ctext">Ještě než cokoli vyplníš, <b>dej si appku na plochu telefonu</b> a otevři ji odtamtud. '
+  +'Není to detail: appka spuštěná z ikony si vede <b>vlastní data</b> — co nastavíš tady v prohlížeči, '
+  +'by se do ní nepřeneslo a jelo by se od nuly.</p>'
+  + (ip
+     ? '<ul class="cing">'
+       +'<li>1️⃣ Dole klepni na <b>Sdílet</b> <span style="font-size:16px">⬆️</span> (čtvereček se šipkou)</li>'
+       +'<li>2️⃣ Sjeď dolů a vyber <b>Přidat na plochu</b></li>'
+       +'<li>3️⃣ Potvrď <b>Přidat</b> — na ploše přibude ikona PEVE FIT</li>'
+       +'<li>4️⃣ <b>Zavři Safari a otevři appku z té ikony.</b> Tenhle průvodce v ní naskočí znovu — to je správně.</li></ul>'
+     : '<ul class="cing">'
+       +'<li>1️⃣ Vpravo nahoře klepni na <b>⋮</b> (tři tečky)</li>'
+       +'<li>2️⃣ Vyber <b>Přidat na plochu</b> nebo <b>Instalovat aplikaci</b></li>'
+       +'<li>3️⃣ Potvrď — na ploše přibude ikona PEVE FIT</li>'
+       +'<li>4️⃣ <b>Zavři prohlížeč a otevři appku z té ikony.</b> Tenhle průvodce v ní naskočí znovu — to je správně.</li></ul>')
+  +'<div class="note" style="margin-top:12px">Z plochy pak funguje jako normální aplikace: celá obrazovka, '
+  +'funguje i bez internetu a nic se nikam neinstaluje z obchodu.</div>'
+  +'<p class="who" style="margin-top:12px">Nejde to teď? Tlačítkem níž můžeš pokračovat i v prohlížeči '
+  +'a nainstalovat si ji později — jen počítej s tím, že appka z ikony pojede načisto.</p>';
+}
+
 function renderOnb(){
  const o = document.getElementById("onbOverlay");
  if (state.onb === null || state.onb === undefined){ o.hidden = true; return; }
- const st = state.onb, N = 4;
+ const kroky = onbKroky();
+ if (state.onb >= kroky.length) state.onb = kroky.length - 1;
+ const krok = kroky[state.onb];
+ const N = kroky.length;
  document.body.style.overflow = "hidden";
  o.hidden = false;
  const me = store.get("meId", null), fam = store.get("famId", null);
  const samotny = solo();
- let telo, dalsi = "Pokračovat →", muzeDal = true;
+ let telo, dalsi = "Pokračovat →", muzeDal = true, bezPreskocit = false;
 
- if (st === 0){
+ if (krok === "vitej"){
   telo = '<div class="cstep">Vítej</div>'
-   +'<p class="ctext">Tohle je <b>PEVE FIT</b> — appka na jídlo a trénink'+(samotny ? "" : " pro vás dva")+'.</p>'
-   +'<ul class="cing"><li>🍽️ <b>Jídlo na každý den</b> spočítané na tvoje čísla. Odškrtáváš, co sníš.</li>'
-   +'<li>🏋️ <b>Desítky tréninků</b> s deníkem — appka si pamatuje, co jsi zvedal(a), a řekne, kdy přidat.</li>'
-   +'<li>📈 <b>Váha, míry a fotky</b>, ze kterých sama pozná, jestli to funguje.</li>'
-   +'<li>'+(samotny
-      ? '🤜 <b>Trénink s kámošem</b> — zapisuješ za oba a na konci se vyhlásí vítěz.'
-      : '💌 <b>Propojení s tím druhým</b> — vidíte na sebe a můžete se pošťouchnout.')+'</li></ul>'
-   +'<p class="who" style="margin-top:14px">Nastavení zabere minutu. Pak už se jen kliká.</p>';
+   +'<p class="ctext">Tohle je <b>PEVE FIT</b> — jedna appka na jídlo, trénink a pokrok'
+   +(samotny ? "" : " pro vás dva")+'. Co v ní najdeš:</p>'
+   +'<ul class="cing">'
+   +'<li>🍽️ <b>Jídelníček na každý den</b> spočítaný na tvoje tělo a cíl — snídaně, svačiny, oběd i večeře. Odškrtáváš, co sníš, a appka hlídá kalorie i bílkoviny.</li>'
+   +'<li>🛒 <b>Nákupní seznam</b> se poskládá sám z toho, co se bude vařit — seřazený podle oddělení, jak jdeš obchodem.</li>'
+   +'<li>🏋️ <b>Desítky tréninků</b> na sílu, doma, kardio i protahování — s deníkem, doporučenou váhou na každý cvik a nápovědou k technice. Appka si pamatuje, co jsi zvedal(a), a řekne, kdy přidat.</li>'
+   +'<li>🤜 <b>Trénink s kámošem</b> — zapíšeš série za oba a na konci se vyhlásí vítěz. Kronika soubojů se vede sama.</li>'
+   +'<li>📈 <b>Průběh</b> — váha s trendem, míry, fotky, spánek. Když se váha nehýbe správně, appka sama navrhne úpravu kalorií.</li>'
+   +'<li>🏅 <b>Odznaky</b> za sérii, rekordy, vodu, spánek… ' + ODZNAKY.length + ' kousků. Nejsou o parádě, jsou o zvyku.</li>'
+   +'<li>📴 <b>Funguje offline</b> a data jsou jen tvoje — žádné účty, žádné reklamy.</li>'
+   +'</ul>'
+   +'<p class="who" style="margin-top:12px">Nastavení zabere dvě minuty. Pak už se jen kliká.</p>';
   dalsi = "Pojďme na to →";
- } else if (st === 1){
+ } else if (krok === "instal"){
+  telo = onbInstalKrok();
+  dalsi = jeNainstalovana() ? "Pokračovat →" : "Mám hotovo / pokračovat →";
+ } else if (krok === "profil"){
   if (samotny){
    telo = onbProfilForm();
    muzeDal = profilVyplneny(ja());
+   bezPreskocit = true;
   } else {
-   telo = '<div class="cstep">Krok 1 ze 3 — kdo drží tenhle telefon</div>'
+   telo = '<div class="cstep">Kdo drží tenhle telefon</div>'
     +'<p class="ctext">Podle toho se pak ukazuje tvůj plán a tvoje čísla.</p>'
     +'<div class="tset" style="gap:10px">'
     +'<button class="pchip'+(me==="p"?" on":"")+'" data-setme="p" type="button" style="font-size:15px;padding:12px 18px">Jsem '+esc(jmeno("p"))+' 💪</button>'
@@ -3491,43 +3635,43 @@ function renderOnb(){
        : '<p class="who" style="margin-top:16px">Vyber jednu možnost, ať víme, čí to je telefon.</p>');
    muzeDal = !!me;
   }
- } else if (st === 2){
-  if (samotny){
-   telo = '<div class="cstep">Krok 2 ze 3 — cvičíš sám, nebo ve dvou?</div>'
-    +'<p class="ctext">Appka umí obojí. Když si přidáš parťáka, uvidíte na sebe živě, '
-    +'budete mít společný jídelníček i nákup a půjde se navzájem pošťuchovat.</p>'
-    +'<div class="note"><b>Zatím jedeš sám.</b> To je v pořádku — parťáka jde přidat kdykoli '
-    +'v Nastavení, nic se tím neztratí.</div>'
-    +'<div class="wrow" style="margin-top:12px"><button class="act" id="onbParak" type="button">Chci parťáka</button></div>'
-    +'<div class="hint">Na kámoše, se kterým jenom občas zajdeš do posilky, parťáka potřebovat nebudeš — '
-    +'toho si zapíšeš rovnou v tréninku jako sparingpartnera.</div>';
-  } else {
-   telo = '<div class="cstep">Krok 2 ze 3 — propojení</div>'
-    +'<p class="ctext">Když spojíte oba telefony, drží se stejně úplně všechno — jídlo, deník, váhy i nákup.</p>'
-    + (fam
-       ? '<div class="note">Propojení je nastavené. Rodinný kód:</div><div class="code">'+esc(fam)+'</div>'
-         +'<p class="who">Ten samý kód musí být i ve druhém telefonu — nebo mu pošli pozvánku z Nastavení.</p>'
-       : '<div class="tset" style="gap:10px">'
-         +'<button class="act" id="pairCreate" type="button">Vytvořit rodinný kód</button></div>'
-         +'<p class="who" style="margin:14px 0 4px">Nebo vlož kód z druhého telefonu:</p>'
-         +'<div class="wrow"><input type="text" id="pairInput" placeholder="XXXXX-XXXXX-XXXXX-XXXXX" '
-         +'autocapitalize="characters" autocomplete="off" spellcheck="false" style="flex:1;min-width:170px;width:auto">'
-         +'<button class="act small" id="pairJoin" type="button">Propojit</button></div>'
-         +'<div class="hint" id="pairMsg">Nespěchá to — jde to nastavit kdykoli potom.</div>');
-  }
+ } else if (krok === "parak"){
+  telo = '<div class="cstep">Cvičíš sám, nebo ve dvou?</div>'
+   +'<p class="ctext">Appka umí obojí. Když si přidáš parťáka, uvidíte na sebe živě, '
+   +'budete mít společný jídelníček i nákup a půjde se navzájem pošťuchovat.</p>'
+   +'<div class="note"><b>Zatím jedeš sám.</b> To je v pořádku — parťáka jde přidat kdykoli '
+   +'v Nastavení, nic se tím neztratí.</div>'
+   +'<div class="wrow" style="margin-top:12px"><button class="act" id="onbParak" type="button">Chci parťáka</button></div>'
+   +'<div class="hint">Na kámoše, se kterým jenom občas zajdeš do posilky, parťáka potřebovat nebudeš — '
+   +'toho si zapíšeš rovnou v tréninku jako sparingpartnera.</div>';
+ } else if (krok === "pair"){
+  telo = '<div class="cstep">Propojení</div>'
+   +'<p class="ctext">Když spojíte oba telefony, drží se stejně úplně všechno — jídlo, deník, váhy i nákup.</p>'
+   + (fam
+      ? '<div class="note">Propojení je nastavené. Rodinný kód:</div><div class="code">'+esc(fam)+'</div>'
+        +'<p class="who">Ten samý kód musí být i ve druhém telefonu — nebo mu pošli pozvánku z Nastavení.</p>'
+      : '<div class="tset" style="gap:10px">'
+        +'<button class="act" id="pairCreate" type="button">Vytvořit rodinný kód</button></div>'
+        +'<p class="who" style="margin:14px 0 4px">Nebo vlož kód z druhého telefonu:</p>'
+        +'<div class="wrow"><input type="text" id="pairInput" placeholder="XXXXX-XXXXX-XXXXX-XXXXX" '
+        +'autocapitalize="characters" autocomplete="off" spellcheck="false" style="flex:1;min-width:170px;width:auto">'
+        +'<button class="act small" id="pairJoin" type="button">Propojit</button></div>'
+        +'<div class="hint" id="pairMsg">Nespěchá to — jde to nastavit kdykoli potom.</div>');
  } else {
   telo = '<div class="cstep">Hotovo 🎉</div>'
    +'<p class="ctext">A je to'+(samotny && jmeno(ja()) !== "Já" ? ", "+esc(jmeno(ja())) : "")+'. Co udělat jako první:</p>'
    +'<ul class="cing"><li>✅ <b>Odškrtni si dnešní jídla</b> v záložce Dnes — appka počítá jen to, co odklikneš.</li>'
    +'<li>🏋️ V <b>Tréninku</b> mrkni na kartu „Co dneska" — poradí podle toho, kolik máš času.</li>'
+   +'<li>😴 <b>Ráno zapiš spánek</b> jedním ťuknutím v Dnes — regenerace je půlka výsledků.</li>'
    +'<li>🛒 <b>V neděli</b> je v Nákupu seznam příprav. Kdo vyhraje neděli, vyhraje týden.</li>'
-   +'<li>📲 Dej si appku <b>na plochu telefonu</b> (Sdílet → Přidat na plochu), ať ji máš jako normální aplikaci.</li></ul>';
+   + (jeNainstalovana() ? '' : '<li>📲 A nezapomeň si appku <b>dát na plochu</b> (Sdílet → Přidat na plochu).</li>')
+   +'</ul>';
   dalsi = "Jdeme na to ✓";
  }
- const dots = '<div class="dots">'+Array.from({length:N},(_,i)=>'<i class="'+(i<=st?"on":"")+'"></i>').join("")+'</div>';
- const zpet = st > 0 ? '<button class="ghost" data-onb="prev" type="button">← Zpět</button>' : '';
+ const dots = '<div class="dots">'+Array.from({length:N},(_,i2)=>'<i class="'+(i2<=state.onb?"on":"")+'"></i>').join("")+'</div>';
+ const zpet = state.onb > 0 ? '<button class="ghost" data-onb="prev" type="button">← Zpět</button>' : '';
  o.innerHTML = '<div class="chead"><h2 class="brand sm"><span class="logo" aria-hidden="true"><svg viewBox="0 0 32 32"><rect x="1.5" y="12.2" width="3.6" height="7.6" rx="1.3" opacity=".8"/><rect x="26.9" y="12.2" width="3.6" height="7.6" rx="1.3" opacity=".8"/><rect x="6.2" y="8.6" width="5.2" height="14.8" rx="2.1"/><rect x="20.6" y="8.6" width="5.2" height="14.8" rx="2.1"/><rect x="10.8" y="14.5" width="10.4" height="3" rx="1.5"/></svg></span><span class="wm">PEVE<span>FIT</span></span></h2>'
-  +(st === 1 && samotny ? '' : '<button class="xbtn" data-onb="skip" type="button">Přeskočit</button>')
+  +(bezPreskocit ? '' : '<button class="xbtn" data-onb="skip" type="button">Přeskočit</button>')
   +'</div>'
   + dots + telo
   +'<div class="cnav">'+zpet+'<button class="act" data-onb="next" type="button"'+(muzeDal?"":" disabled style=\"opacity:.45\"")+'>'+dalsi+'</button></div>';
@@ -3959,6 +4103,12 @@ const PRIPOMINKY = [
    ev:(who)=>treninky(who).map(t=>({ freq:"WEEKLY", dow:t[0], cas:"21:00", min:5,
      nazev:"📝 Byl jsi cvičit? Zapiš to",
      popis:"Otevři Trénink, rozklikni cviky a zapiš kg × opakování. Trvá to minutu a je to celý smysl deníku." })) },
+
+ { id:"vecerka", ic:"😴", n:"Večerka", pop:"Každý večer ve 21:45",
+   det:"Osm hodin spánku nezačíná ráno — začíná večer tím, že jdeš do postele.", def:false,
+   ev:(who)=>[{ freq:"DAILY", cas:"21:45", min:5,
+     nazev:"😴 Za chvíli večerka",
+     popis:"Když chceš spát " + String(spanekCil(who)).replace(".",",") + " h a vstáváš brzo, teď je čas zhasnout obrazovky. Ráno zapiš spánek jedním ťuknutím." }] },
 
  { id:"vecer", ic:"🌙", n:"Večerní kontrola jídla", pop:"Každý večer ve 21:00",
    det:"Dojedl jsi dnešní kalorie? Když ne, ještě je čas.", def:true,
@@ -6606,6 +6756,8 @@ const ODZNAKY = [
  { id:"serie14", ic:"🔥", n:"Čtrnáct dní",       s:"dva týdny v řadě",              p:w=>[streak(w),14] },
  { id:"serie30", ic:"👑", n:"Měsíc bez výpadku", s:"30 dní v řadě",                 p:w=>[streak(w),30] },
 
+ { id:"spanek7", ic:"😴", n:"Vyspaný týden",     s:"7 nocí v řadě nad cílem",       p:w=>[spanekSerie(w),7] },
+ { id:"spanek30",ic:"🛌", n:"Mistr regenerace",  s:"30 zapsaných nocí",             p:w=>[Object.keys(store.get("spanek",{})||{}).filter(k=>k.slice(-2)==="|"+w).length,30] },
  { id:"voda5",   ic:"💧", n:"Pitný režim",       s:"5 dní splněná voda",            p:w=>[vodaDny(w),5] },
  { id:"voda20",  ic:"🌊", n:"Vodní tvor",        s:"20 dní splněná voda",           p:w=>[vodaDny(w),20] },
  { id:"supl30",  ic:"💊", n:"Kreatin 30 dní",    s:"denně, i ve dnech volna",       p:w=>[suplDny(w),30] },
@@ -7381,6 +7533,7 @@ const SDIL = {
  spar:    { c:"spar",   t:"pole",  id:x=>x.d+"|"+(x.who||"")+"|"+(x.bud||"")+"|"+(x.rid||""), st:"spar" },
  checks:  { c:"checks", t:"mapa",  st:"checks", dnu:200, dat:id=>id.slice(0,10) },
  water:   { c:"water",  t:"mapa",  st:"water",   dnu:200, dat:id=>id.slice(0,10) },
+ spanek:  { c:"spanek", t:"mapa",  dnu:200, dat:id=>id.slice(0,10) },
  parti:   { c:"parti",  t:"pole",  id:x=>String(x) },
  odznaky: { c:"odz",    t:"pole",  id:x=>String(x) },
  pantry:  { c:"spiz",   t:"pole",  id:x=>String(x),                              st:"pantry" }
@@ -7723,6 +7876,7 @@ function peerCard(){
    +'<div class="meter m-prot"><i style="width:'
    + Math.min(100, Math.round(waterGet(other, iso)*GLASS*100/Math.max(1,waterCil(other))))+'%"></i></div>'
    +'<p class="who" style="margin:6px 0 0">Série: <b>'+streak(other)+' dní</b>'
+   +(spanekGet(other, iso) ? ' · spal'+rod(other,"","a")+' <b>'+String(spanekGet(other, iso).h).replace(".",",")+' h</b>' : '')
    +(kg ? ' · poslední váha <b>'+String(kg).replace(".",",")+' kg</b>' : '')
    +(dnesTr.length ? ' · dneska <b>'+rod(other,"odtrénoval","odtrénovala")+' '+esc(dnesTr[dnesTr.length-1].rid)+'</b> 🏋️' : '')
    +'</p>'
@@ -8140,9 +8294,34 @@ function progPrehled(){
 }
 
 /* --- 2/4 Tělo --- */
+function spanekCard(who){
+ const dny = spanekDny(who, 14).reverse();
+ const cil = spanekCil(who);
+ const data = dny.map(x=>({ lab: czDate(x.iso).replace(/\s/g,"").slice(0,-1), v: x.h || 0,
+                            top: x.h ? String(x.h).replace(".",",") : "" }));
+ const serie = spanekSerie(who);
+ const pr7 = spanekPrumer(who, 7);
+ const dnesZ = spanekGet(who, isoDnes());
+ return '<div class="card"><div class="rhead"><h3>😴 '+esc(jmeno(who))+' — spánek</h3>'
+  +'<span class="rmeta">'+(pr7 !== null ? 'Ø '+String(pr7).replace(".",",")+' h za týden' : 'cíl '+String(cil).replace(".",",")+' h')+'</span></div>'
+  +'<p class="who">'+esc(spanekVeta(who))
+  +(serie >= 3 ? ' Série: <b>'+pocet(serie,"noc","noci","nocí")+'</b> nad cílem. 🔥' : '')+'</p>'
+  + spanekRow(who, isoDnes())
+  + (dny.some(x=>x.h)
+     ? sloupceSvg(data, { c: who==="p" ? "var(--s1)" : "var(--s3)", cil: cil, cilLab: "cíl",
+         alt: "Spánek po dnech", prazdno: "" })
+     : '<div class="dim" style="font-size:12.5px;margin:8px 0">Zapiš pár nocí a objeví se graf.</div>')
+  + (dnesZ && dnesZ.q === 1
+     ? '<div class="note" style="margin-top:8px">Po mizerné noci klidně uber na tréninku — technika drží hůř '
+       +'a síla je stejně o 5–10 % dole. Lehčí váhy, stejný pohyb, žádná škoda.</div>' : '')
+  +'<div class="hint">Sval neroste v posilovně — roste ve spánku. Pod 7 hodin dlouhodobě znamená '
+  +'horší regeneraci, větší chutě a slabší tréninky. Cíl si nastavíš v Nastavení.</div></div>';
+}
 function progTelo(){
  const ch = checkinStav();
  return parKaret(wtCard)
+  +'<h2>Spánek</h2>'
+  + parKaret(spanekCard)
   + cyklusCard()
   +'<div class="card"><h3>📸 Měsíční vizuální kontrola</h3>'
   +'<p class="who">Jednou za ~4 týdny: fotky (zepředu, z boku, zezadu — stejné světlo a místo), míry níže a pohled zpět: '
@@ -8279,6 +8458,9 @@ function renderNastaveniTab(){
   /* --- pitný režim --- */
   +'<div class="card"><h3>💧 Pitný režim</h3>'
   +'<p class="who">Kolik sklenic se má za den zaškrtnout. Jedna sklenice = 250 ml.</p>'
+  + nRow(jmeno("p")+" — spánek", nSel("spanek_p", 8, [[7,"7 h"],[7.5,"7,5 h"],[8,"8 h"],[8.5,"8,5 h"],[9,"9 h"]]),
+      "Kolik chceš naspat. Hlídá to graf v Progresu → Tělo")
+  + (duo() ? nRow(jmeno("v")+" — spánek", nSel("spanek_v", 8, [[7,"7 h"],[7.5,"7,5 h"],[8,"8 h"],[8.5,"8,5 h"],[9,"9 h"]])) : "")
   + nRow(jmeno("p"), nSel("water_p", WATER_T.p, [[2000,"2 l (8 sklenic)"],[2500,"2,5 l (10)"],[3000,"3 l (12)"],[3500,"3,5 l (14)"],[4000,"4 l (16)"]]))
   + (duo() ? nRow(jmeno("v"), nSel("water_v", WATER_T.v, [[1500,"1,5 l (6 sklenic)"],[2000,"2 l (8)"],[2200,"2,2 l (9)"],[2500,"2,5 l (10)"],[3000,"3 l (12)"]])) : "")
   +'</div>'
@@ -8367,7 +8549,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">35</td></tr>'
+  +'<tr><td>Verze</td><td class="num">36</td></tr>'
   +'<tr><td>Tréninků k výběru</td><td class="num">'+(ROUTINES.p.length+ROUTINES.v.length)+'</td></tr>'
   +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
@@ -8658,7 +8840,7 @@ document.addEventListener("click", e=>{
   const a = ob.dataset.onb;
   if (a === "skip") closeOnb();
   else if (a === "prev"){ state.onb--; renderOnb(); }
-  else if (a === "next"){ if (state.onb >= 3) closeOnb(); else { state.onb++; renderOnb(); } }
+  else if (a === "next"){ if (state.onb >= onbKroky().length - 1) closeOnb(); else { state.onb++; renderOnb(); } }
   return;
  }
  const nkd = e.target.closest("[data-nkdni]");
@@ -9068,6 +9250,24 @@ document.addEventListener("click", e=>{
  if (e.target.id === "planFill"){ doplnPlan(); renderPlan(); renderDnes(); renderNext(); celebrate("📅"); return; }
  if (e.target.id === "planClear"){ vycistitPlan(); state.planDen = null; renderPlan(); renderDnes(); renderNext(); return; }
 
+ const spk = e.target.closest("[data-spanek]");
+ if (spk){
+  const q = spk.dataset.spanek.split("|");
+  const z = spanekGet(q[0], q[1]);
+  const h = z ? z.h + parseFloat(q[2]) : (parseFloat(q[2]) > 0 ? spanekCil(q[0]) : spanekCil(q[0]) - 0.5);
+  spanekSet(q[0], q[1], Math.max(0.5, h));
+  kontrolaOdznaku();
+  renderDnes(); renderProgres(); syncDot();
+  if (window.sync && sync.on) sync.pushStatus();
+  return;
+ }
+ const spq = e.target.closest("[data-spq]");
+ if (spq){
+  const q = spq.dataset.spq.split("|");
+  spanekQ(q[0], q[1], +q[2]);
+  renderDnes(); renderProgres();
+  return;
+ }
  const so = e.target.closest("[data-statobd]");
  if (so){ nastSet("statObd", +so.dataset.statobd); renderCisla(); return; }
  const fr = e.target.closest("[data-favr]");
@@ -9279,7 +9479,8 @@ document.addEventListener("click", e=>{
                 "n_prot_p","n_prot_v","n_water_p","n_water_v","n_casy","n_mintr_p","n_mintr_v",
                 "n_rozvrh_p","n_rozvrh_v","n_tren_p","n_tren_v","n_hlasky","n_zpravyAuto","n_konfety","n_stouch",
                 "favJ","parti","tlogB","spar","n_zkus_p","n_zkus_v","favR","profil_p","profil_v","ts1","cooked","shuffleN","odznaky",
-                "n_rekSort","n_rekPocet","n_ukaz1rm","n_statObd","stouch_p","stouch_v","parti"]
+                "n_rekSort","n_rekPocet","n_ukaz1rm","n_statObd","stouch_p","stouch_v","parti","spanek",
+                "n_spanek_p","n_spanek_v"]
    .concat(Object.keys(SDIL).map(k => "ts_" + k));
   const dump = {};
   keys.forEach(k=>{ const v = store.get(k, null); if (v !== null) dump[k] = v; });
