@@ -6890,7 +6890,34 @@ const ODZNAKY = [
  { id:"dynastie", ic:"🏰", n:"Dynastie",          s:"25 vyhraných soubojů",                  p:w=>[sparHist(w).filter(x=>x.v==="V").length,25] },
  { dom:true, id:"michelin", ic:"⭐", n:"Michelin",  s:"50× dovařeno krok za krokem",         p:()=>[store.get("cooked",0),50] },
  { dom:true, id:"spajz",    ic:"🏪", n:"Špajz generál", s:"10 nákupů dotažených do konce",   p:()=>[nakupu(),10] },
- { dom:true, id:"kebab15",  ic:"🥙", n:"Kebabová věrnost", s:"15 dní vyřešených venku",      p:()=>[dnyVenku(),15] }
+ { dom:true, id:"kebab15",  ic:"🥙", n:"Kebabová věrnost", s:"15 dní vyřešených venku",      p:()=>[dnyVenku(),15] },
+
+ /* --- třetí vlna: rovná stovka --- */
+ { id:"centurion", ic:"🏛️", n:"Centurion",         s:"100 dokončených jednotek",             p:w=>[histW(w).length,100] },
+ { id:"tr100",     ic:"🗝️", n:"Inventář posilovny",s:"100 dní v deníku",                     p:w=>[trDny(w),100] },
+ { id:"stehovak",  ic:"📦", n:"Stěhovák",          s:"500 tun nazvedáno celkem",             p:w=>[objemCelkem(w),500000] },
+ { id:"bagr",      ic:"🚜", n:"Bagr",              s:"milion kilo celkem — fakt milion",     p:w=>[objemCelkem(w),1000000] },
+ { id:"rekord10",  ic:"🚀", n:"Deset rekordů",     s:"deset cviků posunutých nahoru",        p:w=>[pokroky(w),10] },
+ { id:"pestrost30",ic:"🎨", n:"Renesanční člověk", s:"30 různých cviků v deníku",            p:w=>[trCviku(w),30] },
+ { id:"serie1000", ic:"⛰️", n:"Tisíc sérií",       s:"tohle už se počítá na roky",           p:w=>[serieCelkem(w),1000] },
+ { id:"tezkavaha", ic:"🦍", n:"Těžká váha",        s:"série se 140+ kg na tyči",             p:w=>[tezkaSerie(w,140),1] },
+ { id:"neprorazitelny", ic:"🛡️", n:"Neprorazitelný", s:"100 dní série bez výpadku",          p:w=>[streak(w),100] },
+ { id:"vodnik",    ic:"🧜", n:"Vodník",            s:"100 dní splněná voda",                 p:w=>[vodaDny(w),100] },
+ { id:"lekarnik",  ic:"⚗️", n:"Lékárník",          s:"kreatin 100 dní — bez debat",          p:w=>[suplDny(w),100] },
+ { id:"aristokrat",ic:"🥐", n:"Snídaňová šlechta", s:"50 odškrtnutých snídaní",              p:w=>[snidaneDny(w),50] },
+ { id:"katedrala", ic:"🏗️", n:"Stavitel",          s:"100 dní se splněnými bílkovinami",     p:w=>[protDny(w),100] },
+ { id:"robot",     ic:"🤖", n:"Robot",             s:"30 dokonalých dní — už to není náhoda",p:w=>[dokonaleDny(w),30] },
+ { id:"ruzenka",   ic:"🌹", n:"Šípková Růženka",   s:"21 nocí v řadě nad cílem",             p:w=>[spanekSerie(w),21] },
+ { id:"medved",    ic:"🐻", n:"Medvěd v zimě",     s:"180 zapsaných nocí",                   p:w=>[Object.keys(store.get("spanek",{})||{}).filter(k=>k.slice(-2)==="|"+w).length,180] },
+ { id:"statistik", ic:"🧮", n:"Statistik",         s:"50 vážení — data nade vše",            p:w=>[wtArr(w).length,50] },
+ { id:"metr",      ic:"🧵", n:"Krejčovský metr",   s:"12 měření — rok v číslech",            p:w=>[mrArr(w).length,12] },
+ { id:"gladiator", ic:"⚔️", n:"Gladiátor",         s:"25 soubojů s parťáky",                 p:w=>[sparHist(w).length,25] },
+ { id:"naborar",   ic:"🧲", n:"Náborář",           s:"5 různých sparingpartnerů",            p:w=>[new Set(sparHist(w).map(x=>x.bud)).size,5] },
+ { id:"ultramaraton", ic:"🏃", n:"Ultramaraton",   s:"30 kardio tréninků",                   p:w=>[kardioTreninky(w),30] },
+ { id:"hadimuz",   ic:"🐍", n:"Hadí člověk",       s:"30 protahovacích tréninků",            p:w=>[mobilitaTreninky(w),30] },
+ { dom:true, id:"kasino",   ic:"🎰", n:"Kasino",   s:"20× zamíchané menu",                   p:()=>[store.get("shuffleN",0),20] },
+ { dom:true, id:"gurman",   ic:"🍷", n:"Gurmán",   s:"30 oblíbených receptů",                p:()=>[store.get("favs",[]).length,30] },
+ { dom:true, id:"legenda",  ic:"🧑‍🍳", n:"Legenda kuchyně", s:"100× dovařeno krok za krokem", p:()=>[store.get("cooked",0),100] }
 ];
 
 function odzStav(o, w){
@@ -8660,7 +8687,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">37</td></tr>'
+  +'<tr><td>Verze</td><td class="num">38</td></tr>'
   +'<tr><td>Tréninků k výběru</td><td class="num">'+(ROUTINES.p.length+ROUTINES.v.length)+'</td></tr>'
   +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
