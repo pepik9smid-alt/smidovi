@@ -174,7 +174,12 @@
   .cyk{display:flex;align-items:center;gap:13px;flex-wrap:wrap}
   .cyk .den{font-size:27px;font-weight:700;line-height:1;min-width:46px}
 
-  .odz{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:9px;margin-top:10px}
+  .odzbox{max-height:462px;overflow-y:auto;margin-top:10px;padding-right:2px;
+    -webkit-overflow-scrolling:touch;overscroll-behavior:contain;border-radius:12px;
+    mask-image:linear-gradient(to bottom,#000 92%,transparent);
+    -webkit-mask-image:linear-gradient(to bottom,#000 92%,transparent)}
+  .odz{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:9px}
+  .odzbox .odz{margin-top:0;padding-bottom:26px}
   .odz .o{text-align:center;padding:11px 6px;border:1px solid var(--border);border-radius:12px}
   .odz .o.on{background:var(--accent-soft);border-color:var(--s1)}
   .odz .e{font-size:25px;line-height:1.15;filter:grayscale(1);opacity:.35}
@@ -6727,6 +6732,78 @@ function stouchnuti(w){
  return Math.max(store.get("stouch_" + w, 0) || 0, ze);
 }
 
+/* počítadla pro nové odznaky */
+function serieCelkem(w){
+ const all = logAll();
+ let n = 0;
+ Object.keys(all).filter(k => k.indexOf(w+"|") === 0).forEach(k => all[k].forEach(z => n += z.s.length));
+ return n;
+}
+function maxObjemTreninku(w){ return histW(w).reduce((a,x)=>Math.max(a, x.obj||0), 0); }
+function snidaneDny(w){
+ return Object.keys(state.checks).filter(k => state.checks[k] && k.indexOf("|"+w+"|s0") > 0).length;
+}
+function protDny(w){
+ let n = 0;
+ for (let i = 0; i < 120; i++){
+  if (dayTotals(w, isoPlus(-i)).p >= target(w).prot) n++;
+ }
+ return n;
+}
+function spanekTop(w){
+ const all = store.get("spanek", {}) || {};
+ let m = 0;
+ Object.keys(all).forEach(k => { if (k.slice(-2) === "|"+w && all[k].h > m) m = all[k].h; });
+ return m;
+}
+function zombieTreninky(w){
+ const all = store.get("spanek", {}) || {};
+ return histW(w).filter(x => { const z = all[x.d+"|"+w]; return z && z.h > 0 && z.h < 6; }).length;
+}
+function mobilitaTreninky(w){
+ const vse = ROUTINES.p.concat(ROUTINES.v);
+ return histW(w).filter(x => { const r = vse.find(r0 => r0.id === x.rid); return r && r.typ === "mobilita"; }).length;
+}
+function kardioTreninky(w){
+ const vse = ROUTINES.p.concat(ROUTINES.v);
+ return histW(w).filter(x => { const r = vse.find(r0 => r0.id === x.rid); return r && r.typ === "kardio"; }).length;
+}
+function domaTreninky(w){
+ const vse = ROUTINES.p.concat(ROUTINES.v);
+ return histW(w).filter(x => { const r = vse.find(r0 => r0.id === x.rid); return r && r.typ === "doma"; }).length;
+}
+function nejvicSJednim(w){
+ const c = {};
+ sparHist(w).forEach(x => { c[x.bud] = (c[x.bud]||0)+1; });
+ return Object.keys(c).reduce((a,k)=>Math.max(a,c[k]), 0);
+}
+function vahaPohyb(w){
+ const arr = wtArr(w).slice().sort((a,b)=>a.d.localeCompare(b.d));
+ if (arr.length < 5) return 0;
+ return Math.abs(Math.round((arr[arr.length-1].kg - arr[0].kg) * 10) / 10);
+}
+function vikendoveTreninky(w){
+ return histW(w).filter(x => { const d = wdOf(x.d); return d === 5 || d === 6; }).length;
+}
+function tezkaSerie(w, kg){
+ const all = logAll();
+ let ok = false;
+ Object.keys(all).filter(k => k.indexOf(w+"|") === 0).forEach(k =>
+  all[k].forEach(z => z.s.forEach(x => { if ((x[0]||0) >= kg) ok = true; })));
+ return ok ? 1 : 0;
+}
+function dokonaleDny(w){
+ // splněné kalorie, bílkoviny i voda v jeden den — sváteční úkaz
+ let n = 0;
+ for (let i = 0; i < 120; i++){
+  const iso = isoPlus(-i);
+  const t = dayTotals(w, iso);
+  if (t.k >= MIN_KCAL[w] && t.p >= target(w).prot
+      && waterGet(w, iso) >= Math.round(waterCil(w)/GLASS)) n++;
+ }
+ return n;
+}
+
 const ODZNAKY = [
  { id:"spar1",   ic:"🤜", n:"První sparing",     s:"trénink s kámošem",             p:w=>[sparHist(w).length,1] },
  { id:"spar5",   ic:"🥊", n:"Pět soubojů",       s:"tohle už je rivalita",          p:w=>[sparHist(w).length,5] },
@@ -6786,7 +6863,34 @@ const ODZNAKY = [
  { dom:true, id:"vejcofil",ic:"🥚", n:"Vejcofil",          s:"3 vaječné recepty v oblíbených",        p:()=>[vejcoRecepty(),3] },
  { id:"nedelnik",ic:"😴", n:"Nedělní vážič",     s:"4× vážení v neděli ráno, jak se patří", p:w=>[nedelniVazeni(w),4] },
  { id:"blazen",  ic:"❤️‍🔥", n:"Zamilovaný blázen", s:"25 šťouchnutí — už to hraničí s obtěžováním", p:w=>[stouchnuti(w),25] },
- { id:"slon",    ic:"🐘", n:"Stotunový",         s:"100 tun nazvedáno celkem",              p:w=>[objemCelkem(w),100000] }
+ { id:"slon",    ic:"🐘", n:"Stotunový",         s:"100 tun nazvedáno celkem",              p:w=>[objemCelkem(w),100000] },
+
+ /* --- druhá vlna: 25 dalších, ať je co lovit --- */
+ { id:"serie100", ic:"🔢", n:"Stovka sérií",      s:"100 zapsaných sérií",                   p:w=>[serieCelkem(w),100] },
+ { id:"serie500", ic:"🧮", n:"Pět set sérií",     s:"to už je řemeslo",                      p:w=>[serieCelkem(w),500] },
+ { id:"tunovka",  ic:"🚛", n:"Tunovka",           s:"5 tun v jediném tréninku",              p:w=>[maxObjemTreninku(w),5000] },
+ { id:"drtic",    ic:"🪨", n:"Drtič",             s:"série se 100+ kg na tyči",              p:w=>[tezkaSerie(w,100),1] },
+ { id:"pulstovka",ic:"🏟️", n:"Půlstovka",         s:"50 dokončených jednotek",               p:w=>[histW(w).length,50] },
+ { id:"vikendar", ic:"🌤️", n:"Víkendový válečník",s:"10 tréninků o víkendu",                 p:w=>[vikendoveTreninky(w),10] },
+ { id:"gumak",    ic:"🧘", n:"Gumák",             s:"10 protahovacích tréninků",             p:w=>[mobilitaTreninky(w),10] },
+ { id:"motor",    ic:"🫀", n:"Motorista",         s:"10 kardio tréninků",                    p:w=>[kardioTreninky(w),10] },
+ { id:"obyvak",   ic:"🛋️", n:"Posilovna obývák",  s:"10 domácích tréninků",                  p:w=>[domaTreninky(w),10] },
+ { id:"zombie",   ic:"🧟", n:"Zombie mód",        s:"trénink po noci pod 6 hodin",           p:w=>[zombieTreninky(w),1] },
+ { id:"kral9",    ic:"👑", n:"Královská noc",     s:"jedna noc 9+ hodin spánku",             p:w=>[spanekTop(w) >= 9 ? 1 : 0,1] },
+ { id:"spanek100",ic:"🌌", n:"Sto nocí",          s:"100 zapsaných nocí",                    p:w=>[Object.keys(store.get("spanek",{})||{}).filter(k=>k.slice(-2)==="|"+w).length,100] },
+ { id:"ptace",    ic:"🌅", n:"Ranní ptáče",       s:"20 odškrtnutých snídaní",               p:w=>[snidaneDny(w),20] },
+ { id:"protein25",ic:"🍗", n:"Bílkovinný účetní", s:"25 dní se splněnými bílkovinami",       p:w=>[protDny(w),25] },
+ { id:"dokonaly", ic:"💎", n:"Dokonalý den",      s:"kalorie, bílkoviny i voda v jeden den", p:w=>[dokonaleDny(w),1] },
+ { id:"dokonaly7",ic:"🏵️", n:"Dokonalý týden",    s:"7 dokonalých dní",                      p:w=>[dokonaleDny(w),7] },
+ { id:"serie50",  ic:"☄️", n:"Padesát dní",       s:"50 dní série bez výpadku",              p:w=>[streak(w),50] },
+ { id:"voda50",   ic:"🐬", n:"Delfín",            s:"50 dní splněná voda",                   p:w=>[vodaDny(w),50] },
+ { id:"pohyb2",   ic:"⚖️", n:"Váha se hnula",     s:"±2 kg od prvního vážení",               p:w=>[vahaPohyb(w) >= 2 ? 1 : 0,1] },
+ { id:"fotorok",  ic:"🎬", n:"Rok v obraze",      s:"12 měsíčních fotek",                    p:w=>[fotoArr(w).length,12] },
+ { id:"nemesis",  ic:"😈", n:"Nemesis",           s:"10 soubojů s jedním parťákem",          p:w=>[nejvicSJednim(w),10] },
+ { id:"dynastie", ic:"🏰", n:"Dynastie",          s:"25 vyhraných soubojů",                  p:w=>[sparHist(w).filter(x=>x.v==="V").length,25] },
+ { dom:true, id:"michelin", ic:"⭐", n:"Michelin",  s:"50× dovařeno krok za krokem",         p:()=>[store.get("cooked",0),50] },
+ { dom:true, id:"spajz",    ic:"🏪", n:"Špajz generál", s:"10 nákupů dotažených do konce",   p:()=>[nakupu(),10] },
+ { dom:true, id:"kebab15",  ic:"🥙", n:"Kebabová věrnost", s:"15 dní vyřešených venku",      p:()=>[dnyVenku(),15] }
 ];
 
 function odzStav(o, w){
@@ -6857,15 +6961,22 @@ function odznakStrip(){
 
 function odznakCard(w){
  const mam = ziskane(w);
+ // získané nahoru, zamčené seřazené podle toho, jak blízko k nim je —
+ // ať je nahoře vždycky něco, co stojí za pohled
+ const serazene = ODZNAKY.map(o => {
+  const on = mam.indexOf(o.id) >= 0, r = odzStav(o, w);
+  return { o: o, on: on, pom: r[1] > 0 ? r[0] / r[1] : 0, r: r };
+ }).sort((a, b) => (b.on - a.on) || (b.pom - a.pom));
  return '<div class="card"><div class="rhead"><h3>'+(solo() ? "🏅 Odznaky" : esc(jmeno(w))+' — odznaky')+'</h3>'
   +'<span class="rmeta">'+mam.length+'/'+ODZNAKY.length+'</span></div>'
-  +'<div class="odz">'+ODZNAKY.map(o=>{
-    const on = mam.indexOf(o.id) >= 0, r = odzStav(o,w);
+  +'<div class="odzbox"><div class="odz">'+serazene.map(x=>{
+    const o = x.o, on = x.on, r = x.r;
     return '<div class="o'+(on?" on":"")+'"><div class="e">'+o.ic+'</div>'
      +'<div class="t">'+esc(o.n)+'</div>'
      +'<div class="s">'+(on ? "máš ✓" : (r[1] > 1 ? fmt(r[0])+" / "+fmt(r[1]) : esc(o.s)))+'</div></div>';
-  }).join("")+'</div>'
-  +'<div class="hint">Zamčené odznaky ukazují, jak daleko k nim máš. Nic se za ně neplatí — jsou to jen důkazy.</div></div>';
+  }).join("")+'</div></div>'
+  +'<div class="hint">Získané jsou nahoře, zamčené seřazené podle toho, jak blízko k nim máš. '
+  +'Mřížka se posouvá — je jich '+ODZNAKY.length+'. Nic se za ně neplatí, jsou to jen důkazy.</div></div>';
 }
 
 function kontrolaOdznaku(){
@@ -8549,7 +8660,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">36</td></tr>'
+  +'<tr><td>Verze</td><td class="num">37</td></tr>'
   +'<tr><td>Tréninků k výběru</td><td class="num">'+(ROUTINES.p.length+ROUTINES.v.length)+'</td></tr>'
   +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
