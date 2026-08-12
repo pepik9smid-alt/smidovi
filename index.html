@@ -518,6 +518,23 @@
     -webkit-overflow-scrolling:touch;overscroll-behavior:contain;
     mask-image:linear-gradient(to bottom,#000 88%,transparent);
     -webkit-mask-image:linear-gradient(to bottom,#000 88%,transparent)}
+  .sess-head .zb.dlouho{color:var(--s2);font-weight:600;max-width:30ch;line-height:1.35;margin-top:3px}
+  .sezrok{display:flex;gap:3px;margin:12px 0 2px}
+  .sezrok .sm{flex:1;min-width:0;text-align:center;padding:5px 0 4px;border-radius:8px;
+    background:var(--surface-1);border:1px solid transparent;position:relative;overflow:hidden}
+  .sezrok .sm i{position:absolute;inset:0 0 auto 0;height:3px;display:block;opacity:.75}
+  .sezrok .sm b{display:block;font-size:12.5px;line-height:1.5;filter:grayscale(1);opacity:.5}
+  .sezrok .sm span{display:block;font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+  .sezrok .sm.akt b{filter:none;opacity:1}
+  .sezrok .sm.ted{border-color:var(--text-primary);background:var(--surface-2)}
+  .sezrok .sm.ted span{color:var(--text-primary);font-weight:700}
+  .sezcis{display:flex;gap:8px;flex-wrap:wrap}
+  .sezcis>div{flex:1;min-width:92px;background:var(--surface-1);border-radius:10px;padding:8px 10px}
+  .sezcis span{display:block;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+  .sezcis b{display:block;font-size:15.5px;line-height:1.35}
+  .sezcis i{font-size:12px;font-style:normal;color:var(--muted)}
+  .sezcis i.up{color:var(--good)} .sezcis i.dn{color:var(--s2)}
+  .card.sezn{animation:fadeUp .35s ease both}
   .voda.spanek{margin-top:6px}
   .spq{display:inline-flex;gap:4px;margin-left:8px}
   .spq button{background:var(--surface-1);border:1px solid var(--border);border-radius:9px;
@@ -2328,24 +2345,26 @@ const ROUTINES = {
   { id:"R", title:"R — Push/Pull hybrid 40′", min:40, typ:"sila",
     tip:"Když je čas jen na jedno a chceš zasáhnout celé horní tělo. Střídej tlak a tah, pauzy krať.",
     ex:[["bench","3 × 6–8",8,"2:30"],["cablerow","3 × 8–10",8,"2:00"],["shpressdb","3 × 10–12",9,"1:30"],["latpd","3 × 10–12",9,"1:30"],["curldb","2 × 12–15",9,"1:00"],["tripush","2 × 12–15",9,"1:00"]] },
- { id:"S", title:"S — Silový trojboj (dřep, bench, tah)", min:70, typ:"sila",
+ { id:"S", title:"S — Silový trojboj (dřep, bench, tah)", min:65, typ:"sila",
     tip:"Tři cviky, na kterých se pozná, jestli sílíš. Dlouhé pauzy, málo opakování, plná koncentrace.",
     ex:[["squat","5 × 5",8,"3:00"],["bench","5 × 5",8,"3:00"],["deadlift","3 × 5",8,"3:30"],["cablerow","3 × 8–10",8,"2:00"],["plank","3 × 45 s",8,"1:00"]] },
- { id:"T", title:"T — Paže a ramena 35′", min:35, typ:"sila",
+ { id:"T", title:"T — Paže a ramena 40′", min:40, typ:"sila",
     tip:"Den na to, co je vidět v tričku. Krátké pauzy, hodně opakování, pumpa až to pálí.",
     ex:[["shpressdb","4 × 8–10",8,"2:00"],["latraise","4 × 15–20",10,"1:00"],["curlbb","3 × 8–10",9,"1:30"],["ohtri","3 × 10–12",9,"1:30"],["hammer","3 × 12–15",9,"1:00"],["facepull","3 × 15–20",9,"1:00"]] },
  { id:"U", title:"U — Záda do šířky 45′", min:45, typ:"sila",
     tip:"Široká záda dělají pas užší, aniž bys zhubl. Tahej lokty, ne ruce.",
     ex:[["pullup","4 × 6–10",8,"2:30"],["bentrow","4 × 8–10",8,"2:30"],["latpd","3 × 10–12",9,"1:30"],["csrow","3 × 10–12",9,"1:30"],["facepull","3 × 15–20",9,"1:00"],["shrugdb","3 × 12–15",9,"1:00"]] },
- { id:"A", title:"A — Horní tělo (tlaky)", min:75, typ:"sila",
-    tip:"Hlavní tlakový den. Bench jede první, dokud jsi svěží — na něm se měří pokrok.",
-    ex:[["bench","4 × 5–8",8,"3:00"],["pullup","4 × 8–10",8,"2:30"],["inclinedb","3 × 10–12",9,"2:00"],["cablerow","3 × 10–12",9,"2:00"],["latraise","3 × 15–20",10,"1:30"],["tripush","3 × 12–15",10,"1:30"],["facepull","2 × 15–20",9,"1:00"],["cablefly","3 × 12–15",10,"1:30"],["shrugdb","3 × 12–15",10,"1:30"]] },
+ { id:"A", title:"A — Horní tělo (tlaky)", min:60, typ:"sila",
+    tip:"Hlavní tlakový den. Bench jede první, dokud jsi svěží — na něm se měří pokrok. "
+      + "Sedm cviků stačí: po hodině už síla stejně klesá.",
+    ex:[["bench","4 × 5–8",8,"3:00"],["pullup","4 × 8–10",8,"2:30"],["inclinedb","3 × 10–12",9,"2:00"],["cablerow","3 × 10–12",9,"2:00"],["latraise","3 × 15–20",10,"1:30"],["tripush","3 × 12–15",10,"1:30"],["facepull","2 × 15–20",9,"1:00"]] },
   { id:"B", title:"B — Dolní tělo (kvadricepsy)", min:60, typ:"sila",
     tip:"Dřep první a poctivě. Zbytek dne je stavba kolem něj.",
     ex:[["squat","4 × 5–8",8,"3:00"],["rdl","3 × 8–10",8,"2:30"],["legpress","3 × 12–15",9,"2:00"],["legext","3 × 12–15",10,"1:30"],["lyingcurl","3 × 12–15",9,"1:30"],["calf","4 × 12–15",10,"1:30"],["hangraise","3 × 12–15",9,"1:00"]] },
-  { id:"C", title:"C — Horní tělo (tahy)", min:75, typ:"sila",
-    tip:"Den pro záda a paže. Veslování v předklonu drž přísně — záda rovná, žádné houpání.",
-    ex:[["bentrow","4 × 6–10",8,"3:00"],["csrow","3 × 10–12",9,"2:00"],["ohp","4 × 6–10",8,"2:30"],["latpd","3 × 10–12",9,"2:00"],["dip","3 × 10–12",9,"2:00"],["latraise","3 × 15–20",10,"1:30"],["curlbb","3 × 10–12",10,"1:30"],["hammer","3 × 10–12",10,"1:30"],["ohtri","2 × 12–15",10,"1:00"]] },
+  { id:"C", title:"C — Horní tělo (tahy)", min:65, typ:"sila",
+    tip:"Den pro záda a paže. Veslování v předklonu drž přísně — záda rovná, žádné houpání. "
+      + "Dva bicepsové cviky za sebou nedávaly smysl, zůstala velká činka.",
+    ex:[["bentrow","4 × 6–10",8,"3:00"],["csrow","3 × 10–12",9,"2:00"],["ohp","4 × 6–10",8,"2:30"],["latpd","3 × 10–12",9,"2:00"],["dip","3 × 10–12",9,"2:00"],["latraise","3 × 15–20",10,"1:30"],["curlbb","3 × 10–12",10,"1:30"]] },
   { id:"D", title:"D — Dolní tělo (hamstringy)", min:60, typ:"sila",
     tip:"Mrtvý tah jen tolik, kolik unese technika. Radši o 10 kg míň a rovná záda.",
     ex:[["deadlift","3 × 4–6",8,"4:00"],["bulg","3 × 8–10 / noha",9,"2:00"],["seatcurl","3 × 12–15",10,"1:30"],["hipthrust","3 × 12",9,"1:30"],["backext","3 × 12–15",9,"1:30"],["calf","4 × 12–15",10,"1:30"],["cablecrunch","3 × 12–15",10,"1:00"]] },
@@ -2364,13 +2383,13 @@ const ROUTINES = {
   { id:"H", title:"H — Celé tělo za 45 minut", min:45, typ:"sila",
     tip:"Když jdeš do posilovny jen jednou za týden, tohle je ta nejlepší volba — sáhne na všechno.",
     ex:[["squat","3 × 6–8",8,"2:30"],["bench","3 × 6–8",8,"2:30"],["cablerow","3 × 10–12",9,"2:00"],["rdl","3 × 10",8,"2:00"],["latraise","2 × 15",10,"1:00"],["plank","3 × 45 s","—","1:00"]] },
-  { id:"I", title:"I — Silový základ 5×5", min:50, typ:"sila",
+  { id:"I", title:"I — Silový základ 5×5", min:65, typ:"sila",
     tip:"Klasika na čistou sílu: tři velké cviky, pět sérií po pěti. Jednou za čas si tím ověříš, že opravdu sílíš.",
     ex:[["squat","5 × 5",8,"3:00"],["bench","5 × 5",8,"3:00"],["bentrow","5 × 5",8,"3:00"],["calf","3 × 12–15",10,"1:30"],["plank","3 × 45 s","—","1:00"]] },
   { id:"K", title:"K — 30′ Krize (když není čas)", min:28, typ:"sila",
     tip:"Půl hodiny je vždycky lepší než nic — a do fronty A→B→C→D se to počítá stejně.",
     ex:[["legpress","3 × 8",8,"1:30"],["bench","3 × 8",8,"1:30"],["cablerow","3 × 10",8,"1:30"],["latraise","2 × 15",9,"1:30"]] },
-  { id:"J", title:"J — Doma jen s vlastní vahou", min:30, typ:"doma",
+  { id:"J", title:"J — Doma jen s vlastní vahou", min:40, typ:"doma",
     tip:"Nulové vybavení, jen podlaha a stůl. Na cesty a hotely přesně tohle.",
     ex:[["pushup","4 × co dáš",9,"1:30"],["bwsquat","4 × 20",9,"1:30"],["invrow","4 × co dáš",9,"1:30"],["jumpsquat","3 × 12",9,"1:30"],["superman","3 × 12",9,"1:00"],["plank","3 × 45 s","—","1:00"]] },
   { id:"L", title:"L — Doma s jednoručkami", min:35, typ:"doma",
@@ -2591,10 +2610,10 @@ function vahaTed(who){
 function bmr(pr, kg){
  return Math.round(10*kg + 6.25*(pr.vyska||175) - 5*(pr.vek||30) + (pr.pohl === "z" ? -161 : 5));
 }
-function vypocty(who){
+function vypocty(who, cilPrepis){
  const pr = profil(who);
  const kg = vahaTed(who);
- const c = CILE.find(x => x[0] === pr.cil) || CILE[1];
+ const c = CILE.find(x => x[0] === (cilPrepis || pr.cil)) || CILE[1];
  const vydej = Math.round(bmr(pr, kg) * (pr.akt || 1.42));
  let kcal = Math.round(vydej * c[3] / 10) * 10;
  const podlaha = pr.pohl === "z" ? 1500 : 1800;
@@ -2617,6 +2636,8 @@ function cilKcal(who){
 function cilProt(who){
  const r = nast("prot_" + who, null);
  if (r) return r;
+ const f = sezById(sezAkt(who));                 // režim si drží svoje bílkoviny
+ if (f) return Math.round(vahaTed(who) * f.protKg / 5) * 5;
  const pr = profil(who);
  if (!profilHotovy(who) && pr.rucne) return pr.rucne.prot;
  return vypocty(who).prot;
@@ -2628,7 +2649,23 @@ function jmeno(who){
 }
 function zena(who){ return profil(who).pohl === "z"; }
 function sadaTreninku(who){ return profil(who).sada === "tvarovani" ? "v" : "p"; }
+/* Nejdelší trénink, jaký si tu appka dovolí naplánovat.
+   Přes hodinu a půl už člověk nesbírá sílu, ale únavu — a hlavně tam nikdo nechodí. */
+const STROP_MIN = 70;
 function rutiny(who){ return ROUTINES[sadaTreninku(who)] || ROUTINES.p; }
+/* Poctivý odhad z počtu sérií a pauz — ne z toho, co je napsané v hlavičce. */
+function casRutiny(r){
+ if (!r || !r.ex) return 0;
+ const prace = (r.typ === "doma" || r.typ === "kardio") ? 0.6 : 0.8;   // minuta na samotnou sérii
+ let m = 0;
+ r.ex.forEach(e => {
+  const n = plannedSets(e[1]);
+  const c = String(e[3] || "1:30").match(/^(\d+):(\d+)$/);
+  const pauza = c ? (+c[1]) + (+c[2]) / 60 : 1.5;
+  m += n * (pauza + prace);
+ });
+ return Math.round(m);
+}
 
 /* BASE_T zůstává jako fasáda — čte se z profilu, takže zbytek appky
    nemusel měnit ani řádek. */
@@ -2706,6 +2743,7 @@ const state = {
  jinyKod: false,
  venkuId: null,
  venkuMin: 0,
+ recEdit: null,
  soloTik: null,
  spar: store.get("spar", []),
  fotoP: store.get("fotoP", []),
@@ -2732,6 +2770,288 @@ function vodaRow(who, iso){
 
 const SUPPS = [["cr","Kreatin 5 g"],["d3","Vitamin D3 2000 IU"],["om","Omega-3"]];
 
+/* ================= SEZÓNNÍ REŽIMY =================
+   Tělo se nedá stavět a sekat zároveň. Rok se proto dělí na období,
+   kdy se přibírá, kdy se shazuje a kdy se jen drží — a appka podle toho
+   posune kalorie, bílkoviny, styl tréninku i doporučená jídla.
+   Nikdy ale sama od sebe: vždycky se nejdřív zeptá a ukáže čísla.       */
+
+const SEZONY = [
+ { id:"objem", ic:"🏔️", n:"Objem", kratce:"stavíme svaly", barva:"var(--s1)",
+   mesice:[11,12,1,2], cil:"nabrat", protKg:2.0, vahaTyden:0.25, maxTydnu:18,
+   heslo:"Zima je na stavbu. Pod mikinou stejně nikdo nepozná, že máš o kilo víc — "
+       + "ale v březnu se pozná, jestli je to kilo svalu.",
+   jidlo:"Jez i tehdy, kdy se ti nechce. Sacharidy kolem tréninku — rýže, brambory, těstoviny. "
+       + "Tohle je jediná část roku, kdy je pizza upřímně užitečná.",
+   trenink:"Těžké série, dlouhé pauzy, kardio jen na rozehřátí. Pokrok měř na čince, ne na váze.",
+   pozor:"Objem není propustka na cokoli. Půl kila týdně nahoru už je z větší půlky tuk, "
+       + "který budeš na jaře pracně shazovat.",
+   recept:"kcal" },
+ { id:"sekacka", ic:"🔥", n:"Sekačka", kratce:"jde se dolů", barva:"var(--s2)",
+   mesice:[3,4,5,6], cil:"zhubnout", protKg:2.2, vahaTyden:-0.5, maxTydnu:14,
+   heslo:"Břicho se dělá v kuchyni, ne v posilovně. Od března se maká na tom, co bude vidět v červenci.",
+   jidlo:"Bílkoviny první, zelenina druhá, zbytek co zbyde. Objemná jídla — polévky, saláty, tvaroh. "
+       + "Hlad není důkaz, že to funguje. Je to jen hlad.",
+   trenink:"Váhy drž, jak to půjde — právě ony ti udrží svaly. Kardio přidej, ale radši chůzi, "
+       + "kolo nebo brusle než hodinu na páse.",
+   pozor:"Víc než kilo týdně dolů = jdou i svaly. A po šesti týdnech si dej týden na udržovačce, "
+       + "jinak to vzdáš úplně.",
+   recept:"prot" },
+ { id:"forma", ic:"🏖️", n:"Forma", kratce:"držíme, co jsme vydřeli", barva:"var(--s3)",
+   mesice:[7,8], cil:"drzet", protKg:2.2, vahaTyden:0, maxTydnu:10,
+   heslo:"Léto se neshazuje, léto se užívá. Teď jde jen o to nezahodit, co jsi od jara nadřel.",
+   jidlo:"Jíst normálně a nepočítat každou kalorii. Grilované maso, zelenina, ovoce. "
+       + "Pivo u vody se do rozpočtu vejde — jen ne každý den.",
+   trenink:"Klidně půlka tréninků venku. Brusle, kolo, voda — appka ti je v tomhle období nabízí schválně.",
+   pozor:"Dva týdny dovolené postavu nezničí. Dva měsíce „jsem přece na dovolené\" ano.",
+   recept:"lehke" },
+ { id:"udrzba", ic:"⚖️", n:"Udržovačka", kratce:"nabíráme sílu, ne kila", barva:"var(--s4)",
+   mesice:[9,10], cil:"drzet", protKg:1.95, vahaTyden:0, maxTydnu:12,
+   heslo:"Podzim je rozjezd. Váha stojí, čísla v posilovně jdou nahoru — a v listopadu "
+       + "se do objemu vjíždí z lepší pozice.",
+   jidlo:"Nic zvláštního: normálně, poctivě, bez extrémů. Tělo si po sekačce odpočine a hlava taky.",
+   trenink:"Nejlepší čas doladit techniku u velkých cviků. Přidávej po malých krocích, každý týden.",
+   pozor:"Tohle období se nejsnáz prošvihne. Když teď necháš tréninky plavat, "
+       + "v objemu nebude z čeho stavět.",
+   recept:"vse" }
+];
+const MESICE_CZ = ["led","úno","bře","dub","kvě","čvn","čvc","srp","zář","říj","lis","pro"];
+
+function sezById(id){ return SEZONY.find(f => f.id === id) || null; }
+/* Jaký režim patří k danému měsíci podle kalendáře. */
+function sezProMesic(m){
+ const f = SEZONY.find(x => x.mesice.indexOf(m) >= 0);
+ return f ? f.id : "udrzba";
+}
+function sezDatum(iso){
+ const d = iso ? new Date(iso + "T12:00:00") : new Date();
+ return sezProMesic(d.getMonth() + 1);
+}
+/* Co má člověk nastavené teď. Dokud si nic nevybere, žádný režim neběží. */
+function sezStav(who){ return store.get("sez_" + who, null); }
+function sezAkt(who){ const z = sezStav(who); return z && z.id ? z.id : null; }
+function sezOd(who){ const z = sezStav(who); return z && z.od ? z.od : null; }
+function sezTydnu(who){
+ const od = sezOd(who);
+ if (!od) return 0;
+ return Math.max(0, Math.floor(daysBetween(od, isoDnes()) / 7));
+}
+
+/* Čísla, která z režimu vypadnou — ukazují se předem, ať není překvapení. */
+function sezCisla(who, id){
+ const f = sezById(id);
+ if (!f) return null;
+ const v = vypocty(who, f.cil);
+ return { kcal: v.kcal, prot: Math.round(vahaTed(who) * f.protKg / 5) * 5,
+          vydej: v.vydej, vahaTyden: f.vahaTyden, kg: vahaTed(who) };
+}
+/* Co člověk má teď — ať je vidět rozdíl proti tomu, co přijde. */
+function sezTed(who){ return { kcal: cilKcal(who), prot: cilProt(who) }; }
+
+function sezAplikuj(who, id){
+ const f = sezById(id);
+ if (!f) return null;
+ const c = sezCisla(who, id);
+ store.set("sezZpet_" + who, {                    // ať jde couvnout
+  cil: profil(who).cil, kcal: store.get("kcal_" + who, null),
+  prot: nast("prot_" + who, null), sez: sezStav(who), kdy: isoDnes()
+ });
+ profilSet(who, { cil: f.cil });
+ store.set("kcal_" + who, null);      // kalorie ať se počítají z režimu a drží krok s váhou
+ nastSet("prot_" + who, null);        // bílkoviny řídí režim
+ store.set("sez_" + who, { id: id, od: isoDnes() });
+ store.set("sezVidel_" + who, sezDatum(isoDnes()));   // tohle období už je vyřešené
+ return c;
+}
+function sezVrat(who){
+ const z = store.get("sezZpet_" + who, null);
+ if (!z) return false;
+ profilSet(who, { cil: z.cil || "drzet" });
+ store.set("kcal_" + who, z.kcal || null);
+ nastSet("prot_" + who, z.prot || null);
+ store.set("sez_" + who, z.sez || null);
+ store.set("sezZpet_" + who, null);
+ return true;
+}
+function sezVypni(who){
+ store.set("sez_" + who, null);
+ store.set("sezVidel_" + who, null);
+}
+
+/* Návrh na přepnutí. Appka nikdy nepřepne sama — jen ukáže kartu. */
+function sezNavrh(who){
+ if (!nast("sezAuto", true)) return null;
+ const dop = sezDatum(isoDnes());
+ const akt = sezAkt(who);
+ if (akt === dop) return null;
+ /* Ptáme se jednou za období, ne každý den. Když člověk řekne „teď ne"
+    nebo si vybere něco jiného, do dalšího období je klid. */
+ if (store.get("sezVidel_" + who, null) === dop) return null;
+ return { id: dop, akt: akt, cisla: sezCisla(who, dop), ted: sezTed(who) };
+}
+function sezOdmitni(who, id){ store.set("sezVidel_" + who, id); }
+
+/* ---------- poctivé hlídání uvnitř režimu ---------- */
+/* Sekačka bez přestávky přestane po pár měsících fungovat — a hlavně ji nikdo neudrží. */
+function sezPauza(who){
+ const f = sezById(sezAkt(who));
+ if (!f || f.id !== "sekacka") return null;
+ const t = sezTydnu(who);
+ if (t < 6) return null;
+ return { tydnu: t, txt: t >= 12
+   ? "Sekáš už " + pocet(t, "týden", "týdny", "týdnů") + ". Tohle už není hubnutí, ale vyčerpání — "
+     + "přepni na dva týdny na udržovačku. Tuk nikam neuteče, ale nervy a svaly ano."
+   : "Sekáš " + pocet(t, "týden", "týdny", "týdnů") + " v kuse. Dej si týden na udržovačce — "
+     + "metabolismus se srovná a druhá půlka půjde líp. Není to prohra, je to součást plánu." };
+}
+/* Jde váha tam, kam má? Bez chlácholení. */
+function sezVaha(who){
+ const f = sezById(sezAkt(who));
+ if (!f) return null;
+ const arr = (wtArr(who) || []).slice().sort((a,b)=>a.d.localeCompare(b.d));
+ const od = sezOd(who);
+ const v = arr.filter(x => !od || x.d >= od);
+ if (v.length < 2) return null;
+ const dnu = daysBetween(v[0].d, v[v.length-1].d);
+ if (dnu < 10) return null;
+ const zmena = Math.round((v[v.length-1].kg - v[0].kg) * 10) / 10;
+ const tydnu = dnu / 7;
+ const realne = Math.round(zmena / tydnu * 100) / 100;
+ const cil = f.vahaTyden;
+ const o = (n)=> (n > 0 ? "+" : "") + String(Math.round(n*100)/100).replace(".", ",");
+ let verdikt;
+ if (cil > 0){
+  if (realne < cil * 0.3) verdikt = "Váha skoro stojí. V objemu to znamená jediné — jíš málo. Přidej 200 kcal denně.";
+  else if (realne > cil * 2.2) verdikt = "Nabíráš moc rychle. Nad půl kila týdně už je to hlavně tuk — uber 200 kcal.";
+  else verdikt = "Přesně tak to má vypadat. Nech to běžet.";
+ } else if (cil < 0){
+  if (realne > cil * 0.3) verdikt = "Váha se skoro nehýbe. Buď je příjem vyšší, než si myslíš, nebo se sní víc o víkendu, než se zapíše.";
+  else if (realne < cil * 2.2) verdikt = "Padá to moc rychle. Přes kilo týdně už jdou i svaly — přidej 200 kcal, není kam spěchat.";
+  else verdikt = "Ideální tempo. Takhle se hubne tuk, ne svaly.";
+ } else {
+  verdikt = Math.abs(realne) < 0.2
+   ? "Váha drží, jak má. Sílu měř v posilovně, ne na váze."
+   : "Váha se hýbe víc, než by v tomhle období měla — hoď oko na kalorie.";
+ }
+ return { zmena: zmena, realne: realne, cil: cil, tydnu: Math.round(tydnu*10)/10,
+          sedi: cil === 0 ? Math.abs(realne) < 0.25 : (realne / cil > 0.3 && realne / cil < 2.2),
+          txt: "Za " + pocet(Math.round(tydnu), "týden", "týdny", "týdnů") + " " + o(zmena) + " kg "
+             + "(" + o(realne) + " kg týdně, plán " + o(cil) + "). " + verdikt };
+}
+
+/* ---------- co režim říká o jídle a tréninku ---------- */
+/* Skóre receptu podle toho, co zrovna dává smysl jíst. */
+function sezSkoreReceptu(r, who){
+ const f = sezById(sezAkt(who));
+ if (!f || !r || !r.p || !r.v) return 0;
+ const por = (who === "v") ? r.v : r.p;
+ const kcal = por.kcal || 1, prot = por.prot || 0;
+ if (f.recept === "kcal")  return kcal / 100 + prot / 10;          // v objemu je hustota výhoda
+ if (f.recept === "prot")  return prot / (kcal / 100);             // bílkoviny na sto kalorií
+ if (f.recept === "lehke") return prot / (kcal / 100) * 0.7 + (kcal < 600 ? 3 : 0);
+ return prot / 10;
+}
+function sezReceptyProc(who){
+ const f = sezById(sezAkt(who));
+ if (!f) return "";
+ if (f.recept === "kcal")  return "V objemu jsou nahoře jídla, která toho nacpou nejvíc do jedné porce — ať to vůbec sníš.";
+ if (f.recept === "prot")  return "Na sekačce jsou nahoře jídla s nejvíc bílkovinami na kalorii. Zasytí a udrží svaly.";
+ if (f.recept === "lehke") return "V létě nahoře lehčí a bílkovinová jídla — ať se dá jíst i za třiceti stupňů.";
+ return "Nahoře jsou jídla s poctivým podílem bílkovin.";
+}
+function sezTreninkTxt(who){
+ const f = sezById(sezAkt(who));
+ return f ? f.trenink : "";
+}
+
+/* ---------- roční pás: kde jsme a co přijde ---------- */
+function sezRokHtml(who){
+ const teď = new Date().getMonth() + 1;
+ const akt = sezAkt(who);
+ return '<div class="sezrok">' + [1,2,3,4,5,6,7,8,9,10,11,12].map(m => {
+   const f = sezById(sezProMesic(m));
+   return '<div class="sm'+(m === teď ? " ted" : "")+(akt === f.id ? " akt" : "")+'" '
+    + 'title="'+esc(MESICE_CZ[m-1]+" — "+f.n)+'">'
+    + '<i style="background:'+f.barva+'"></i><b>'+f.ic+'</b><span>'+MESICE_CZ[m-1]+'</span></div>';
+  }).join("") + '</div>';
+}
+
+/* ---------- návrh na přepnutí ---------- */
+function sezNavrhKarta(who){
+ const n = sezNavrh(who);
+ if (!n) return "";
+ const f = sezById(n.id), star = sezById(n.akt);
+ const dk = n.cisla.kcal - n.ted.kcal, dp = n.cisla.prot - n.ted.prot;
+ const zn = x => (x > 0 ? "+" : "") + fmt(x);
+ return '<div class="card sezn" style="border-color:'+f.barva+'">'
+  +'<div class="rhead"><h3>'+f.ic+' Začíná období: '+esc(f.n)+'</h3>'
+  +'<span class="rmeta">'+(solo() ? "" : esc(jmeno(who))+" · ")+esc(f.kratce)+'</span></div>'
+  +'<p class="who" style="margin:2px 0 10px">'+esc(f.heslo)+'</p>'
+  +'<div class="sezcis"><div><span>Kalorie</span><b>'+fmt(n.ted.kcal)+' → '+fmt(n.cisla.kcal)+'</b>'
+  +'<i class="'+(dk >= 0 ? "up" : "dn")+'">'+zn(dk)+' kcal</i></div>'
+  +'<div><span>Bílkoviny</span><b>'+n.ted.prot+' → '+n.cisla.prot+' g</b>'
+  +'<i class="'+(dp >= 0 ? "up" : "dn")+'">'+zn(dp)+' g</i></div>'
+  +'<div><span>Váha</span><b>'+(f.vahaTyden === 0 ? "držet"
+     : (f.vahaTyden > 0 ? "+" : "") + String(f.vahaTyden).replace(".", ",") + " kg")+'</b>'
+  +'<i>'+(f.vahaTyden === 0 ? "stabilně" : "za týden")+'</i></div></div>'
+  +'<div class="note" style="margin:10px 0">'+esc(f.jidlo)+'</div>'
+  +'<div class="wrow" style="margin:0">'
+  +'<button class="act small" data-sezano="'+who+'|'+f.id+'" type="button">Jo, přepni to</button>'
+  +'<button class="ghost" data-sezne="'+who+'|'+f.id+'" type="button">Teď ne</button></div>'
+  +'<div class="hint">'+(star ? "Teď jedeš " + esc(star.n) + ". " : "")
+  +'Nic se nemaže — po přepnutí je hned vedle tlačítko Vrátit zpátky.</div></div>';
+}
+
+/* ---------- hlavní karta režimu ---------- */
+function sezKarta(who){
+ const f = sezById(sezAkt(who));
+ const jm = solo() ? "" : esc(jmeno(who)) + " — ";
+ if (!f){
+  const dop = sezById(sezDatum(isoDnes()));
+  return '<div class="card"><div class="rhead"><h3>🗓️ '+jm+'Sezónní režim</h3>'
+   +'<span class="rmeta">zatím vypnutý</span></div>'
+   +'<p class="who">Tělo neumí stavět svaly a zároveň shazovat tuk. Proto se rok dělí na období — '
+   +'v zimě se přibírá, na jaře seká, v létě drží. Režim ti podle toho sám nastaví kalorie, '
+   +'bílkoviny i styl tréninku a doporučí k tomu jídla.</p>'
+   + sezRokHtml(who)
+   +'<p class="who" style="margin:10px 0 6px">Podle kalendáře teď sedí <b>'+dop.ic+' '+esc(dop.n)+'</b>.</p>'
+   +'<div class="chips">'+ SEZONY.map(x =>
+      '<button class="chip'+(x.id === dop.id ? " on" : "")+'" data-sezano="'+who+'|'+x.id+'" type="button">'
+      + x.ic+' '+esc(x.n)+'</button>').join("")+'</div>'
+   +'<div class="hint">Ťukni na období a appka ti ukáže, co se změní. Přepnout jde kdykoli.</div></div>';
+ }
+ const c = sezCisla(who, f.id);
+ const t = sezTydnu(who);
+ const pauza = sezPauza(who);
+ const vah = sezVaha(who);
+ const zpet = store.get("sezZpet_" + who, null);
+ return '<div class="card" style="border-color:'+f.barva+'">'
+  +'<div class="rhead"><h3>'+f.ic+' '+jm+esc(f.n)+'</h3>'
+  +'<span class="rmeta">'+(t ? pocet(t, "týden", "týdny", "týdnů") : "první dny")
+  +' · '+esc(f.kratce)+'</span></div>'
+  +'<p class="who" style="margin:2px 0 10px">'+esc(f.heslo)+'</p>'
+  +'<div class="sezcis"><div><span>Kalorie</span><b>'+fmt(cilKcal(who))+'</b><i>denně</i></div>'
+  +'<div><span>Bílkoviny</span><b>'+cilProt(who)+' g</b><i>denně</i></div>'
+  +'<div><span>Váha</span><b>'+(f.vahaTyden === 0 ? "držet"
+     : (f.vahaTyden > 0 ? "+" : "") + String(f.vahaTyden).replace(".", ",") + " kg")+'</b>'
+  +'<i>'+(f.vahaTyden === 0 ? "stabilně" : "za týden")+'</i></div></div>'
+  + (vah ? '<div class="note" style="margin:10px 0'+(vah.sedi ? "" : ";border-color:var(--s2)")+'">'
+      +(vah.sedi ? "✓ " : "⚠️ ")+esc(vah.txt)+'</div>' : '')
+  + (pauza ? '<div class="note" style="margin:10px 0;border-color:var(--s2)"><b>⏸️ '+esc(pauza.txt)+'</b></div>' : '')
+  +'<div class="nblok" style="margin-top:10px"><div class="nh">🍽️ Jak jíst</div>'
+  +'<div class="hint" style="margin-top:0">'+esc(f.jidlo)+'</div></div>'
+  +'<div class="nblok"><div class="nh">🏋️ Jak trénovat</div>'
+  +'<div class="hint" style="margin-top:0">'+esc(f.trenink)+'</div></div>'
+  +'<div class="nblok"><div class="nh">⚠️ Na co si dát pozor</div>'
+  +'<div class="hint" style="margin-top:0">'+esc(f.pozor)+'</div></div>'
+  + sezRokHtml(who)
+  +'<div class="chips" style="margin-top:10px">'+ SEZONY.map(x =>
+     '<button class="chip'+(x.id === f.id ? " on" : "")+'" data-sezano="'+who+'|'+x.id+'" type="button">'
+     + x.ic+' '+esc(x.n)+'</button>').join("")+'</div>'
+  +'<div class="wrow" style="margin-top:8px">'
+  + (zpet ? '<button class="ghost" data-sezvrat="'+who+'" type="button">↩︎ Vrátit, co bylo předtím</button>' : '')
+  +'<button class="sh" data-sezoff="'+who+'" type="button">Vypnout režim</button></div></div>';
+}
 /* ================= MÍSTO FITKA VEN =================
    Když je venku čtyřicet, posilovna je trest. Tohle není výmluva —
    pohyb je pohyb a appka ho počítá jako trénink. Jen si o tom vede
@@ -2945,10 +3265,21 @@ function buildSelect(key, day, opts, idx){
  return s+'</select>';
 }
 
+/* Původní recepty držíme bokem, aby šla úprava kdykoli vrátit zpátky. */
+const DINNERS_ZAKLAD = DINNERS.map(r => JSON.parse(JSON.stringify(r)));
 function nactiMoje(){
-  const moje = store.get("myRecipes", []);
-  for (let i = DINNERS.length-1; i >= 0; i--) if (DINNERS[i].own) DINNERS.splice(i,1);
-  moje.forEach(r => DINNERS.push(r));
+  const moje = store.get("myRecipes", []) || [];
+  DINNERS.length = 0;
+  DINNERS_ZAKLAD.forEach(r => DINNERS.push(JSON.parse(JSON.stringify(r))));
+  moje.forEach(r => {
+    const i = DINNERS.findIndex(d => d.id === r.id);
+    if (i >= 0) DINNERS[i] = r;      // upravený vestavěný recept přepíše původní
+    else DINNERS.push(r);            // úplně nový přibude na konec
+  });
+}
+function jeZaklad(id){ return DINNERS_ZAKLAD.some(r => r.id === id); }
+function jeUpraveny(id){
+  return jeZaklad(id) && (store.get("myRecipes", []) || []).some(r => r.id === id);
 }
 const dinnerById = id => DINNERS.find(d=>d.id===id) || DINNERS[0];
 const fmt = n => n.toLocaleString("cs-CZ");
@@ -3145,6 +3476,29 @@ function hlaskaDne(){
  const i = (state.hlaskaI !== null && state.hlaskaI !== undefined)
    ? state.hlaskaI % pool.length : dnu % pool.length;
  return pool[i];
+}
+/* Krátká věta k jídlu podle toho, v jakém je člověk období. */
+function sezDnesRada(who){
+ const f = sezById(sezAkt(who));
+ if (!f) return "";
+ const iso = state.dayIso || isoDnes();
+ let snedeno = 0;
+ planForIso(who, iso).forEach(m => { if (state.checks[iso+"|"+who+"|"+m.slot]) snedeno += m.kcal; });
+ const zbyva = cilKcal(who) - snedeno;
+ if (f.id === "objem")
+  return zbyva > 600
+   ? "Do cíle ti chybí "+fmt(zbyva)+" kcal. V objemu se nedojídá z hladu, ale z plánu — "
+     +"přidej si k večeři přílohu navíc."
+   : "Dnešek v objemu vypadá dobře. Zbytek dopij, nedojídej.";
+ if (f.id === "sekacka")
+  return zbyva < 0
+   ? "Jsi "+fmt(-zbyva)+" kcal nad cílem. Nic se neděje — jeden den sekačku nezruší, "
+     +"ale zítra ať to sedí."
+   : "Zbývá ti "+fmt(zbyva)+" kcal. Dej je do bílkovin a zeleniny, ne do sladkého — "
+     +"zasytí to na dýl.";
+ if (f.id === "forma")
+  return "V létě to nemusí sedět na kalorii. Drž bílkoviny a pij — zbytek si tělo srovná samo.";
+ return "Udržovačka: jez normálně a soustřeď se na to, aby šla čísla nahoru v posilovně, ne na váze.";
 }
 function hlaskaCard(){
  return '<div class="hlaska"><span class="e">💬</span>'
@@ -3654,8 +4008,10 @@ function renderDnes(){
  const kdoSel = '<select data-kdo="'+iso+'" style="width:auto;margin-top:4px">'
   + Object.keys(KDO).map(k=>'<option value="'+k+'"'+(k===kdoVari(iso)?" selected":"")+'>'+KDO[k][0]+' '+esc(KDO[k][1])+'</option>').join("")
   + '</select>';
+ const sezn = (solo() ? [ja()] : ["p","v"]).map(sezNavrhKarta).join("");
  document.getElementById("tab-dnes").innerHTML =
-  navrhyCard()
+  sezn
+  + navrhyCard()
   + ringCard(iso)
   +'<div class="card" style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">'
   +'<div><div class="time" style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px">Den</div>'
@@ -3666,6 +4022,10 @@ function renderDnes(){
   +'<div style="font-size:12.5px;color:var(--text-secondary)">Vaří: '+kdoSel+'</div></div></div>'
   +(duo() ? '<div class="grid2">'+personCard("p",iso)+personCard("v",iso)+'</div>'
           : personCard(ja(), iso))
+  + (nast("hlasky", true) ? (()=>{ const w0 = solo() ? ja() : (store.get("meId", null) || "p");
+      const r0 = sezDnesRada(w0), f0 = sezById(sezAkt(w0));
+      return r0 ? '<div class="note" style="border-color:'+f0.barva+'"><b>'+f0.ic+' '
+        +esc(f0.n)+':</b> '+esc(r0)+'</div>' : ''; })() : "")
   + odznakStrip()
   + spoluPozvankaKarta()
   + tydenTreninkCard()
@@ -3777,7 +4137,7 @@ const OUT_KATALOG = [
  ], "Když si můžeš vybrat kdekoliv, tohle je nejlepší poměr. <b>Vždycky si přidej maso navíc</b> — v asijských bistrech to bývá za 30–50 Kč a zdvojnásobí to bílkoviny."]
 ];
 
-const TAGS = [["all","Vše"],["fav","⭐ Oblíbené"],["doma","🏠 Mám doma"],["rychlo","⚡ Rychlé"],["trouba","🔥 Trouba a pomalu"],["svet","🌍 Svět"],["klasika","🇨🇿 Klasika"],["moje","👨‍🍳 Naše"],["out","🌯 Venku"]];
+const TAGS = [["all","Vše"],["rezim","🎯 Do režimu"],["fav","⭐ Oblíbené"],["doma","🏠 Mám doma"],["rychlo","⚡ Rychlé"],["trouba","🔥 Trouba a pomalu"],["svet","🌍 Svět"],["klasika","🇨🇿 Klasika"],["moje","👨‍🍳 Naše"],["out","🌯 Venku"]];
 const TAGLABEL = {rychlo:"⚡ rychlé", trouba:"🔥 trouba", svet:"🌍 svět", klasika:"🇨🇿 klasika", moje:"👨‍🍳 náš recept", out:"🌯 venku"};
 const tagOf = r => r.out ? "out" : (r.own ? "moje" : (r.tag || "klasika"));
 const chibiOk = r => chybi(r).length === 0;
@@ -4112,19 +4472,55 @@ function ulozMoje(arr){
  if (window.sync && sync.on) sync.pushRec();
 }
 
+/* Předvyplní formulář daným receptem a otevře ho. */
+function upravRecept(id){
+ const r = DINNERS.find(x => x.id === id);
+ if (!r) return;
+ state.recEdit = id;
+ state.recOpen = true;
+ renderRecepty();
+ setTimeout(()=>{
+  const f = document.getElementById("recForm");
+  if (f){ f.open = true; f.scrollIntoView({ block:"start", behavior:"smooth" }); }
+  const nastav = (el, v) => { const x = document.getElementById(el); if (x) x.value = v; };
+  nastav("nrName", r.name);
+  nastav("nrTag", ["klasika","rychlo","svet","trouba"].indexOf(r.tag) >= 0 ? r.tag : "klasika");
+  nastav("nrVpor", r.v.por); nastav("nrVk", r.v.kcal); nastav("nrVp", r.v.prot);
+  nastav("nrPpor", r.p.por); nastav("nrPk", r.p.kcal); nastav("nrPp", r.p.prot);
+  nastav("nrIng", (r.ing || []).map(x => x[1] ? (x[0] + " " + String(x[1]).replace(".", ",") + " " + (x[2] || "ks")).trim() : x[0]).join("\n"));
+  nastav("nrSteps", (r.steps || []).join("\n"));
+ }, 60);
+}
 function novyReceptForm(){
- const moje = mojeRecepty();
- const seznam = moje.length
+ const vsechny = mojeRecepty() || [];
+ const moje = vsechny.filter(r => !jeZaklad(r.id));          // úplně nové recepty
+ const zmenene = vsechny.filter(r => jeZaklad(r.id));        // přepsané recepty z appky
+ const up = state.recEdit ? DINNERS.find(x => x.id === state.recEdit) : null;
+ const seznam = (moje.length
   ? '<div style="margin:10px 0 4px">'+moje.map(r=>'<div class="mine"><span style="flex:1">'+esc(r.name)
     +' <span class="dim">· V '+r.v.kcal+' · P '+r.p.kcal+'</span></span>'
     +'<button class="x" data-delrec="'+esc(r.id)+'" title="Smazat">×</button></div>').join("")+'</div>'
-  : "";
- return '<details class="card" style="padding:0" id="recForm"'+(state.recOpen?" open":"")+'>'
+  : "")
+  + (zmenene.length
+  ? '<div style="margin:10px 0 4px"><div class="hint" style="margin:0 0 4px">Recepty z appky, které jsi upravil'
+    +rod(store.get("meId","p")||"p","","a")+' — křížek vrátí původní verzi:</div>'
+    + zmenene.map(r=>'<div class="mine"><span style="flex:1">'+esc(r.name)
+    +' <span class="dim">· upraveno</span></span>'
+    +'<button class="x" data-recreset="'+esc(r.id)+'" title="Vrátit původní">×</button></div>').join("")+'</div>'
+  : "");
+ return '<details class="card'+(up?" oblib":"")+'" style="padding:0" id="recForm"'+(state.recOpen?" open":"")+'>'
   +'<summary style="padding:16px;cursor:pointer;list-style:none;font-size:16.5px;font-weight:600">'
-  +'➕ Přidat vlastní recept'+(moje.length?' <span class="dim" style="font-weight:400;font-size:13px">('+moje.length+' vlastních)</span>':'')+'</summary>'
+  +(up ? '✏️ Upravit — '+esc(up.name)
+       : '➕ Přidat vlastní recept'+(moje.length?' <span class="dim" style="font-weight:400;font-size:13px">('+moje.length+' vlastních)</span>':''))
+  +'</summary>'
   +'<div style="padding:0 16px 16px">'
-  +'<p class="who">Zapiš cokoli, co doma vaříte. Objeví se to mezi recepty, půjde to zařadit do týdne '
-  +'a suroviny se samy propíšou do nákupu. Uvidí to i ten druhý.</p>'
+  + (up
+     ? '<p class="who">Uprav, co potřebuješ, a dej Uložit. '
+       + (jeZaklad(up.id)
+          ? 'Tohle je recept z appky — tvoje verze ho přepíše a půjde kdykoli vrátit zpátky.'
+          : 'Je to tvůj recept, mění se rovnou.')+'</p>'
+     : '<p class="who">Zapiš cokoli, co doma vaříte. Objeví se to mezi recepty, půjde to zařadit do týdne '
+       +'a suroviny se samy propíšou do nákupu. Uvidí to i ten druhý.</p>')
   +'<div class="form-row"><div class="f" style="min-width:180px"><label>Název jídla</label>'
   +'<input type="text" id="nrName" placeholder="Babiččiny bramborové placky"></div>'
   +'<div class="f" style="max-width:150px"><label>Typ</label><select id="nrTag">'
@@ -4144,9 +4540,12 @@ function novyReceptForm(){
   +'<label style="font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;display:block;margin:9px 0 3px">'
   +'Postup — každý krok na nový řádek</label>'
   +'<textarea class="f2" id="nrSteps" placeholder="Brambory nastrouhej a slij vodu.&#10;Zamíchej vejce, mouku a česnek.&#10;Smaž dozlatova."></textarea>'
-  +'<div class="wrow" style="margin-top:11px"><button class="act small" id="nrSave" type="button">Uložit recept</button>'
+  +'<div class="wrow" style="margin-top:11px"><button class="act small" id="nrSave" type="button">'
+  +(up ? 'Uložit změny' : 'Uložit recept')+'</button>'
+  + (up ? '<button class="ghost" id="nrCancel" type="button">Zrušit úpravu</button>' : '')
+  + (up && jeUpraveny(up.id) ? '<button class="ghost" data-recreset="'+esc(up.id)+'" type="button">Vrátit původní</button>' : '')
   +'<span class="hint" id="nrMsg" style="margin:0"></span></div>'
-  + seznam
+  + (up ? "" : seznam)
   +'</div></details>';
 }
 
@@ -4155,7 +4554,11 @@ function renderRecepty(){
  const favs = store.get("favs", []);
  const q = (state.recQ || "").trim().toLowerCase();
  let list;
+ const jaJsem = solo() ? ja() : (store.get("meId", null) || "p");
  if (f === "all") list = DINNERS;
+ else if (f === "rezim") list = DINNERS.filter(r => !r.out)
+        .map(r => ({ r:r, sk: sezSkoreReceptu(r, jaJsem) }))
+        .sort((a,b)=> b.sk - a.sk).map(x => x.r);
  else if (f === "fav") list = DINNERS.filter(r => favs.includes(r.id));
  else if (f === "doma") list = DINNERS.filter(r => !r.out).map(r => ({r:r, m:chybi(r).length}))
         .sort((a,b)=> a.m - b.m || a.r.name.localeCompare(b.r.name,"cs")).map(x => x.r);
@@ -4166,6 +4569,17 @@ function renderRecepty(){
  const hledej = '<input type="search" class="search" id="recQ" placeholder="🔍 Hledej recept nebo surovinu — třeba kuře, vejce, rychlé…" '
   +'value="'+esc(state.recQ||"")+'" autocomplete="off">';
 
+ const rezimBox = f === "rezim"
+  ? (sezAkt(jaJsem)
+     ? '<div class="card" style="border-color:'+sezById(sezAkt(jaJsem)).barva+'">'
+       +'<h3>'+sezById(sezAkt(jaJsem)).ic+' Jídla do režimu — '+esc(sezById(sezAkt(jaJsem)).n)+'</h3>'
+       +'<p class="who" style="margin:0">'+esc(sezReceptyProc(jaJsem))+'</p>'
+       +'<div class="hint">'+esc(sezById(sezAkt(jaJsem)).jidlo)+'</div></div>'
+     : '<div class="card"><h3>🎯 Zatím bez režimu</h3>'
+       +'<p class="who" style="margin:0">Sezónní režim není zapnutý, tak jsou nahoře prostě jídla '
+       +'s poctivým podílem bílkovin. Zapnout ho jde v <b>Nastavení → Cíle</b> — pak se tenhle seznam '
+       +'přerovná podle toho, jestli je zima na objem nebo jaro na sekačku.</p></div>')
+  : "";
  const spiz = f === "doma"
   ? '<div class="card"><h3>🏠 Co máš doma</h3><p class="who">Poklepej na to, co máš v lednici a ve spíži. '
     +'Recepty se přerovnají — nahoře budou ty, na které nemusíš nikam běžet.</p><div>'
@@ -4200,7 +4614,11 @@ function renderRecepty(){
   +'</div>'
   +'<div class="wrow" style="margin:6px 0 2px">'
   +(r.ing.length ? '<button class="act small" data-cookopen="'+r.id+'" type="button">👨‍🍳 Vařit krok za krokem</button>' : '')
-  +'<button class="sh" data-recshare="'+r.id+'">📤 Poslat recept</button></div>'
+  +'<button class="sh" data-recedit="'+r.id+'">✏️ Upravit</button>'
+  +'<button class="sh" data-recshare="'+r.id+'">📤 Poslat recept</button>'
+  + (jeUpraveny(r.id) ? '<span class="dim" style="font-size:12px;align-self:center">upraveno tebou</span>' : '')
+  + (r.own && !jeZaklad(r.id) ? '<button class="sh" data-delrec="'+esc(r.id)+'">🗑 Smazat</button>' : '')
+  +'</div>'
   + (f === "doma" && chybi(r).length
      ? '<div class="missing">Chybí ti: '+esc(chybi(r).join(", "))+'</div>'
      : (f === "doma" ? '<div class="missing" style="color:var(--good)">✓ Máš na to všechno</div>' : ''))
@@ -4214,7 +4632,7 @@ function renderRecepty(){
   +'</ul><ol>'+r.steps.map(s=>'<li>'+esc(s)+'</li>').join("")+'</ol></div></details>').join("");
  document.getElementById("tab-recepty").innerHTML =
   '<h2>Večeře — '+(q ? list.length+" nalezeno z "+DINNERS.length : DINNERS.length+" receptů do rotace")+'</h2>'
-  + hledej + chips + spiz + davka + novyReceptForm()
+  + hledej + chips + rezimBox + spiz + davka + novyReceptForm()
   + (list.length ? din : '<div class="card"><p class="who" style="margin:0">Nic takového tu není. Zkus jiné slovo — třeba jen „kur" nebo „vejc".</p></div>')
   + (f === "out" || f === "all" ? outKatalog() : "")
   +'<h2>Snídaně, shake &amp; meal prep</h2>'+extra
@@ -5978,8 +6396,11 @@ function zbyvaMin(hot, cel, min, planMin){
   const w = Math.min(1, hot / 6);                     // váha reality roste s počtem sérií
   tempo = realT * w + planT * (1 - w);
  }
- tempo = Math.max(0.6, Math.min(6, tempo));           // ať to neuletí ani jedním směrem
- return Math.max(1, Math.round(zbyva * tempo));
+ tempo = Math.max(0.6, Math.min(4.5, tempo));         // ať to neuletí ani jedním směrem
+ /* A ať to nikdy nevyhodí dvě hodiny. Když se někdo zdrží u první série,
+    nemá cenu mu strašit hlavu čísly — od toho je hláška o protahování. */
+ const strop = Math.round((planMin || 60) * 1.2);
+ return Math.min(strop, Math.max(1, Math.round(zbyva * tempo)));
 }
 function casZa(min){
  if (min === null || min === undefined) return "";
@@ -5987,6 +6408,16 @@ function casZa(min){
  return dvoj(d.getHours()) + ":" + dvoj(d.getMinutes());
 }
 function jeHotovo(hot, cel){ return hot >= cel; }
+/* Když se trénink protahuje, appka to řekne narovinu — ale až když to má smysl říct. */
+function pretahujeText(min, planMin, hot, cel){
+ const m = +min || 0, plan = +planMin || 0;
+ if (!plan || jeHotovo(hot, cel)) return "";
+ if (m >= 105) return "Jedeš " + Math.round(m) + " minut. Po hodině a půl už tělo nepřidává sílu, "
+   + "jen únavu — dodělej, co zbývá, a jdi domů.";
+ if (m >= plan + 20) return "Plán byl " + plan + " minut, jedeš " + Math.round(m)
+   + ". Zkrať pauzy, nebo to zabal po dalších dvou sériích — počítá se to stejně.";
+ return "";
+}
 function zbyvaText(hot, cel, min, planMin, dlouhy){
  if (jeHotovo(hot, cel)) return "hotovo 💪";
  const z = zbyvaMin(hot, cel, min, planMin);
@@ -6448,7 +6879,10 @@ function renderSession(){
   +'<div class="t"><div class="nm">'+esc(r.title)+(duo?' <span class="duobadge">🤜 s '+esc(sKym(s0.bud))+'</span>':'')+'</div>'
   +'<div class="mt">'+t.hot+'/'+t.cel+' sérií'+(t.obj?' · '+fmt(t.obj)+' kg objem':'')
   +(duo?' · zapisuješ za '+esc(sessJmeno(kdo)):'')+'</div>'
-  +'<div class="zb">'+esc(zbyvaText(tTy.hot, tTy.cel, tTy.min, planMinut(who, s0.rid), true))+'</div></div>'
+  +'<div class="zb">'+esc(zbyvaText(tTy.hot, tTy.cel, tTy.min, planMinut(who, s0.rid), true))+'</div>'
+  + (()=>{ const v = pretahujeText(tTy.min, planMinut(who, s0.rid), tTy.hot, tTy.cel);
+           return v ? '<div class="zb dlouho">⏳ '+esc(v)+'</div>' : ''; })()
+  +'</div>'
   +'<div class="clock" id="sessClock">'+casTrvani(t.min)+'</div>'
   + (nast("watchBtn", false)
      ? '<button class="ghost" data-hzrun="Trénink na hodinkách" type="button" '
@@ -6921,7 +7355,7 @@ function routineCard(r){
   + rozehratiHtml(r, false)
   + r.ex.map((e,i)=>exRow(r.id,e,i)).join("") + '</div>';
 }
-const TR_TIME = [["all","Vše"],[20,"⏱ do 20 min"],[30,"⏱ do 30 min"],[45,"⏱ do 45 min"],[999,"⏱ mám čas"]];
+const TR_TIME = [["all","Vše"],[20,"⏱ do 20 min"],[30,"⏱ do 30 min"],[45,"⏱ do 45 min"],[60,"⏱ do 60 min"],[999,"⏱ mám čas"]];
 const TR_TYP  = [["all","Vše"],["fav","⭐ Oblíbené"],["sila","🏋️ Síla"],["kardio","🏃 Kardio"],["doma","🏠 Doma"],["mobilita","🧘 Mobilita"]];
 
 function favR(){ return store.get("favR", []); }
@@ -6973,10 +7407,13 @@ function trReco(who){
   proc = "Na <b>"+esc(hlavni.title.split(" — ")[0])+"</b> ti dneska nezbývá čas. Za "+t+" minut stihneš tohle — "
        + "a fronta počká, nic se nezkazí.";
  }
- return '<div class="card" style="border-color:var(--s1)">'
-  +'<div class="rhead"><h3>💡 Co dneska</h3><span class="rmeta">~'+pick.min+' min</span></div>'
+ const f0 = sezById(sezAkt(who));
+ return '<div class="card" style="border-color:'+(f0 ? f0.barva : "var(--s1)")+'">'
+  +'<div class="rhead"><h3>💡 Co dneska</h3><span class="rmeta">'
+  +(f0 ? f0.ic+' '+esc(f0.n)+' · ' : '')+'~'+pick.min+' min</span></div>'
   +'<div style="font-size:16px;font-weight:600;margin-bottom:3px">'+esc(pick.title)+'</div>'
   +'<p class="who" style="margin-bottom:8px">'+proc+'</p>'
+  + (f0 ? '<div class="hint" style="margin:0 0 8px">'+f0.ic+' '+esc(f0.trenink)+'</div>' : '')
   +'<button class="act" data-start="'+pick.id+'" type="button" style="width:100%;margin:2px 0 10px">▶︎ Spustit trénink</button>'
   +'<div class="note" style="margin:0">'+esc(pick.tip)+'</div></div>';
 }
@@ -6985,6 +7422,15 @@ function trReco(who){
    Appka nikoho nekárá, ale ani nedělá, že si toho nevšimla. */
 function venkuPoznamka(who){
  const n = venkuVRade(who);
+ const f = sezById(sezAkt(who));
+ if (f && f.id === "objem" && n >= 2)
+  return "Dva výlety v řadě — a to jsi v objemu. Venku se svaly nepostaví, "
+   + "ty se staví u činky. Zítra železo, výlet klidně po něm.";
+ if (f && (f.id === "forma" || f.id === "sekacka") && n === 0)
+  return (f.id === "forma"
+    ? "V létě je tohle plnohodnotná půlka plánu — pohyb venku drží formu a hlava si odpočine. "
+    : "Na sekačce se tohle počítá dvakrát: spálíš navíc a nesníš u toho. ")
+   + "Zapíše se to jako trénink, do týdne i do odznaků.";
  if (n === 0) return "Vyměnit fitko za pohyb venku je pořád trénink. Zapíše se do historie, "
    + "započítá do týdne i do odznaků.";
  if (n === 1) return "Včera venku, dneska zas? Klidně — jen ať se z toho nestane jediná forma pohybu.";
@@ -7085,6 +7531,11 @@ function renderTrenink(){
      : '<p class="who" style="margin:0">Nic. Zkus kratší slovo — třeba „ram", „nohy" nebo „bic".</p>')
    +'</div>';
  }
+ const nejdelsi = rutiny(who).reduce((a,r)=> Math.max(a, r.min || 0), 0);
+ const casovaNota = '<div class="note"><b>Nejdelší trénink tady má '+nejdelsi+' minut</b> — a je to schválně. '
+  + 'Přes hodinu a půl už tělo nepřidává sílu, jen únavu, a hlavně: na dvouhodinový trénink se člověk '
+  + 'prostě nevykašle jen jednou, ale pořád. Radši '+nejdelsi+' minut třikrát týdně než dvě hodiny jednou za čas. '
+  + 'Když se to během tréninku začne protahovat, appka ti to řekne.</div>';
  const vyber = trList(who);
  const list = vyber.length
   ? '<h2>'+vyber.length+' '+(vyber.length===1?"trénink":(vyber.length<5?"tréninky":"tréninků"))+' pro tenhle výběr</h2>'
@@ -7100,7 +7551,7 @@ function renderTrenink(){
  const tip = who==="p"
   ? '<div class="note"><b>Dvojitá progrese:</b> stejná váha, přidávej opakování. Horní hranice ve všech sériích → +2,5 kg (horní tělo) / +5 kg (dolní) a znovu. U každého cviku jde vybrat varianta — když je nářadí obsazené nebo něco nesedí. Deload každý 7. týden: poloviční série.</div>'
   : '<div class="note"><b>Neboj se činek:</b> silový trénink u ženy = pevné tvary, ne „chlapské svaly" — na ty nejsou hormony, nestane se to omylem. U každého cviku jde vybrat varianta. Váhy zapisuj do Hevy: síla nahoru = postava se mění, i když váha stojí.</div>';
- document.getElementById("tab-trenink").innerHTML = tgl + spoluPozvankaKarta() + bezi + peerTreninkBox() + head + trReco(who) + venkuCard(who) + sparingCard(who) + hledejEx + nalez + filtry + strecTip + list + tip
+ document.getElementById("tab-trenink").innerHTML = tgl + spoluPozvankaKarta() + bezi + peerTreninkBox() + head + trReco(who) + venkuCard(who) + sparingCard(who) + hledejEx + nalez + filtry + casovaNota + strecTip + list + tip
   + '<div class="note"><b>Deník máš přímo tady.</b> Rozklikni cvik, zapiš kg a opakování — appka si pamatuje, '
   + 'co jsi zvedal(a) minule, a sama řekne, kdy přidat. Tlačítko s časem spustí odpočinek mezi sériemi.</div>'
   + '<div class="note" style="border-color:var(--s1)"><b>Rekordy, objem a statistiky</b> mají vlastní záložku '
@@ -8267,10 +8718,10 @@ const SDIL = {
 /* jednoduché hodnoty — sdílí se celé, vyhrává novější zápis */
 const SDIL1 = ["queue","fb","cooked","lastCheckin","cyklus","shopHist","shopCasto","nakupDni",
  /* profily a čísla patří k člověku, ne k telefonu */
- "profil_p","profil_v","kcal_p","kcal_v",
+ "profil_p","profil_v","kcal_p","kcal_v","sez_p","sez_v","sezZpet_p","sezZpet_v","sezVidel_p","sezVidel_v",
  "n_prot_p","n_prot_v","n_water_p","n_water_v","n_mintr_p","n_mintr_v",
  "n_rozvrh_p","n_rozvrh_v","n_tren_p","n_tren_v","n_zkus_p","n_zkus_v",
- "n_casy","schval","stouch_p","stouch_v","solo"];
+ "n_casy","schval","stouch_p","stouch_v","solo","n_sezAuto"];
 const SDIL1_ST = { queue:"queue", fb:"fb", lastCheckin:"lastCheckin", cyklus:"cyklus", nakupDni:"nakupDni" };
 
 let sdilTicho = false;          // při slučování se nerazítkuje
@@ -9294,6 +9745,8 @@ function renderNastaveniTab(){
   /* --- hlasky --- */
   +'<div class="card"><h3>💬 Hlášky a zprávy</h3>'
   + nRow("Denní hláška v Dnes", nTgl("hlasky", true, "Chci je 😀", "Radši klid"), "Ta drzá věta dole pod jídlem")
+  + nRow("Nabízet sezónní režim", nTgl("sezAuto", true, "Ano 🗓️", "Nechci"),
+      "Na začátku období (objem, sekačka, forma) se zeptá, jestli přepnout")
   + nRow("Automatické zprávy", nTgl("zpravyAuto", true, "Zapnuté 🔔", "Vypnuté"), "Splněný cíl, série, tempo váhy, neděle…")
   + nRow("Šťouchance", nTgl("stouch", true, "Povolené 💌", "Zakázané"), "Tlačítka, kterými se navzájem otravujete")
   +'<div class="hint">Když hlášky vypneš, appka bude vážná jako výpis z banky. Nedoporučuju. 🫣</div></div>'
@@ -9331,7 +9784,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">42</td></tr>'
+  +'<tr><td>Verze</td><td class="num">44</td></tr>'
   +'<tr><td>Tréninků k výběru</td><td class="num">'+(ROUTINES.p.length+ROUTINES.v.length)+'</td></tr>'
   +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
@@ -9367,7 +9820,13 @@ function cileKarta(who){
 function renderCile(){
  const lide = solo() ? [ja()] : ["p","v"];
  document.getElementById("tab-cile").innerHTML =
-  (solo() ? cileKarta(ja()) : '<div class="grid2">'+cileKarta("p")+cileKarta("v")+'</div>')
+  '<h2>Sezónní režim</h2>'
+  + lide.map(sezNavrhKarta).join("")
+  + lide.map(sezKarta).join("")
+  +'<div class="note">Režim nikdy nic nepřepne sám — jen ukáže kartu s čísly a čeká na tvoje ťuknutí. '
+  +'Když si kalorie přepíšeš ručně, tvoje číslo má vždycky přednost. Vypnout návrhy jde v Nastavení.</div>'
+  +'<h2>Čísla a pravidla</h2>'
+  + (solo() ? cileKarta(ja()) : '<div class="grid2">'+cileKarta("p")+cileKarta("v")+'</div>')
   +'<div class="card"><h3>Když si zapisuješ jinam</h3>'
   +'<p class="who">Do Kalorických tabulek nebo podobné appky si čísla přepiš ručně — samy je spočítají jinak. '
   +'Zapisuj jen první 2–3 týdny, pak stačí odhad a tahle appka.</p>'
@@ -9684,18 +10143,48 @@ document.addEventListener("click", e=>{
    msg.textContent = "Chybí název nebo kalorie u obou — bez toho se to nedá počítat.";
    msg.style.color = "var(--s2)"; return;
   }
+  const puvodni = state.recEdit ? DINNERS.find(x => x.id === state.recEdit) : null;
   const rec = {
-   id: "my"+Date.now(), own: true, tag: val("nrTag") || "klasika", name: name,
+   id: state.recEdit || ("my"+Date.now()),
+   own: state.recEdit ? !jeZaklad(state.recEdit) : true,   // upravená klasika zůstane klasikou
+   // typy, které v nabídce nejsou (třeba „venku"), si recept nechá svoje
+   tag: (puvodni && ["klasika","rychlo","svet","trouba"].indexOf(puvodni.tag) < 0)
+        ? (puvodni.tag || "klasika") : (val("nrTag") || "klasika"),
+   name: name,
    v: { por: val("nrVpor") || "1 porce", kcal: vk, prot: vp },
    p: { por: val("nrPpor") || "velká porce", kcal: pk, prot: pp },
    ing: val("nrIng").split("\n").map(parseIng).filter(Boolean),
    steps: val("nrSteps").split("\n").map(x=>x.trim()).filter(Boolean)
   };
+  if (puvodni && puvodni.out) rec.out = true;      // „venku" zůstane venku
   if (!rec.steps.length) rec.steps = ["Postup si zatím nezapsali — doplňte, až to budete vařit."];
-  ulozMoje(mojeRecepty().concat([rec]));
-  state.recOpen = true; state.recFilter = "moje";
-  renderRecepty(); renderTyden(); renderNakup();
-  celebrate("🍽️");
+
+  const bezNej = mojeRecepty().filter(r => r.id !== rec.id);
+  ulozMoje(bezNej.concat([rec]));
+  const byloUpravou = !!state.recEdit;
+  state.recEdit = null;
+  state.recOpen = !byloUpravou;
+  if (!byloUpravou) state.recFilter = "moje";
+  renderAll();
+  if (byloUpravou){
+   pushMsg("recup-"+rec.id+"-"+isoDnes(), "✏️", "Recept upraven",
+     jmeno(store.get("meId","p") || "p")+" upravil"+rod(store.get("meId","p") || "p","","a")
+     +" recept „"+rec.name+"\". Změna platí i v jídelníčku a v nákupu.");
+  }
+  celebrate(byloUpravou ? "✏️" : "🍽️");
+  return;
+ }
+ const re0 = e.target.closest("[data-recedit]");
+ if (re0){ upravRecept(re0.dataset.recedit); return; }
+ if (e.target.id === "nrCancel"){
+  state.recEdit = null; state.recOpen = true; renderRecepty(); return;
+ }
+ const rr = e.target.closest("[data-recreset]");
+ if (rr){
+  const id = rr.dataset.recreset;
+  ulozMoje(mojeRecepty().filter(r => r.id !== id));
+  state.recEdit = null; state.recOpen = false;
+  renderAll();
   return;
  }
  const dr = e.target.closest("[data-delrec]");
@@ -10053,6 +10542,28 @@ document.addEventListener("click", e=>{
  if (e.target.id === "planFill"){ doplnPlan(); renderPlan(); renderDnes(); renderNext(); celebrate("📅"); return; }
  if (e.target.id === "planClear"){ vycistitPlan(); state.planDen = null; renderPlan(); renderDnes(); renderNext(); return; }
 
+ const sza = e.target.closest("[data-sezano]");
+ if (sza){
+  const [w, id] = sza.dataset.sezano.split("|");
+  const f = sezById(id), c = sezAplikuj(w, id);
+  if (c){
+   pushMsg("sez-"+w+"-"+id+"-"+isoDnes(), f.ic, "Nový režim: "+f.n,
+     jmeno(w)+" jede "+f.n.toLowerCase()+" — "+fmt(c.kcal)+" kcal a "+c.prot+" g bílkovin denně. "+f.heslo);
+   celebrate(f.ic);
+  }
+  kontrolaOdznaku(); renderAll(); syncDot();
+  if (window.sync && sync.on) sync.pushStatus();
+  return;
+ }
+ const szn = e.target.closest("[data-sezne]");
+ if (szn){
+  const [w, id] = szn.dataset.sezne.split("|");
+  sezOdmitni(w, id); renderAll(); return;
+ }
+ const szv = e.target.closest("[data-sezvrat]");
+ if (szv){ sezVrat(szv.dataset.sezvrat); renderAll(); syncDot(); return; }
+ const szo = e.target.closest("[data-sezoff]");
+ if (szo){ sezVypni(szo.dataset.sezoff); renderAll(); syncDot(); return; }
  const vch = e.target.closest("[data-venku]");
  if (vch){
   const id = vch.dataset.venku;
@@ -10317,7 +10828,7 @@ document.addEventListener("click", e=>{
  }
  if (e.target.id === "expBtn"){
   const keys = ["week","pick","checks","shop","queue","fb","exsel","wtP","wtV","mrP","mrV","lastCheckin",
-                "kcal_p","kcal_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist","plan","jidlo","shopHist","shopCasto","nakupDni","navrhy","schval","spizOdecist",
+                "kcal_p","kcal_v","sez_p","sez_v","sezZpet_p","sezZpet_v","sezVidel_p","sezVidel_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist","plan","jidlo","shopHist","shopCasto","nakupDni","navrhy","schval","spizOdecist",
                 "n_prot_p","n_prot_v","n_water_p","n_water_v","n_casy","n_mintr_p","n_mintr_v",
                 "n_rozvrh_p","n_rozvrh_v","n_tren_p","n_tren_v","n_hlasky","n_zpravyAuto","n_konfety","n_stouch",
                 "favJ","parti","tlogB","spar","n_zkus_p","n_zkus_v","favR","profil_p","profil_v","ts1","cooked","shuffleN","odznaky",
