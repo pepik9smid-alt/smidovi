@@ -119,6 +119,45 @@
                  background:var(--surface-1);color:var(--muted);cursor:pointer;font-size:16px;line-height:1;padding:0}
   .setrow.done .okbtn{background:var(--s3);border-color:var(--s3);color:#fff}
   .setrow.done input{opacity:.55}
+  .setrow input:focus{outline:2px solid var(--s1);outline-offset:-1px;background:var(--surface-2)}
+  .protej{display:grid;grid-template-columns:1fr 16px;grid-template-rows:auto auto auto;
+    gap:2px 10px;width:100%;text-align:left;
+    background:var(--surface-1);border:1px solid var(--border);border-radius:12px;
+    padding:9px 12px;margin-bottom:12px;cursor:pointer;font:inherit;color:inherit}
+  .protej .pj-n{grid-column:1;grid-row:1;font-size:13.5px;font-weight:600}
+  .protej .pj-n b.ok{color:var(--good);font-size:11.5px;font-weight:700}
+  .protej .pj-c{grid-column:1;grid-row:2;font-size:11.5px;color:var(--muted);
+    font-variant-numeric:tabular-nums}
+  .protej .pj-b{grid-column:1;grid-row:3;display:block;height:4px;border-radius:99px;
+    background:var(--grid);margin-top:5px;position:relative;overflow:hidden}
+  .protej .pj-b i{position:absolute;left:0;height:2px;border-radius:99px;display:block}
+  .protej .pj-b i.k{top:0;background:var(--s1)}
+  .protej .pj-b i.p{top:2px;background:var(--s3)}
+  .protej .pj-a{grid-column:2;grid-row:1/4;align-self:center;justify-self:end;
+    color:var(--muted);font-size:19px;line-height:1}
+  .setkrok{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    padding:2px 0 8px 31px;margin-top:-2px}
+  .setkrok .sk-g{display:inline-flex;align-items:center;gap:4px}
+  .setkrok .sk-g b{font-size:10.5px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.5px;font-weight:600;padding:0 1px}
+  .setkrok button{border:1px solid var(--border);background:var(--surface-1);
+    color:var(--text-secondary);border-radius:8px;padding:6px 9px;font:inherit;
+    font-size:12.5px;line-height:1;cursor:pointer;font-variant-numeric:tabular-nums}
+  .setkrok button:active{background:var(--s1);border-color:var(--s1);color:#fff}
+  .setkrok .sk-x{margin-left:auto;color:var(--muted);border-style:dashed}
+  .serpr{font-size:12px;color:var(--s2);font-weight:600;padding:1px 0 5px 31px}
+  #prToast{position:fixed;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));
+    z-index:400;pointer-events:none;animation:fadeUp .3s ease both}
+  #prToast.pryc{opacity:0;transition:opacity .4s ease}
+  .prt-in{display:flex;gap:12px;align-items:flex-start;
+    background:linear-gradient(135deg, var(--s2), var(--s1));color:#fff;
+    border-radius:16px;padding:13px 15px;box-shadow:0 12px 34px rgba(0,0,0,.32)}
+  .prt-ic{font-size:26px;line-height:1}
+  .prt-t{flex:1;min-width:0}
+  .prt-t b{display:block;font-size:15px;line-height:1.3}
+  .prt-t span{display:block;font-size:13px;opacity:.92;margin-top:1px;font-variant-numeric:tabular-nums}
+  .prt-t span i{font-style:normal;opacity:.8}
+  .prt-t em{display:block;font-style:normal;font-size:12.5px;margin-top:5px;opacity:.9;line-height:1.35}
   .sethead{display:grid;grid-template-columns:24px 1fr 66px 58px 40px;gap:7px;
            font-size:10.5px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);
            padding-bottom:4px;border-bottom:1px solid var(--grid);margin-bottom:4px}
@@ -519,6 +558,52 @@
     mask-image:linear-gradient(to bottom,#000 88%,transparent);
     -webkit-mask-image:linear-gradient(to bottom,#000 88%,transparent)}
   .sess-head .zb.dlouho{color:var(--s2);font-weight:600;max-width:30ch;line-height:1.35;margin-top:3px}
+  .meal.vlastni{border-left:3px solid var(--s3)}
+  .meal .zsloz{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.45}
+  .meal .zsloz i{font-style:normal;color:var(--text-secondary)}
+  .mealx{display:block;margin:4px 0 0 auto;background:none;border:0;color:var(--muted);
+    font-size:15px;line-height:1;padding:2px 4px;cursor:pointer}
+  .mealx:hover{color:var(--s2)}
+  .vynbox{margin-top:8px}
+  .vynchip{display:inline-flex;align-items:center;gap:5px;background:var(--surface-1);
+    border-radius:99px;padding:4px 6px 4px 11px;margin:0 5px 5px 0;font-size:12.5px;
+    color:var(--muted);text-decoration:line-through}
+  .vynchip button{background:none;border:0;color:var(--text-secondary);cursor:pointer;
+    font-size:13px;padding:0 3px;text-decoration:none}
+  .pridejJ{width:100%;margin-top:10px}
+  .pk-most{padding:14px 15px calc(18px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--border);margin-top:6px}
+  .fd-count{padding:8px 15px 4px;font-size:12.5px;color:var(--muted)}
+  .fd-item{display:flex;align-items:flex-start;gap:8px;padding:9px 15px;
+    border-bottom:1px solid var(--baseline)}
+  .fd-item.open{display:block;background:var(--surface-1)}
+  .fd-n{flex:1;min-width:0;background:none;border:0;padding:0;text-align:left;font:inherit;
+    color:inherit;cursor:pointer;font-size:14.5px;line-height:1.4}
+  .fd-m{display:block;font-size:12px;color:var(--muted);margin-top:1px}
+  .fd-plus{flex:0 0 auto;width:30px;height:30px;border-radius:50%;border:1px solid var(--border);
+    background:var(--surface-2);color:var(--text-primary);font-size:17px;line-height:1;cursor:pointer}
+  .fd-edit{margin-top:9px}
+  .fd-jed{display:flex;gap:5px;flex-wrap:wrap}
+  .fd-jed button{border:1px solid var(--border);background:var(--surface-2);color:var(--text-secondary);
+    border-radius:99px;padding:5px 11px;font-size:12.5px;cursor:pointer}
+  .fd-jed button.on{background:var(--s1);border-color:var(--s1);color:#fff;font-weight:600}
+  .fd-sum{margin-top:7px;font-size:14px;font-weight:600}
+  .fd-vlastni{padding:12px 15px}
+  .fd-kos{position:sticky;bottom:0;background:var(--surface-2);border-top:1px solid var(--border);
+    padding:9px 15px calc(9px + env(safe-area-inset-bottom))}
+  .fd-kl{margin-bottom:6px}
+  .fd-kchip{display:inline-flex;align-items:center;gap:4px;background:var(--surface-1);
+    border-radius:99px;padding:4px 5px 4px 10px;margin:0 5px 5px 0;font-size:12.5px}
+  .fd-kchip i{font-style:normal;color:var(--muted)}
+  .fd-kchip button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:12px;padding:0 3px}
+  .fd-nazev{width:100%;background:var(--surface-1);color:var(--text-primary);
+    border:1px solid var(--border);border-radius:9px;padding:8px 10px;font:inherit;font-size:13.5px;
+    margin-bottom:8px}
+  .fd-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .fd-bar span{flex:1;min-width:130px;font-size:13.5px}
+  .pk-chips.fd-kat{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;
+    -webkit-overflow-scrolling:touch}
+  .pk-chips.fd-kat button{white-space:nowrap}
   .sezrok{display:flex;gap:3px;margin:12px 0 2px}
   .sezrok .sm{flex:1;min-width:0;text-align:center;padding:5px 0 4px;border-radius:8px;
     background:var(--surface-1);border:1px solid transparent;position:relative;overflow:hidden}
@@ -999,6 +1084,8 @@
 </header>
 
 <div class="sheet" id="pickSheet" hidden></div>
+<div class="sheet" id="foodSheet" hidden></div>
+<div id="prToast" hidden></div>
 <div class="sheet" id="notifSheet" hidden>
   <div class="sheet-head"><h2>🔔 Oznamovací centrum</h2>
     <button class="ghost" id="notifClose" type="button">Zavřít</button></div>
@@ -2693,6 +2780,8 @@ const state = {
  week: store.get("week", ["stehna","stirfry","bolonske","kari","panenka","tortilly","gulas"]),
  pick: store.get("pick", DAYS.map(()=>({vb:0,vl:0,vs1:0,vs2:2,pb:0,pl:0}))),
  checks: store.get("checks", {}),
+ zapis: store.get("zapis", []),
+ vynech: store.get("vynech", {}),
  shop: store.get("shop", {}),
  queue: store.get("queue", 0),
  fb: store.get("fb", 0),
@@ -2743,6 +2832,7 @@ const state = {
  jinyKod: false,
  venkuId: null,
  venkuMin: 0,
+ jidS: null,
  recEdit: null,
  soloTik: null,
  spar: store.get("spar", []),
@@ -2962,6 +3052,136 @@ function sezReceptyProc(who){
 function sezTreninkTxt(who){
  const f = sezById(sezAkt(who));
  return f ? f.trenink : "";
+}
+
+/* ================= PŘIDÁVÁNÍ JÍDLA =================
+   Tři cesty k jednomu cíli: poskládat ze surovin, vybrat hotové jídlo
+   z appky, nebo prostě napsat název a čísla ručně.                    */
+function otevriJidlo(who, iso){
+ state.jidS = { who: who, iso: iso, rezim: "sur", q: "", kat: "all",
+                otev: null, jed: 0, mn: 1, kos: [], nazev: "", qFocus: false };
+ document.body.style.overflow = "hidden";
+ renderJidlo();
+}
+function zavriJidlo(){
+ state.jidS = null;
+ const el = document.getElementById("foodSheet");
+ if (el){ el.hidden = true; el.innerHTML = ""; }
+ document.body.style.overflow = "";
+}
+function jidNajdi(){
+ const st = state.jidS;
+ const q = bezDia(String(st.q || "").trim());
+ if (st.rezim === "jid"){
+  return vsechnaJidla(st.who)
+   .map((o,i)=>({ typ:"jid", i:i, n:o.name, kcal:o.kcal, prot:o.prot, g:o.g }))
+   .filter(x => !q || bezDia(x.n).indexOf(q) >= 0);
+ }
+ return POTRAVINY.map((pz,i)=>({ typ:"sur", i:i, pz:pz, n:pz[0], kat:pz[3] }))
+  .filter(x => st.kat === "all" || x.kat === st.kat)
+  .filter(x => !q || bezDia(x.n).indexOf(q) >= 0);
+}
+function jidRadekSur(x, poz){
+ const st = state.jidS, pz = x.pz;
+ const otevreno = st.otev === x.i;
+ if (!otevreno)
+  return '<div class="fd-item"><button class="fd-n" data-fdopen="'+x.i+'" type="button">'
+   + esc(pz[0]) + '<span class="fd-m">'+fmt(pz[1])+' kcal · '+String(pz[2]).replace(".",",")
+   +' g B <span class="dim">ve 100 g</span></span></button>'
+   +'<button class="fd-plus" data-fdopen="'+x.i+'" type="button" aria-label="Přidat">+</button></div>';
+ const jd = potJednotky(pz);
+ const ji = Math.min(st.jed, jd.length - 1);
+ const g = Math.round(jd[ji][1] * st.mn * 10) / 10;
+ const krok = potKrok(jd[ji][1]);
+ return '<div class="fd-item open"><div class="fd-n" style="cursor:default">'
+  + esc(pz[0]) + '<span class="fd-m">'+fmt(pz[1])+' kcal · '+String(pz[2]).replace(".",",")+' g B ve 100 g</span></div>'
+  +'<div class="fd-edit">'
+  +'<div class="fd-jed">'+ jd.map((u,i)=>'<button class="'+(i===ji?"on":"")+'" data-fdjed="'+i+'" type="button">'
+     + esc(u[0]) + '</button>').join("") + '</div>'
+  +'<div class="voda" style="margin:8px 0 0">'
+  +'<button data-fdmn="'+(-krok)+'" type="button" aria-label="Ubrat">−</button>'
+  +'<span class="lit" style="min-width:160px;text-align:center"><b>'
+  + potMnozstviText(st.mn, jd[ji][0]) +'</b> · '+ fmt(g) +' g</span>'
+  +'<button data-fdmn="'+krok+'" type="button" aria-label="Přidat">+</button></div>'
+  +'<div class="fd-sum">'+fmt(potKcal(pz, g))+' kcal · '+String(potProt(pz, g)).replace(".",",")+' g bílkovin</div>'
+  +'<div class="wrow" style="margin:8px 0 0">'
+  +'<button class="act small" data-fdadd="'+x.i+'" type="button">Přidat do jídla</button>'
+  +'<button class="ghost" data-fdopen="-1" type="button">Zpět</button></div></div></div>';
+}
+function jidRadekJid(x){
+ return '<div class="fd-item"><button class="fd-n" data-fdjidlo="'+x.i+'" type="button">'
+  + esc(x.n) + '<span class="fd-m">'+fmt(x.kcal)+' kcal · '+x.prot+' g B'
+  + (x.g && JG_LABEL[x.g] ? ' <span class="dim">· '+JG_LABEL[x.g]+'</span>' : '')+'</span></button>'
+  +'<button class="fd-plus" data-fdjidlo="'+x.i+'" type="button" aria-label="Přidat">+</button></div>';
+}
+function renderJidlo(){
+ const el = document.getElementById("foodSheet");
+ if (!el) return;
+ const st = state.jidS;
+ if (!st){ el.hidden = true; el.innerHTML = ""; return; }
+ const c = kosSoucet();
+ const d = new Date(st.iso + "T12:00:00");
+ const den = st.iso === isoDnes() ? "dnes" : DAYS[wdOf(st.iso)] + " " + d.getDate() + ". " + (d.getMonth()+1) + ".";
+
+ let telo;
+ if (st.rezim === "vlastni"){
+  telo = '<div class="fd-vlastni"><p class="who">Když to tu není a nechce se ti to skládat — '
+   +'napiš název a čísla z obalu. Uloží se to jen tobě do dneška.</p>'
+   +'<div class="form-row"><div class="f" style="min-width:170px"><label>Co to bylo</label>'
+   +'<input type="text" id="fdVn" placeholder="Babiččin řízek" value="'+esc(st.vn||"")+'"></div>'
+   +'<div class="f" style="max-width:110px"><label>kcal</label>'
+   +'<input type="number" id="fdVk" inputmode="numeric" placeholder="450" value="'+esc(st.vk||"")+'"></div>'
+   +'<div class="f" style="max-width:110px"><label>bílkoviny g</label>'
+   +'<input type="number" id="fdVp" inputmode="numeric" placeholder="30" value="'+esc(st.vp||"")+'"></div></div>'
+   +'<div class="wrow" style="margin-top:10px"><button class="act small" id="fdVadd" type="button">Přidat do jídla</button>'
+   +'<span class="hint" id="fdVmsg" style="margin:0"></span></div></div>';
+ } else {
+  const nal = jidNajdi();
+  const strop = 120;
+  telo = '<div class="fd-count">'+fmt(nal.length)+' '+pl(nal.length,"položka","položky","položek")
+   + (nal.length > strop ? ' <span class="dim">· ukazuju prvních '+strop+', napiš víc písmen</span>' : '')
+   +'</div>'
+   + (nal.length
+      ? nal.slice(0, strop).map(x => st.rezim === "jid" ? jidRadekJid(x) : jidRadekSur(x)).join("")
+      : '<div class="pk-none">Nic takového tu není. Zkus kratší slovo — třeba „syr", „chleb" nebo „kur". '
+        +'Pořád nic? Přepni na <b>✏️ Vlastní</b> a napiš to ručně.</div>');
+ }
+
+ el.hidden = false;
+ el.innerHTML =
+  '<div class="pk-top">'
+  +'<div class="pk-head"><div><h2>Přidat jídlo</h2>'
+  +'<div class="sub">'+esc(den)+' · '+esc(jmeno(st.who))+' · jen do tvého dne</div></div>'
+  +'<button class="ghost" id="foodClose" type="button">Zavřít</button></div>'
+  +'<div class="pk-chips">'
+  +'<button class="'+(st.rezim==="sur"?"on":"")+'" data-fdrez="sur" type="button">🧩 Suroviny '+fmt(POTRAVINY.length)+'</button>'
+  +'<button class="'+(st.rezim==="jid"?"on":"")+'" data-fdrez="jid" type="button">🍽️ Hotová jídla</button>'
+  +'<button class="'+(st.rezim==="vlastni"?"on":"")+'" data-fdrez="vlastni" type="button">✏️ Vlastní</button>'
+  +'</div>'
+  + (st.rezim === "vlastni" ? "" :
+     '<input type="search" class="pk-search" id="foodQ" placeholder="🔍 Hledej — chleba, sýr, jogurt, pivo…" '
+     +'value="'+esc(st.q||"")+'" autocomplete="off">')
+  + (st.rezim === "sur"
+     ? '<div class="pk-chips fd-kat"><button class="'+(st.kat==="all"?"on":"")+'" data-fdkat="all" type="button">Vše</button>'
+       + POT_KAT.map(t=>'<button class="'+(st.kat===t[0]?"on":"")+'" data-fdkat="'+t[0]+'" type="button">'
+         + t[1] +'</button>').join("") + '</div>'
+     : '')
+  +'</div>'
+  + telo
+  + (c.n
+     ? '<div class="fd-kos"><div class="fd-kl">'
+       + st.kos.map((x,i)=>'<span class="fd-kchip">'+esc(x.n)
+         +' <i>'+esc(potMnozstviText(x.mn, x.jed))+'</i>'
+         +'<button data-fddel="'+i+'" type="button" aria-label="Odebrat">✕</button></span>').join("")
+       +'</div>'
+       +'<input type="text" class="fd-nazev" id="fdNazev" placeholder="'+esc(kosNazev().slice(0,60))+'" '
+       +'value="'+esc(st.nazev||"")+'" autocomplete="off">'
+       +'<div class="fd-bar"><span><b>'+fmt(c.kcal)+'</b> kcal · <b>'+c.prot+'</b> g bílkovin</span>'
+       +'<button class="act" id="fdSave" type="button">Uložit do dne</button></div></div>'
+     : '');
+
+ const inp = document.getElementById("foodQ");
+ if (inp && st.qFocus){ inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
 }
 
 /* ---------- roční pás: kde jsme a co přijde ---------- */
@@ -3697,8 +3917,14 @@ function renderPick(){
     +(x.i === akt ? '<span class="pk-tick">✓</span>' : '')
     +'</div>';
   }).join("")
-  : '<div class="pk-none">Nic takového tu není. Zkus kratší slovo — třeba „vejce", „skyr" nebo „kuř". '
-    +'Nebo si to <b>přidej jako vlastní recept</b> v Receptech.</div>';
+  : '<div class="pk-none">Mezi '+sl.n.toLowerCase()+'mi tohle není. Ale appka zná ještě <b>'
+    +fmt(POTRAVINY.length)+' surovin</b> — tam se dá jídlo poskládat po kouskách.</div>';
+ const most = '<div class="pk-most">'
+  +'<div class="dim" style="font-size:12.5px;margin-bottom:6px">'
+  +'Tohle mění jídlo <b>oběma</b>. Když sis dal'+rod(st.who,"","a")+' něco svého — třeba jogurt a rohlík — '
+  +'poskládej si to ze surovin, zapíše se to jen tobě.</div>'
+  +'<button class="act small" data-pkjidlo="'+st.who+'|'+st.iso+'" type="button" style="width:100%">'
+  +'🧩 Poskládat vlastní jídlo — '+fmt(POTRAVINY.length)+' surovin</button></div>';
 
  el.hidden = false;
  el.innerHTML =
@@ -3718,7 +3944,7 @@ function renderPick(){
   +' · ťukni a je vybráno'
   +(kolikFav ? ' · ⭐ '+kolikFav+' nahoře' : '')
   +' <button class="sh" id="pickRnd" type="button">🎲 náhodně</button></div>'
-  + radky;
+  + radky + most;
  const inp = document.getElementById("pickQ");
  if (inp && st.qFocus){ inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
 }
@@ -3855,6 +4081,1235 @@ function porceText(m){
  if (m === 3) return "trojitá porce";
  return String(m).replace(".", ",") + "× porce";
 }
+/* ================= SUROVINY =================
+   1045 položek: pečivo, maso, mléčné, zelenina, sladké, nápoje i hotovky.
+   Formát: [název, kcal/100 g, bílkoviny g/100 g, kategorie, [[porce, gramy], ...]]
+   Čísla jsou běžné tabulkové hodnoty — poctivý odhad, ne laboratoř.
+   Na to, aby se člověk trefil do dne, to sedí bohatě.                    */
+const POTRAVINY = [
+ ["Chléb kmínový",250,8,"pec",[["plátek",40],["krajíc",55]]],
+ ["Chléb žitný",240,8,"pec",[["plátek",40]]],
+ ["Chléb celozrnný",245,9,"pec",[["plátek",40]]],
+ ["Chléb toustový bílý",270,8,"pec",[["plátek",25]]],
+ ["Chléb toustový celozrnný",250,10,"pec",[["plátek",28]]],
+ ["Chléb kváskový",245,8,"pec",[["plátek",50]]],
+ ["Chléb tmavý se semínky",265,10,"pec",[["plátek",45]]],
+ ["Rohlík obyčejný",290,9,"pec",[["kus",43]]],
+ ["Rohlík celozrnný",275,10,"pec",[["kus",45]]],
+ ["Houska bílá",290,9,"pec",[["kus",43]]],
+ ["Houska grahamová",270,10,"pec",[["kus",60]]],
+ ["Kaiserka",285,9,"pec",[["kus",55]]],
+ ["Bageta bílá",275,9,"pec",[["kus",120],["půlka",60]]],
+ ["Bageta celozrnná",260,10,"pec",[["kus",120]]],
+ ["Veka",280,9,"pec",[["plátek",30]]],
+ ["Dalamánek",265,9,"pec",[["kus",60]]],
+ ["Croissant",405,8,"pec",[["kus",60]]],
+ ["Loupák",380,8,"pec",[["kus",70]]],
+ ["Koblih s marmeládou",400,6,"pec",[["kus",70]]],
+ ["Šáteček s tvarohem",350,7,"pec",[["kus",80]]],
+ ["Tortilla pšeničná",300,8,"pec",[["kus",60]]],
+ ["Tortilla celozrnná",285,9,"pec",[["kus",60]]],
+ ["Pita chléb",275,9,"pec",[["kus",60]]],
+ ["Knäckebrot / žitný křehký",340,10,"pec",[["plátek",10]]],
+ ["Rýžový chlebíček",385,8,"pec",[["kus",8]]],
+ ["Křupavý chlebíček žitný",350,11,"pec",[["kus",10]]],
+ ["Hamburgerová houska",290,9,"pec",[["kus",60]]],
+ ["Hot dog rohlík",285,9,"pec",[["kus",55]]],
+ ["Strouhanka",370,12,"pec",[["lžíce",12]]],
+ ["Kobliha bez náplně",420,6,"pec",[["kus",60]]],
+ ["Vánočka / mazanec",360,8,"pec",[["plátek",60]]],
+ ["Perník",370,6,"pec",[["kus",30]]],
+ ["Rýže bílá vařená",130,2.7,"prilohy",[["porce",150],["lžíce",40]]],
+ ["Rýže bílá syrová",350,7,"prilohy",[["porce",70]]],
+ ["Rýže basmati vařená",135,3,"prilohy",[["porce",150]]],
+ ["Rýže natural vařená",125,3,"prilohy",[["porce",150]]],
+ ["Rýže jasmínová vařená",135,3,"prilohy",[["porce",150]]],
+ ["Těstoviny vařené",155,6,"prilohy",[["porce",180]]],
+ ["Těstoviny syrové",360,13,"prilohy",[["porce",80]]],
+ ["Těstoviny celozrnné vařené",145,6,"prilohy",[["porce",180]]],
+ ["Brambory vařené",80,2,"prilohy",[["porce",200],["kus",100]]],
+ ["Brambory pečené",105,2.5,"prilohy",[["porce",200]]],
+ ["Bramborová kaše",95,2,"prilohy",[["porce",200]]],
+ ["Šťouchané brambory se slaninou",145,3.5,"prilohy",[["porce",200]]],
+ ["Hranolky z fritézy",290,3.5,"prilohy",[["porce",150]]],
+ ["Hranolky z trouby",175,3,"prilohy",[["porce",150]]],
+ ["Americké brambory",190,3,"prilohy",[["porce",150]]],
+ ["Batáty pečené",110,2,"prilohy",[["porce",200]]],
+ ["Bramborák",230,5,"prilohy",[["kus",90]]],
+ ["Knedlík houskový",240,7,"prilohy",[["plátek",30]]],
+ ["Knedlík bramborový",200,5,"prilohy",[["plátek",35]]],
+ ["Knedlík kynutý ovocný",235,6,"prilohy",[["kus",90]]],
+ ["Noky / gnocchi",175,5,"prilohy",[["porce",200]]],
+ ["Kuskus vařený",115,4,"prilohy",[["porce",180]]],
+ ["Bulgur vařený",120,4,"prilohy",[["porce",180]]],
+ ["Quinoa vařená",120,4.5,"prilohy",[["porce",180]]],
+ ["Pohanka vařená",105,4,"prilohy",[["porce",180]]],
+ ["Jáhly vařené",115,3.5,"prilohy",[["porce",180]]],
+ ["Ovesné vločky suché",370,13,"prilohy",[["porce",60],["lžíce",12]]],
+ ["Ovesná kaše na vodě",90,3,"prilohy",[["porce",300]]],
+ ["Ovesná kaše na mléce",120,5,"prilohy",[["porce",300]]],
+ ["Müsli s ořechy",420,10,"prilohy",[["porce",50],["lžíce",15]]],
+ ["Granola",450,9,"prilohy",[["porce",45],["lžíce",15]]],
+ ["Cornflakes",380,7,"prilohy",[["porce",40]]],
+ ["Čokoládové cereálie",400,7,"prilohy",[["porce",40]]],
+ ["Krupice suchá",350,11,"prilohy",[["porce",50]]],
+ ["Krupicová kaše na mléce",100,4,"prilohy",[["porce",300]]],
+ ["Polenta vařená",85,2,"prilohy",[["porce",200]]],
+ ["Rýžové nudle vařené",110,2,"prilohy",[["porce",180]]],
+ ["Lasagne plátky syrové",360,12,"prilohy",[["plátek",15]]],
+ ["Kuřecí prsa syrová",110,23,"maso",[["porce",150]]],
+ ["Kuřecí prsa grilovaná",150,30,"maso",[["porce",130]]],
+ ["Kuřecí stehno bez kůže",130,20,"maso",[["kus",120]]],
+ ["Kuřecí stehno s kůží pečené",215,19,"maso",[["kus",150]]],
+ ["Kuřecí křídla pečená",250,20,"maso",[["kus",40]]],
+ ["Kuřecí mleté maso",140,20,"maso",[["porce",150]]],
+ ["Kuřecí řízek smažený",260,20,"maso",[["kus",130]]],
+ ["Kuřecí nugetky",290,15,"maso",[["kus",20]]],
+ ["Krůtí prsa syrová",105,24,"maso",[["porce",150]]],
+ ["Krůtí stehno",130,21,"maso",[["porce",150]]],
+ ["Vepřová panenka",120,22,"maso",[["porce",150]]],
+ ["Vepřová kotleta",175,21,"maso",[["kus",180]]],
+ ["Vepřová krkovice",240,18,"maso",[["porce",180]]],
+ ["Vepřové mleté maso",240,17,"maso",[["porce",150]]],
+ ["Vepřový bok / bůček",350,15,"maso",[["porce",150]]],
+ ["Vepřový řízek smažený",290,19,"maso",[["kus",150]]],
+ ["Hovězí zadní / kýta",130,22,"maso",[["porce",150]]],
+ ["Hovězí svíčková",145,22,"maso",[["porce",180]]],
+ ["Hovězí roštěná / steak",190,24,"maso",[["porce",200]]],
+ ["Hovězí mleté 10 % tuku",175,20,"maso",[["porce",150]]],
+ ["Hovězí mleté 20 % tuku",250,17,"maso",[["porce",150]]],
+ ["Mleté maso směs (vepřové + hovězí)",220,18,"maso",[["porce",150]]],
+ ["Jehněčí",230,20,"maso",[["porce",150]]],
+ ["Kachní prsa",200,19,"maso",[["porce",150]]],
+ ["Králík",135,21,"maso",[["porce",150]]],
+ ["Játra kuřecí",120,20,"maso",[["porce",150]]],
+ ["Játra vepřová",135,21,"maso",[["porce",150]]],
+ ["Gyros maso",215,20,"maso",[["porce",150]]],
+ ["Kebab maso",225,19,"maso",[["porce",150]]],
+ ["Šunka kuřecí (nejvyšší jakost)",100,19,"uzeniny",[["plátek",20]]],
+ ["Šunka vepřová (nejvyšší jakost)",115,20,"uzeniny",[["plátek",20]]],
+ ["Šunka dušená",150,15,"uzeniny",[["plátek",20]]],
+ ["Šunkový salám",230,12,"uzeniny",[["plátek",20]]],
+ ["Salám Vysočina",460,15,"uzeniny",[["plátek",15]]],
+ ["Salám Gothaj",300,11,"uzeniny",[["plátek",20]]],
+ ["Salám Poličan",440,17,"uzeniny",[["plátek",15]]],
+ ["Turistický salám",420,18,"uzeniny",[["plátek",15]]],
+ ["Šunkový nářez / debrecínka",250,14,"uzeniny",[["plátek",20]]],
+ ["Párek vídeňský",280,11,"uzeniny",[["kus",50]]],
+ ["Párek drůbeží",220,12,"uzeniny",[["kus",50]]],
+ ["Klobása grilovací",320,14,"uzeniny",[["kus",100]]],
+ ["Klobása domácí",380,16,"uzeniny",[["kus",100]]],
+ ["Špekáček",320,12,"uzeniny",[["kus",80]]],
+ ["Slanina anglická",480,14,"uzeniny",[["plátek",15]]],
+ ["Slanina prorostlá",540,12,"uzeniny",[["plátek",15]]],
+ ["Prosciutto / šunka od kosti",250,27,"uzeniny",[["plátek",12]]],
+ ["Chorizo",450,24,"uzeniny",[["plátek",15]]],
+ ["Paštika játrová",320,11,"uzeniny",[["lžíce",20]]],
+ ["Tlačenka",250,15,"uzeniny",[["plátek",30]]],
+ ["Sekaná",290,14,"uzeniny",[["plátek",60]]],
+ ["Krkovice uzená",260,20,"uzeniny",[["plátek",40]]],
+ ["Losos čerstvý",205,20,"ryby",[["porce",150]]],
+ ["Losos uzený",180,22,"ryby",[["plátek",25]]],
+ ["Treska",82,18,"ryby",[["porce",150]]],
+ ["Tuňák ve vlastní šťávě",105,24,"ryby",[["konzerva",80]]],
+ ["Tuňák v oleji (scezený)",190,25,"ryby",[["konzerva",80]]],
+ ["Tuňák čerstvý steak",130,24,"ryby",[["porce",150]]],
+ ["Makrela uzená",260,21,"ryby",[["kus",200]]],
+ ["Sardinky v oleji",210,22,"ryby",[["konzerva",90]]],
+ ["Sleď / zavináč",220,18,"ryby",[["kus",60]]],
+ ["Pstruh",130,20,"ryby",[["kus",200]]],
+ ["Kapr",130,18,"ryby",[["porce",180]]],
+ ["Krevety",85,20,"ryby",[["porce",120]]],
+ ["Rybí prsty",230,12,"ryby",[["kus",28]]],
+ ["Sushi maki (6 ks)",145,5,"ryby",[["kousek",25]]],
+ ["Surimi tyčinky",100,8,"ryby",[["kus",17]]],
+ ["Mléko polotučné 1,5 %",47,3.4,"mlecne",[["sklenice",250],["do kávy",50]]],
+ ["Mléko plnotučné 3,5 %",64,3.3,"mlecne",[["sklenice",250]]],
+ ["Mléko odtučněné 0,5 %",35,3.4,"mlecne",[["sklenice",250]]],
+ ["Mléko bez laktózy 1,5 %",47,3.4,"mlecne",[["sklenice",250]]],
+ ["Kefír",55,3.3,"mlecne",[["sklenice",250]]],
+ ["Podmáslí",40,3.4,"mlecne",[["sklenice",250]]],
+ ["Acidofilní mléko",55,3.3,"mlecne",[["sklenice",250]]],
+ ["Smetana ke šlehání 31 %",300,2.2,"mlecne",[["lžíce",15]]],
+ ["Smetana na vaření 12 %",125,2.6,"mlecne",[["lžíce",15]]],
+ ["Zakysaná smetana 15 %",155,2.8,"mlecne",[["lžíce",20]]],
+ ["Skyr bílý",63,11,"mlecne",[["kelímek",140],["porce",200]]],
+ ["Skyr ochucený",75,10,"mlecne",[["kelímek",140]]],
+ ["Tvaroh měkký netučný",72,13,"mlecne",[["balení",250],["porce",150]]],
+ ["Tvaroh polotučný",110,12,"mlecne",[["balení",250]]],
+ ["Tvaroh tvrdý na strouhání",130,30,"mlecne",[["porce",100]]],
+ ["Cottage cheese",100,12,"mlecne",[["kelímek",150]]],
+ ["Cottage light",75,13,"mlecne",[["kelímek",150]]],
+ ["Bílý jogurt 3 %",60,4,"mlecne",[["kelímek",150]]],
+ ["Bílý jogurt light 0,1 %",40,5,"mlecne",[["kelímek",150]]],
+ ["Řecký jogurt 10 %",115,6,"mlecne",[["kelímek",150]]],
+ ["Řecký jogurt 0 %",57,10,"mlecne",[["kelímek",150]]],
+ ["Ovocný jogurt",90,3.5,"mlecne",[["kelímek",150]]],
+ ["Jogurt s müsli (Termix apod.)",130,4,"mlecne",[["kelímek",90]]],
+ ["Pribináček",165,6,"mlecne",[["kelímek",80]]],
+ ["Actimel / probiotický nápoj",70,2.7,"mlecne",[["lahvička",100]]],
+ ["Puding vanilkový",100,3,"mlecne",[["kelímek",150]]],
+ ["Rýžový nákyp / mléčná rýže",110,3,"mlecne",[["kelímek",200]]],
+ ["Eidam 30 %",275,27,"syry",[["plátek",20]]],
+ ["Eidam 45 %",340,25,"syry",[["plátek",20]]],
+ ["Gouda",355,25,"syry",[["plátek",20]]],
+ ["Ementál",380,28,"syry",[["plátek",20]]],
+ ["Čedar",400,25,"syry",[["plátek",20]]],
+ ["Parmazán",400,36,"syry",[["lžíce strouhaný",8]]],
+ ["Mozzarella",250,18,"syry",[["kulička",125]]],
+ ["Mozzarella light",165,20,"syry",[["kulička",125]]],
+ ["Hermelín / camembert",300,18,"syry",[["kus",120]]],
+ ["Niva",350,20,"syry",[["porce",30]]],
+ ["Balkánský sýr",250,15,"syry",[["porce",50]]],
+ ["Feta",265,14,"syry",[["porce",50]]],
+ ["Ricotta",175,11,"syry",[["lžíce",25]]],
+ ["Mascarpone",440,4,"syry",[["lžíce",20]]],
+ ["Tavený sýr",260,11,"syry",[["trojúhelník",17]]],
+ ["Tavený sýr light",170,15,"syry",[["trojúhelník",17]]],
+ ["Lučina / smetanový sýr",255,7,"syry",[["lžíce",20]]],
+ ["Lučina light",145,10,"syry",[["lžíce",20]]],
+ ["Žervé",250,8,"syry",[["lžíce",20]]],
+ ["Cottage s pažitkou",105,12,"syry",[["kelímek",150]]],
+ ["Sýr na gril / halloumi",320,22,"syry",[["plátek",40]]],
+ ["Smažený sýr",340,17,"syry",[["kus",100]]],
+ ["Olomoucké tvarůžky",130,30,"syry",[["kus",20]]],
+ ["Kozí sýr",290,19,"syry",[["porce",40]]],
+ ["Mixed pizza sýr strouhaný",340,25,"syry",[["hrst",30]]],
+ ["Vejce slepičí",145,12.5,"vejce",[["kus",58],["bílek",33],["žloutek",18]]],
+ ["Vaječný bílek",52,11,"vejce",[["kus",33]]],
+ ["Vaječný žloutek",320,16,"vejce",[["kus",18]]],
+ ["Vejce natvrdo",145,12.5,"vejce",[["kus",58]]],
+ ["Míchaná vejce na másle",200,12,"vejce",[["porce",150]]],
+ ["Omeleta ze 3 vajec",175,13,"vejce",[["porce",180]]],
+ ["Vaječná omáčka / majonézový salát",250,6,"vejce",[["porce",150]]],
+ ["Čočka vařená",115,9,"lusteniny",[["porce",200]]],
+ ["Čočka suchá",350,25,"lusteniny",[["porce",80]]],
+ ["Fazole bílé z konzervy",90,7,"lusteniny",[["porce",200]]],
+ ["Fazole červené z konzervy",95,8,"lusteniny",[["porce",200]]],
+ ["Cizrna vařená",130,8,"lusteniny",[["porce",200]]],
+ ["Cizrna z konzervy",120,7,"lusteniny",[["porce",200]]],
+ ["Hrách žlutý vařený",110,8,"lusteniny",[["porce",200]]],
+ ["Hummus",240,8,"lusteniny",[["lžíce",25]]],
+ ["Tofu natural",120,13,"lusteniny",[["porce",150]]],
+ ["Tofu uzené",165,18,"lusteniny",[["porce",150]]],
+ ["Tempeh",190,19,"lusteniny",[["porce",130]]],
+ ["Sójové maso suché",340,50,"lusteniny",[["porce",40]]],
+ ["Sójový nápoj neslazený",33,3.3,"lusteniny",[["sklenice",250]]],
+ ["Edamame",120,11,"lusteniny",[["porce",120]]],
+ ["Falafel",330,13,"lusteniny",[["kus",25]]],
+ ["Arašídy pražené",590,26,"lusteniny",[["hrst",30]]],
+ ["Rajče",18,0.9,"zelenina",[["kus",120]]],
+ ["Rajčata cherry",20,0.9,"zelenina",[["hrst",80]]],
+ ["Okurka salátová",15,0.7,"zelenina",[["kus",300],["kolečko",10]]],
+ ["Paprika červená",30,1,"zelenina",[["kus",150]]],
+ ["Paprika zelená",22,0.9,"zelenina",[["kus",150]]],
+ ["Mrkev",35,0.9,"zelenina",[["kus",80]]],
+ ["Cibule",40,1.1,"zelenina",[["kus",90]]],
+ ["Česnek",145,6,"zelenina",[["stroužek",4]]],
+ ["Brokolice",34,2.8,"zelenina",[["porce",200]]],
+ ["Květák",25,2,"zelenina",[["porce",200]]],
+ ["Zelí bílé",25,1.3,"zelenina",[["porce",150]]],
+ ["Kysané zelí",20,1,"zelenina",[["porce",150]]],
+ ["Špenát čerstvý",23,2.9,"zelenina",[["hrst",40]]],
+ ["Špenát listový mražený",25,3,"zelenina",[["porce",200]]],
+ ["Salát ledový",14,0.9,"zelenina",[["hrst",40]]],
+ ["Rukola",25,2.6,"zelenina",[["hrst",25]]],
+ ["Cuketa",17,1.2,"zelenina",[["kus",250]]],
+ ["Lilek",25,1,"zelenina",[["kus",300]]],
+ ["Žampiony",22,3,"zelenina",[["porce",150]]],
+ ["Houby lesní",25,3,"zelenina",[["porce",150]]],
+ ["Kukuřice z konzervy",85,3,"zelenina",[["lžíce",25]]],
+ ["Hrášek mražený",80,5,"zelenina",[["porce",150]]],
+ ["Fazolové lusky",30,1.8,"zelenina",[["porce",150]]],
+ ["Řapíkatý celer",16,0.7,"zelenina",[["stonek",40]]],
+ ["Ředkvičky",16,0.7,"zelenina",[["hrst",60]]],
+ ["Červená řepa vařená",45,1.6,"zelenina",[["porce",100]]],
+ ["Dýně hokaido",40,1.4,"zelenina",[["porce",200]]],
+ ["Batáty syrové",86,1.6,"zelenina",[["kus",200]]],
+ ["Pórek",30,1.5,"zelenina",[["kus",150]]],
+ ["Kedlubna",27,1.7,"zelenina",[["kus",200]]],
+ ["Chřest",20,2.2,"zelenina",[["porce",150]]],
+ ["Avokádo",160,2,"zelenina",[["kus",150],["půlka",75]]],
+ ["Olivy zelené",145,1,"zelenina",[["hrst",30]]],
+ ["Kysaná okurka",20,0.6,"zelenina",[["kus",60]]],
+ ["Kimchi",30,1.5,"zelenina",[["porce",80]]],
+ ["Wok zelenina mražená",40,2,"zelenina",[["porce",200]]],
+ ["Zeleninová směs mražená",45,2.5,"zelenina",[["porce",200]]],
+ ["Rajčatová passata",30,1.4,"zelenina",[["balení",400],["lžíce",20]]],
+ ["Rajčata krájená z konzervy",25,1.2,"zelenina",[["konzerva",400]]],
+ ["Jablko",52,0.3,"ovoce",[["kus",180]]],
+ ["Banán",89,1.1,"ovoce",[["kus",120]]],
+ ["Hruška",57,0.4,"ovoce",[["kus",180]]],
+ ["Pomeranč",47,0.9,"ovoce",[["kus",200]]],
+ ["Mandarinka",53,0.8,"ovoce",[["kus",80]]],
+ ["Grep",42,0.8,"ovoce",[["kus",250]]],
+ ["Kiwi",61,1.1,"ovoce",[["kus",80]]],
+ ["Jahody",32,0.7,"ovoce",[["hrst",100]]],
+ ["Borůvky",57,0.7,"ovoce",[["hrst",80]]],
+ ["Maliny",52,1.2,"ovoce",[["hrst",80]]],
+ ["Hroznové víno",69,0.7,"ovoce",[["hrst",100]]],
+ ["Meloun vodní",30,0.6,"ovoce",[["porce",300]]],
+ ["Meloun cantaloupe",34,0.8,"ovoce",[["porce",200]]],
+ ["Broskev",39,0.9,"ovoce",[["kus",150]]],
+ ["Nektarinka",44,1.1,"ovoce",[["kus",140]]],
+ ["Meruňka",48,1.4,"ovoce",[["kus",40]]],
+ ["Švestka",46,0.7,"ovoce",[["kus",40]]],
+ ["Třešně",63,1,"ovoce",[["hrst",100]]],
+ ["Ananas",50,0.5,"ovoce",[["porce",150]]],
+ ["Mango",60,0.8,"ovoce",[["kus",250]]],
+ ["Datle sušené",280,2.5,"ovoce",[["kus",8]]],
+ ["Rozinky",300,3,"ovoce",[["hrst",30]]],
+ ["Sušené meruňky",240,3.4,"ovoce",[["kus",10]]],
+ ["Sušené brusinky",310,0.5,"ovoce",[["hrst",30]]],
+ ["Banánové chipsy",520,2,"ovoce",[["hrst",30]]],
+ ["Kokos strouhaný",600,6,"ovoce",[["lžíce",8]]],
+ ["Citron",29,1.1,"ovoce",[["kus",80]]],
+ ["Granátové jablko",83,1.7,"ovoce",[["kus",250]]],
+ ["Ovocný salát",55,0.7,"ovoce",[["porce",200]]],
+ ["Vlašské ořechy",655,15,"orechy",[["hrst",30],["kus",5]]],
+ ["Mandle",580,21,"orechy",[["hrst",30]]],
+ ["Kešu",555,18,"orechy",[["hrst",30]]],
+ ["Lískové ořechy",630,15,"orechy",[["hrst",30]]],
+ ["Pistácie",560,20,"orechy",[["hrst",30]]],
+ ["Para ořechy",660,14,"orechy",[["kus",5]]],
+ ["Pekanové ořechy",690,9,"orechy",[["hrst",30]]],
+ ["Arašídové máslo",590,25,"orechy",[["lžíce",18]]],
+ ["Mandlové máslo",615,21,"orechy",[["lžíce",18]]],
+ ["Slunečnicová semínka",585,21,"orechy",[["lžíce",10]]],
+ ["Dýňová semínka",560,30,"orechy",[["lžíce",10]]],
+ ["Chia semínka",490,17,"orechy",[["lžíce",12]]],
+ ["Lněné semínko",530,18,"orechy",[["lžíce",10]]],
+ ["Sezam",570,18,"orechy",[["lžíce",9]]],
+ ["Mák",525,18,"orechy",[["lžíce",9]]],
+ ["Kokosové mléko konzerva",190,2,"orechy",[["lžíce",15]]],
+ ["Olivový olej",900,0,"tuky",[["lžíce",12],["lžička",5]]],
+ ["Řepkový olej",900,0,"tuky",[["lžíce",12]]],
+ ["Slunečnicový olej",900,0,"tuky",[["lžíce",12]]],
+ ["Kokosový olej",900,0,"tuky",[["lžíce",12]]],
+ ["Máslo",745,0.8,"tuky",[["lžíce",15],["na chleba",8]]],
+ ["Přepuštěné máslo / ghí",890,0,"tuky",[["lžíce",12]]],
+ ["Sádlo",890,0,"tuky",[["lžíce",12]]],
+ ["Margarín / Rama",600,0.2,"tuky",[["na chleba",8]]],
+ ["Majonéza",700,1,"tuky",[["lžíce",15]]],
+ ["Majonéza light",300,1,"tuky",[["lžíce",15]]],
+ ["Tatarská omáčka",640,1,"tuky",[["lžíce",15]]],
+ ["Kečup",100,1.2,"tuky",[["lžíce",15]]],
+ ["Hořčice plnotučná",105,5,"tuky",[["lžička",6]]],
+ ["Sójová omáčka",55,8,"tuky",[["lžíce",15]]],
+ ["Sriracha / chilli omáčka",90,2,"tuky",[["lžička",6]]],
+ ["BBQ omáčka",170,1,"tuky",[["lžíce",17]]],
+ ["Česneková omáčka / dresink",350,2,"tuky",[["lžíce",15]]],
+ ["Pesto",460,5,"tuky",[["lžíce",15]]],
+ ["Guacamole",175,2,"tuky",[["lžíce",20]]],
+ ["Balzamikový ocet",90,0.5,"tuky",[["lžíce",15]]],
+ ["Worcester",80,0,"tuky",[["lžička",5]]],
+ ["Zálivka na salát olej + ocet",450,0,"tuky",[["lžíce",15]]],
+ ["Mléčná čokoláda",545,7,"sladke",[["kostička",6],["tabulka",100]]],
+ ["Hořká čokoláda 70 %",570,8,"sladke",[["kostička",6]]],
+ ["Bílá čokoláda",550,6,"sladke",[["kostička",6]]],
+ ["Čokoládová tyčinka (Snickers ap.)",490,8,"sladke",[["kus",50]]],
+ ["Müsli tyčinka",400,6,"sladke",[["kus",25]]],
+ ["Proteinová tyčinka",350,32,"sladke",[["kus",60]]],
+ ["Sušenka máslová",480,6,"sladke",[["kus",12]]],
+ ["Oplatka Horalka / Tatranka",510,7,"sladke",[["kus",50]]],
+ ["Piškoty",390,9,"sladke",[["kus",4]]],
+ ["Perníčky",380,5,"sladke",[["kus",15]]],
+ ["Bábovka",380,6,"sladke",[["plátek",70]]],
+ ["Buchta s tvarohem",300,7,"sladke",[["kus",80]]],
+ ["Koláč ovocný",290,5,"sladke",[["kus",80]]],
+ ["Dort krémový",380,5,"sladke",[["kus",120]]],
+ ["Palačinka se šlehačkou",260,5,"sladke",[["kus",120]]],
+ ["Lívance",250,6,"sladke",[["kus",40]]],
+ ["Zmrzlina smetanová",210,3.5,"sladke",[["kopeček",60]]],
+ ["Nanuk",250,3,"sladke",[["kus",70]]],
+ ["Med",320,0.3,"sladke",[["lžíce",21],["lžička",7]]],
+ ["Cukr krystal",400,0,"sladke",[["lžička",5],["kostka",4]]],
+ ["Marmeláda / džem",250,0.4,"sladke",[["lžíce",20]]],
+ ["Nutella / čoko krém",540,6,"sladke",[["lžíce",20]]],
+ ["Javorový sirup",260,0,"sladke",[["lžíce",20]]],
+ ["Bonbony želé",340,6,"sladke",[["hrst",30]]],
+ ["Chipsy bramborové",535,6,"sladke",[["hrst",30],["sáček",70]]],
+ ["Tyčinky slané",385,11,"sladke",[["hrst",25]]],
+ ["Popcorn slaný",480,9,"sladke",[["hrst",25],["miska",50]]],
+ ["Krekry slané",470,8,"sladke",[["kus",5]]],
+ ["Nachos",490,7,"sladke",[["hrst",30]]],
+ ["Sušené maso jerky",250,45,"sladke",[["balení",40]]],
+ ["Voda",0,0,"napoje",[["sklenice",250]]],
+ ["Káva černá",2,0.2,"napoje",[["šálek",200]]],
+ ["Káva s mlékem",25,1.5,"napoje",[["šálek",200]]],
+ ["Latte",55,3,"napoje",[["sklenice",300]]],
+ ["Cappuccino",45,3,"napoje",[["šálek",180]]],
+ ["Čaj neslazený",1,0,"napoje",[["hrnek",250]]],
+ ["Kakao s mlékem",80,3.5,"napoje",[["hrnek",250]]],
+ ["Čokoládové mléko",70,3.4,"napoje",[["lahev",500]]],
+ ["Džus pomerančový",45,0.7,"napoje",[["sklenice",250]]],
+ ["Jablečný džus",46,0.1,"napoje",[["sklenice",250]]],
+ ["Kola",42,0,"napoje",[["plechovka",330],["lahev",500]]],
+ ["Kola zero",0.3,0,"napoje",[["plechovka",330]]],
+ ["Limonáda / malinovka",40,0,"napoje",[["sklenice",300]]],
+ ["Energetický nápoj",45,0,"napoje",[["plechovka",250]]],
+ ["Iontový nápoj",25,0,"napoje",[["lahev",500]]],
+ ["Pivo 10°",35,0.4,"napoje",[["půllitr",500],["malé",300]]],
+ ["Pivo 12°",43,0.5,"napoje",[["půllitr",500]]],
+ ["Pivo nealko",25,0.4,"napoje",[["půllitr",500]]],
+ ["Víno bílé suché",70,0.1,"napoje",[["dvojka",200],["skleničku",150]]],
+ ["Víno červené",75,0.1,"napoje",[["dvojka",200]]],
+ ["Prosecco / sekt",80,0.1,"napoje",[["skleničku",120]]],
+ ["Rum / vodka 40 %",230,0,"napoje",[["panák",40]]],
+ ["Whisky",250,0,"napoje",[["panák",40]]],
+ ["Becherovka",250,0,"napoje",[["panák",40]]],
+ ["Míchaný drink (mojito ap.)",120,0,"napoje",[["sklenice",250]]],
+ ["Smoothie ovocné",60,1,"napoje",[["sklenice",300]]],
+ ["Mléčný shake",110,3.5,"napoje",[["sklenice",300]]],
+ ["Syrovátkový protein (prášek)",380,78,"doplnky",[["odměrka",30]]],
+ ["Protein rostlinný (prášek)",370,70,"doplnky",[["odměrka",30]]],
+ ["Kasein (prášek)",370,75,"doplnky",[["odměrka",30]]],
+ ["Gainer (prášek)",380,20,"doplnky",[["odměrka",50]]],
+ ["Proteinový nápoj hotový",45,8,"doplnky",[["lahev",330]]],
+ ["Proteinový pudink",90,12,"doplnky",[["kelímek",200]]],
+ ["Kreatin monohydrát",0,0,"doplnky",[["lžička",5]]],
+ ["BCAA prášek",20,4,"doplnky",[["odměrka",10]]],
+ ["Kolagen prášek",360,90,"doplnky",[["odměrka",10]]],
+ ["Svíčková s knedlíkem",175,8,"hotovky",[["porce",450]]],
+ ["Guláš s knedlíkem",165,9,"hotovky",[["porce",450]]],
+ ["Smažený sýr s hranolky",265,11,"hotovky",[["porce",400]]],
+ ["Řízek s bramborovým salátem",240,12,"hotovky",[["porce",400]]],
+ ["Kuře na paprice s knedlíkem",155,8,"hotovky",[["porce",450]]],
+ ["Vepřo knedlo zelo",175,10,"hotovky",[["porce",450]]],
+ ["Rajská s těstovinami",130,6,"hotovky",[["porce",450]]],
+ ["Špagety boloňské",150,8,"hotovky",[["porce",400]]],
+ ["Špagety carbonara",210,9,"hotovky",[["porce",400]]],
+ ["Pizza Margherita",250,11,"hotovky",[["celá 32 cm",400],["kus",100]]],
+ ["Pizza se šunkou a sýrem",265,13,"hotovky",[["celá 32 cm",420]]],
+ ["Pizza salám / peperoni",290,12,"hotovky",[["celá 32 cm",430]]],
+ ["Hamburger klasický",250,14,"hotovky",[["kus",220]]],
+ ["Cheeseburger",265,15,"hotovky",[["kus",230]]],
+ ["Big burger s hranolky",260,13,"hotovky",[["menu",450]]],
+ ["Kebab v pitě",215,13,"hotovky",[["kus",350]]],
+ ["Gyros v pitě",210,13,"hotovky",[["kus",350]]],
+ ["Durum / tortilla s masem",220,13,"hotovky",[["kus",400]]],
+ ["Kuřecí wrap",200,13,"hotovky",[["kus",300]]],
+ ["Bageta se šunkou a sýrem",250,12,"hotovky",[["kus",250]]],
+ ["Obložený chlebíček",230,8,"hotovky",[["kus",80]]],
+ ["Bramborový salát",190,3,"hotovky",[["porce",200]]],
+ ["Coleslaw",130,1.5,"hotovky",[["porce",150]]],
+ ["Caesar salát s kuřetem",145,11,"hotovky",[["porce",350]]],
+ ["Řecký salát",105,4,"hotovky",[["porce",300]]],
+ ["Zeleninový salát s dresinkem",80,2,"hotovky",[["porce",250]]],
+ ["Gulášová polévka",75,5,"hotovky",[["porce",350]]],
+ ["Kuřecí vývar s nudlemi",40,3,"hotovky",[["porce",350]]],
+ ["Česnečka",60,3,"hotovky",[["porce",350]]],
+ ["Dršťková polévka",60,6,"hotovky",[["porce",350]]],
+ ["Krémová polévka zeleninová",70,2,"hotovky",[["porce",350]]],
+ ["Čínské nudle s masem",165,9,"hotovky",[["porce",400]]],
+ ["Kuřecí curry s rýží",155,10,"hotovky",[["porce",400]]],
+ ["Sushi set (12 ks)",145,6,"hotovky",[["porce",300]]],
+ ["Ramen",110,7,"hotovky",[["porce",500]]],
+ ["Tortilla chips s dipem",400,6,"hotovky",[["porce",150]]],
+ ["Bramboráky s masem",230,10,"hotovky",[["porce",350]]],
+ ["Lasagne",180,10,"hotovky",[["porce",350]]],
+ ["Rizoto s kuřetem",150,9,"hotovky",[["porce",400]]],
+ ["Halušky s brynzou",200,8,"hotovky",[["porce",350]]],
+ ["Palačinky slané se šunkou",210,10,"hotovky",[["porce",300]]],
+ ["Hot dog",250,10,"hotovky",[["kus",150]]],
+ ["Langoš",320,7,"hotovky",[["kus",150]]],
+ ["Trdelník",350,7,"hotovky",[["kus",100]]],
+ ["Bramborové spirály / chips na špejli",300,4,"hotovky",[["kus",150]]],
+ ["Klobása v housce",300,13,"hotovky",[["kus",200]]],
+ ["Grilované kuřecí špízy",165,22,"hotovky",[["porce",200]]],
+ ["Steak s hranolky",210,17,"hotovky",[["porce",400]]],
+ ["Ryba a hranolky (fish & chips)",250,13,"hotovky",[["porce",400]]],
+ ["Nudlová polévka instantní",450,10,"hotovky",[["balení",70]]],
+ ["Konzerva luncheon meat",290,12,"hotovky",[["konzerva",200]]],
+ ["Hotové kuřecí nugetky s hranolky",270,13,"hotovky",[["porce",350]]],
+ ["Cornspitz",265,10,"pec",[["kus",60]]],
+ ["Cereální rohlík se semínky",300,10,"pec",[["kus",60]]],
+ ["Sluneční semínkový chléb",270,10,"pec",[["plátek",45]]],
+ ["Chléb Šumava",245,8,"pec",[["plátek",45]]],
+ ["Chléb bezlepkový",240,4,"pec",[["plátek",35]]],
+ ["Bulka na burger celozrnná",275,10,"pec",[["kus",60]]],
+ ["Focaccia",300,8,"pec",[["kus",80]]],
+ ["Ciabatta",270,9,"pec",[["kus",100]]],
+ ["Bagel",280,11,"pec",[["kus",90]]],
+ ["Wrap kukuřičný",290,7,"pec",[["kus",55]]],
+ ["Naan chléb",310,9,"pec",[["kus",90]]],
+ ["Preclík",340,10,"pec",[["kus",80]]],
+ ["Slaný šneček",380,9,"pec",[["kus",70]]],
+ ["Buchta s mákem",320,7,"pec",[["kus",80]]],
+ ["Koláč tvarohový",290,7,"pec",[["kus",70]]],
+ ["Donut s polevou",450,6,"pec",[["kus",70]]],
+ ["Muffin čokoládový",400,6,"pec",[["kus",90]]],
+ ["Croissant s čokoládou",440,7,"pec",[["kus",70]]],
+ ["Toustový chléb s máslem",400,8,"pec",[["plátek",33]]],
+ ["Chlebíčkové pečivo (veka plátek)",280,9,"pec",[["plátek",25]]],
+ ["Rýže parboiled vařená",130,3,"prilohy",[["porce",150]]],
+ ["Rýže černá / divoká vařená",130,5,"prilohy",[["porce",150]]],
+ ["Rizoto rýže arborio syrová",350,7,"prilohy",[["porce",70]]],
+ ["Špagety vařené",155,6,"prilohy",[["porce",180]]],
+ ["Penne vařené",155,6,"prilohy",[["porce",180]]],
+ ["Fusilli vařené",155,6,"prilohy",[["porce",180]]],
+ ["Tarhoňa vařená",150,5,"prilohy",[["porce",180]]],
+ ["Vaječné nudle vařené",140,5,"prilohy",[["porce",180]]],
+ ["Kolínka vařená",155,6,"prilohy",[["porce",180]]],
+ ["Proteinové těstoviny vařené",165,14,"prilohy",[["porce",180]]],
+ ["Konjakové nudle (shirataki)",10,0.2,"prilohy",[["porce",200]]],
+ ["Bramborové placky mražené",220,3,"prilohy",[["kus",60]]],
+ ["Krokety",260,4,"prilohy",[["kus",20]]],
+ ["Bramborové noky",175,5,"prilohy",[["porce",200]]],
+ ["Chlupaté knedlíky",190,5,"prilohy",[["kus",60]]],
+ ["Karlovarský knedlík",245,8,"prilohy",[["plátek",30]]],
+ ["Špecle / nočky",180,6,"prilohy",[["porce",180]]],
+ ["Lupínky do polévky",380,12,"prilohy",[["hrst",20]]],
+ ["Amarant vařený",105,4,"prilohy",[["porce",180]]],
+ ["Ovesné otruby",350,17,"prilohy",[["lžíce",10]]],
+ ["Pšeničné klíčky",360,27,"prilohy",[["lžíce",10]]],
+ ["Kokosová mouka",400,20,"prilohy",[["lžíce",10]]],
+ ["Mouka hladká",350,10,"prilohy",[["lžíce",12]]],
+ ["Mouka celozrnná",340,13,"prilohy",[["lžíce",12]]],
+ ["Bramborový škrob",340,0.5,"prilohy",[["lžíce",10]]],
+ ["Kuřecí prsa vařená",130,28,"maso",[["porce",130]]],
+ ["Kuřecí prsa v trojobalu",280,19,"maso",[["kus",140]]],
+ ["Kuřecí prsa marinovaná grilovaná",165,27,"maso",[["porce",150]]],
+ ["Kuřecí srdíčka",150,16,"maso",[["porce",150]]],
+ ["Kuřecí žaludky",115,18,"maso",[["porce",150]]],
+ ["Krůtí mleté maso",120,22,"maso",[["porce",150]]],
+ ["Krůtí plátek grilovaný",130,28,"maso",[["porce",150]]],
+ ["Vepřová plec",200,19,"maso",[["porce",180]]],
+ ["Vepřové koleno pečené",290,18,"maso",[["porce",300]]],
+ ["Vepřová žebra pečená",290,17,"maso",[["porce",250]]],
+ ["Vepřové výpečky",280,18,"maso",[["porce",180]]],
+ ["Hovězí kližka dušená",190,22,"maso",[["porce",180]]],
+ ["Hovězí žebro",250,19,"maso",[["porce",200]]],
+ ["Tatarský biftek",130,21,"maso",[["porce",150]]],
+ ["Telecí maso",130,21,"maso",[["porce",150]]],
+ ["Zvěřina / srnčí",120,22,"maso",[["porce",150]]],
+ ["Husa pečená",300,22,"maso",[["porce",200]]],
+ ["Kachna pečená",280,19,"maso",[["porce",200]]],
+ ["Kuřecí kůže",450,13,"maso",[["porce",30]]],
+ ["Škvarky",550,20,"maso",[["hrst",30]]],
+ ["Šunka krůtí",95,19,"uzeniny",[["plátek",20]]],
+ ["Šunkový salám drůbeží",180,13,"uzeniny",[["plátek",20]]],
+ ["Junior salám",280,11,"uzeniny",[["plátek",20]]],
+ ["Lovecký salám",450,20,"uzeniny",[["plátek",15]]],
+ ["Herkules",430,18,"uzeniny",[["plátek",15]]],
+ ["Paprikáš",330,13,"uzeniny",[["plátek",20]]],
+ ["Kabanos",400,20,"uzeniny",[["kus",30]]],
+ ["Špekový salám",350,12,"uzeniny",[["plátek",20]]],
+ ["Utopenec",240,11,"uzeniny",[["kus",90]]],
+ ["Buřt / vuřt",300,12,"uzeniny",[["kus",90]]],
+ ["Klobása krájená do jídla",350,15,"uzeniny",[["kolečko",12]]],
+ ["Bůček uzený",400,15,"uzeniny",[["plátek",40]]],
+ ["Uzené koleno",250,20,"uzeniny",[["porce",250]]],
+ ["Debrecínská pečeně",200,18,"uzeniny",[["plátek",30]]],
+ ["Mortadella",310,15,"uzeniny",[["plátek",20]]],
+ ["Salám pikantní feferonkový",400,17,"uzeniny",[["plátek",15]]],
+ ["Losos pečený",230,24,"ryby",[["porce",150]]],
+ ["Losos filet grilovaný",220,25,"ryby",[["porce",150]]],
+ ["Tuňákový salát s majonézou",230,12,"ryby",[["porce",150]]],
+ ["Rybí salát",250,8,"ryby",[["porce",150]]],
+ ["Sardinky v rajčatech",165,20,"ryby",[["konzerva",90]]],
+ ["Šproty",240,18,"ryby",[["konzerva",80]]],
+ ["Makrela v oleji",280,20,"ryby",[["konzerva",90]]],
+ ["Candát",85,19,"ryby",[["porce",180]]],
+ ["Okoun / mořský vlk",100,20,"ryby",[["porce",180]]],
+ ["Kalamáry smažené",200,15,"ryby",[["porce",150]]],
+ ["Mušle slávky",85,16,"ryby",[["porce",200]]],
+ ["Kaviár / jikry",250,25,"ryby",[["lžička",8]]],
+ ["Zavináč rollmops",210,15,"ryby",[["kus",60]]],
+ ["Rybí filé v troubě",110,19,"ryby",[["porce",180]]],
+ ["Activia bílá",65,4.5,"mlecne",[["kelímek",120]]],
+ ["Activia ovocná",85,3.5,"mlecne",[["kelímek",120]]],
+ ["Florian jogurt",95,4,"mlecne",[["kelímek",150]]],
+ ["Lipánek",140,6,"mlecne",[["kelímek",50]]],
+ ["Bio jogurt selský",105,4,"mlecne",[["kelímek",150]]],
+ ["Jogurt řecký ochucený",120,6,"mlecne",[["kelímek",150]]],
+ ["Skyr pitný",55,8,"mlecne",[["lahvička",330]]],
+ ["Protein jogurt vysokobílkovinný",65,10,"mlecne",[["kelímek",150]]],
+ ["Termix",200,6,"mlecne",[["kelímek",90]]],
+ ["Šmoulík",165,6,"mlecne",[["kelímek",100]]],
+ ["Mléčná rýže s ovocem",105,3,"mlecne",[["kelímek",200]]],
+ ["Zakysaná smetana 10 %",115,3,"mlecne",[["lžíce",20]]],
+ ["Šlehačka ve spreji",260,2,"mlecne",[["dávka",15]]],
+ ["Kondenzované mléko slazené",320,8,"mlecne",[["lžíce",20]]],
+ ["Mléko sušené odtučněné",355,35,"mlecne",[["lžíce",10]]],
+ ["Mandlové mléko neslazené",15,0.5,"mlecne",[["sklenice",250]]],
+ ["Ovesné mléko",45,1,"mlecne",[["sklenice",250]]],
+ ["Kokosové mléko nápoj",20,0.2,"mlecne",[["sklenice",250]]],
+ ["Rýžové mléko",50,0.3,"mlecne",[["sklenice",250]]],
+ ["Eidam 20 %",210,30,"syry",[["plátek",20]]],
+ ["Madeland",350,26,"syry",[["plátek",20]]],
+ ["Primátor / gouda plátky",340,25,"syry",[["plátek",20]]],
+ ["Sýr na toast plátkový",300,20,"syry",[["plátek",20]]],
+ ["Pařenec / korbáčik",290,28,"syry",[["porce",30]]],
+ ["Uzený sýr",300,26,"syry",[["porce",30]]],
+ ["Nakládaný hermelín",340,15,"syry",[["kus",120]]],
+ ["Pivní sýr",240,20,"syry",[["porce",100]]],
+ ["Syrečky nakládané",140,28,"syry",[["kus",20]]],
+ ["Brie",330,19,"syry",[["porce",40]]],
+ ["Gorgonzola",350,19,"syry",[["porce",30]]],
+ ["Bryndza",210,15,"syry",[["lžíce",25]]],
+ ["Sýrová pomazánka",260,9,"syry",[["lžíce",20]]],
+ ["Sýr Cottage s jarní cibulkou",105,12,"syry",[["kelímek",150]]],
+ ["Sýr grilovací s bylinkami",300,21,"syry",[["plátek",40]]],
+ ["Sýr Lučina Linie",130,11,"syry",[["lžíce",20]]],
+ ["Skyr sýr / quark natural",70,12,"syry",[["porce",150]]],
+ ["Vejce sázená (2 ks)",190,12,"vejce",[["porce",130]]],
+ ["Vejce ztracená",145,12.5,"vejce",[["kus",58]]],
+ ["Vaječné muffiny",165,14,"vejce",[["kus",60]]],
+ ["Šakšuka",110,6,"vejce",[["porce",300]]],
+ ["Křepelčí vejce",155,13,"vejce",[["kus",10]]],
+ ["Vaječná omeleta se sýrem",210,15,"vejce",[["porce",180]]],
+ ["Vaječná pomazánka",240,8,"vejce",[["lžíce",25]]],
+ ["Čočka na kyselo",110,7,"lusteniny",[["porce",250]]],
+ ["Fazolový guláš",100,6,"lusteniny",[["porce",300]]],
+ ["Cizrnové curry",130,6,"lusteniny",[["porce",300]]],
+ ["Hrachová kaše",110,8,"lusteniny",[["porce",250]]],
+ ["Sójové maso vařené",100,15,"lusteniny",[["porce",150]]],
+ ["Seitan",145,25,"lusteniny",[["porce",130]]],
+ ["Rostlinný burger patty",210,17,"lusteniny",[["kus",110]]],
+ ["Rostlinné mleté maso",160,17,"lusteniny",[["porce",150]]],
+ ["Tofu smažené v trojobalu",260,14,"lusteniny",[["porce",150]]],
+ ["Arašídy solené",600,25,"lusteniny",[["hrst",30]]],
+ ["Fazolová pomazánka",150,6,"lusteniny",[["lžíce",25]]],
+ ["Sójový jogurt",60,4,"lusteniny",[["kelímek",150]]],
+ ["Rajčata sušená v oleji",210,5,"zelenina",[["hrst",30]]],
+ ["Paprika žlutá",27,1,"zelenina",[["kus",150]]],
+ ["Paprika kápie",30,1,"zelenina",[["kus",120]]],
+ ["Feferonky nakládané",25,1,"zelenina",[["kus",15]]],
+ ["Cibule červená",40,1.1,"zelenina",[["kus",90]]],
+ ["Jarní cibulka",32,1.8,"zelenina",[["kus",15]]],
+ ["Pórek grilovaný",45,1.5,"zelenina",[["porce",150]]],
+ ["Růžičková kapusta",43,3.4,"zelenina",[["porce",150]]],
+ ["Kapusta hlávková",30,2,"zelenina",[["porce",150]]],
+ ["Zelí červené",30,1.4,"zelenina",[["porce",150]]],
+ ["Dušené zelí",55,1.5,"zelenina",[["porce",200]]],
+ ["Kysané zelí dušené se slaninou",90,2,"zelenina",[["porce",200]]],
+ ["Mrkvový salát",60,1,"zelenina",[["porce",150]]],
+ ["Celer bulva",32,1.5,"zelenina",[["porce",150]]],
+ ["Petržel kořenová",35,2,"zelenina",[["kus",60]]],
+ ["Pastinák",75,1.2,"zelenina",[["kus",130]]],
+ ["Tuřín / vodnice",30,1,"zelenina",[["porce",150]]],
+ ["Hlíva ústřičná",33,3.3,"zelenina",[["porce",150]]],
+ ["Žampiony grilované",40,3,"zelenina",[["porce",150]]],
+ ["Lilek grilovaný",60,1,"zelenina",[["porce",200]]],
+ ["Cuketa grilovaná",45,1.2,"zelenina",[["porce",200]]],
+ ["Ratatouille",70,1.5,"zelenina",[["porce",250]]],
+ ["Dýňová polévka",60,1.5,"zelenina",[["porce",350]]],
+ ["Zelenina pečená na plechu",85,2,"zelenina",[["porce",250]]],
+ ["Bramborový salát s majonézou",195,3,"zelenina",[["porce",200]]],
+ ["Okurkový salát",30,0.7,"zelenina",[["porce",150]]],
+ ["Rajčatový salát s cibulí",40,1,"zelenina",[["porce",150]]],
+ ["Míchaný zeleninový salát",30,1.3,"zelenina",[["porce",200]]],
+ ["Olivy černé",150,1,"zelenina",[["hrst",30]]],
+ ["Kukuřice klas vařený",95,3.3,"zelenina",[["kus",150]]],
+ ["Sterilovaná zelenina směs",40,1.5,"zelenina",[["porce",150]]],
+ ["Křen strouhaný",65,3,"zelenina",[["lžička",6]]],
+ ["Jablko sušené",250,1,"ovoce",[["hrst",30]]],
+ ["Ostružiny",43,1.4,"ovoce",[["hrst",80]]],
+ ["Rybíz",55,1.4,"ovoce",[["hrst",80]]],
+ ["Angrešt",44,0.9,"ovoce",[["hrst",80]]],
+ ["Brusinky čerstvé",46,0.4,"ovoce",[["hrst",60]]],
+ ["Papája",43,0.5,"ovoce",[["porce",150]]],
+ ["Fík čerstvý",74,0.8,"ovoce",[["kus",50]]],
+ ["Fíky sušené",250,3.3,"ovoce",[["kus",15]]],
+ ["Švestky sušené",240,2.2,"ovoce",[["kus",10]]],
+ ["Liči",66,0.8,"ovoce",[["hrst",80]]],
+ ["Kaki / persimon",70,0.6,"ovoce",[["kus",170]]],
+ ["Pomelo",38,0.8,"ovoce",[["porce",200]]],
+ ["Limetka",30,0.7,"ovoce",[["kus",60]]],
+ ["Ananas kompot",60,0.4,"ovoce",[["porce",150]]],
+ ["Broskve kompot",60,0.5,"ovoce",[["porce",150]]],
+ ["Jablečné pyré",55,0.2,"ovoce",[["kelímek",100]]],
+ ["Mrazené lesní ovoce",45,0.9,"ovoce",[["porce",150]]],
+ ["Banán sušený plátky",350,3,"ovoce",[["hrst",30]]],
+ ["Ovocná přesnídávka",65,0.4,"ovoce",[["kapsička",100]]],
+ ["Burákové máslo bez cukru",600,27,"orechy",[["lžíce",18]]],
+ ["Tahini sezamová pasta",600,17,"orechy",[["lžíce",18]]],
+ ["Kešu máslo",590,18,"orechy",[["lžíce",18]]],
+ ["Vlašské ořechy mleté",655,15,"orechy",[["lžíce",10]]],
+ ["Mandle plátky",580,21,"orechy",[["lžíce",8]]],
+ ["Kokosové chipsy",590,6,"orechy",[["hrst",25]]],
+ ["Konopná semínka loupaná",550,32,"orechy",[["lžíce",10]]],
+ ["Slunečnicová semínka loupaná pražená",600,22,"orechy",[["hrst",30]]],
+ ["Ořechová směs solená",600,20,"orechy",[["hrst",30]]],
+ ["Piniové oříšky",670,14,"orechy",[["lžíce",10]]],
+ ["Sezamový olej",900,0,"tuky",[["lžička",5]]],
+ ["Lněný olej",900,0,"tuky",[["lžíce",12]]],
+ ["Olej ve spreji",900,0,"tuky",[["střik",1]]],
+ ["Máslo přepuštěné na pánev",890,0,"tuky",[["lžička",5]]],
+ ["Pomazánkové máslo",250,5,"tuky",[["lžíce",20]]],
+ ["Sádlo škvarkové",700,5,"tuky",[["lžíce",15]]],
+ ["Ajvar",110,1.5,"tuky",[["lžíce",20]]],
+ ["Sweet chilli omáčka",220,0.5,"tuky",[["lžíce",18]]],
+ ["Ostrý kečup",105,1.2,"tuky",[["lžíce",15]]],
+ ["Dijonská hořčice",150,7,"tuky",[["lžička",6]]],
+ ["Křenová omáčka",200,2,"tuky",[["lžíce",20]]],
+ ["Tzatziki",110,3,"tuky",[["lžíce",25]]],
+ ["Cesar dresink",450,2,"tuky",[["lžíce",15]]],
+ ["Jogurtový dresink",130,3,"tuky",[["lžíce",15]]],
+ ["Rybí omáčka",60,8,"tuky",[["lžička",6]]],
+ ["Hoisin omáčka",220,2,"tuky",[["lžíce",18]]],
+ ["Teriyaki omáčka",130,4,"tuky",[["lžíce",18]]],
+ ["Salsa",40,1.3,"tuky",[["lžíce",20]]],
+ ["Zakysaná zálivka na hranolky",300,2,"tuky",[["lžíce",20]]],
+ ["Bešamel",130,4,"tuky",[["porce",100]]],
+ ["Milka mléčná",535,6,"sladke",[["kostička",5]]],
+ ["Kinder čokoláda",565,9,"sladke",[["tyčinka",12.5]]],
+ ["Kinder Bueno",570,9,"sladke",[["kus",43]]],
+ ["Fidorka",540,6,"sladke",[["kus",30]]],
+ ["Deli tyčinka",470,5,"sladke",[["kus",35]]],
+ ["BeBe sušenky",440,8,"sladke",[["balení",50]]],
+ ["Lentilky",470,5,"sladke",[["balení",40]]],
+ ["Haribo želé",345,7,"sladke",[["hrst",30]]],
+ ["Míša tvarohový nanuk",250,4,"sladke",[["kus",55]]],
+ ["Magnum",320,4,"sladke",[["kus",79]]],
+ ["Zmrzlina v kornoutu",260,4,"sladke",[["kus",110]]],
+ ["Studentská pečeť",500,6,"sladke",[["kostička",6]]],
+ ["Marlenka",400,6,"sladke",[["kus",60]]],
+ ["Věneček",350,5,"sladke",[["kus",70]]],
+ ["Laskonka",450,6,"sladke",[["kus",30]]],
+ ["Větrník",380,5,"sladke",[["kus",90]]],
+ ["Rakvička se šlehačkou",400,4,"sladke",[["kus",60]]],
+ ["Tiramisu",300,5,"sladke",[["porce",120]]],
+ ["Cheesecake",350,6,"sladke",[["kus",110]]],
+ ["Brownie",430,5,"sladke",[["kus",70]]],
+ ["Cookie s čokoládou",480,6,"sladke",[["kus",40]]],
+ ["Croissant s marmeládou",400,6,"sladke",[["kus",70]]],
+ ["Palačinka s Nutellou",320,6,"sladke",[["kus",130]]],
+ ["Ovocné knedlíky",235,6,"sladke",[["kus",90]]],
+ ["Žemlovka",220,6,"sladke",[["porce",200]]],
+ ["Vaflové trubičky",500,5,"sladke",[["kus",8]]],
+ ["Chipsy z pece",450,6,"sladke",[["hrst",30]]],
+ ["Kukuřičné křupky",520,6,"sladke",[["hrst",25]]],
+ ["Solené oříšky v těstíčku",520,15,"sladke",[["hrst",30]]],
+ ["Sušené banánové chipsy slazené",520,2,"sladke",[["hrst",30]]],
+ ["Proteinové chipsy",400,30,"sladke",[["balení",30]]],
+ ["Rýžové chlebíčky s čokoládou",450,7,"sladke",[["kus",17]]],
+ ["Ovesné sušenky",450,7,"sladke",[["kus",25]]],
+ ["Fitness tyčinka müsli",380,5,"sladke",[["kus",23]]],
+ ["Kofola",40,0,"napoje",[["půllitr",500]]],
+ ["Birell nealko",25,0.4,"napoje",[["plechovka",500]]],
+ ["Plzeň 12°",43,0.5,"napoje",[["půllitr",500]]],
+ ["Radegast 10°",35,0.4,"napoje",[["půllitr",500]]],
+ ["Pivo 11°",39,0.5,"napoje",[["půllitr",500]]],
+ ["Pivní speciál 13°+",55,0.6,"napoje",[["půllitr",500]]],
+ ["Cider",50,0,"napoje",[["lahev",400]]],
+ ["Fernet",250,0,"napoje",[["panák",40]]],
+ ["Slivovice",250,0,"napoje",[["panák",40]]],
+ ["Jägermeister",230,0,"napoje",[["panák",40]]],
+ ["Aperol Spritz",110,0,"napoje",[["sklenice",200]]],
+ ["Gin s tonikem",90,0,"napoje",[["sklenice",250]]],
+ ["Mattoni ochucená",20,0,"napoje",[["lahev",500]]],
+ ["Minerálka neochucená",0,0,"napoje",[["lahev",500]]],
+ ["Ledový čaj",30,0,"napoje",[["lahev",500]]],
+ ["Sirup ředěný",25,0,"napoje",[["sklenice",300]]],
+ ["Multivitamin džus",50,0.5,"napoje",[["sklenice",250]]],
+ ["Rajčatový džus",20,0.8,"napoje",[["sklenice",250]]],
+ ["Espresso",3,0.2,"napoje",[["šálek",30]]],
+ ["Flat white",65,3.5,"napoje",[["šálek",250]]],
+ ["Matcha latte",70,3,"napoje",[["sklenice",300]]],
+ ["Horká čokoláda",130,4,"napoje",[["hrnek",250]]],
+ ["Protein shake s mlékem",90,10,"napoje",[["sklenice",350]]],
+ ["Kombucha",30,0,"napoje",[["sklenice",250]]],
+ ["Kulajda",80,2.5,"hotovky",[["porce",350]]],
+ ["Zelňačka",70,3,"hotovky",[["porce",350]]],
+ ["Bramborová polévka",70,2,"hotovky",[["porce",350]]],
+ ["Hrachová polévka",85,5,"hotovky",[["porce",350]]],
+ ["Čočková polévka",80,5,"hotovky",[["porce",350]]],
+ ["Rajská polévka",55,1.5,"hotovky",[["porce",350]]],
+ ["Kuřecí polévka s masem",55,5,"hotovky",[["porce",350]]],
+ ["Vývar hovězí",25,3,"hotovky",[["porce",350]]],
+ ["Koprová omáčka s vejcem",110,4,"hotovky",[["porce",350]]],
+ ["Rajská omáčka s masem",130,8,"hotovky",[["porce",400]]],
+ ["Svíčková omáčka",130,3,"hotovky",[["porce",200]]],
+ ["Špenát s vejcem a bramborem",110,5,"hotovky",[["porce",350]]],
+ ["Smažený květák s bramborem",200,6,"hotovky",[["porce",350]]],
+ ["Segedínský guláš",150,9,"hotovky",[["porce",400]]],
+ ["Znojemská pečeně",145,12,"hotovky",[["porce",350]]],
+ ["Moravský vrabec",230,17,"hotovky",[["porce",300]]],
+ ["Guláš maďarský",130,12,"hotovky",[["porce",350]]],
+ ["Hovězí na houbách",140,15,"hotovky",[["porce",350]]],
+ ["Kuřecí nudličky se zeleninou",130,15,"hotovky",[["porce",350]]],
+ ["Pečené kuře s bramborem",190,17,"hotovky",[["porce",400]]],
+ ["Zapečené těstoviny se šunkou",190,10,"hotovky",[["porce",350]]],
+ ["Zapečené brambory se sýrem",175,7,"hotovky",[["porce",350]]],
+ ["Musaka",165,9,"hotovky",[["porce",350]]],
+ ["Plněná paprika s rajskou",120,8,"hotovky",[["porce",400]]],
+ ["Karbanátek",250,15,"hotovky",[["kus",100]]],
+ ["Sekaná s bramborem",210,12,"hotovky",[["porce",350]]],
+ ["Hamburger domácí",230,16,"hotovky",[["kus",220]]],
+ ["Kuřecí burger",235,15,"hotovky",[["kus",220]]],
+ ["Veggie burger",210,10,"hotovky",[["kus",220]]],
+ ["Quesadilla se sýrem",290,13,"hotovky",[["kus",200]]],
+ ["Burrito s masem",215,12,"hotovky",[["kus",350]]],
+ ["Taco",230,11,"hotovky",[["kus",100]]],
+ ["Pad thai",180,9,"hotovky",[["porce",400]]],
+ ["Kuřecí teriyaki s rýží",165,11,"hotovky",[["porce",400]]],
+ ["Poke bowl s lososem",140,11,"hotovky",[["porce",400]]],
+ ["Falafel v pitě",210,8,"hotovky",[["kus",300]]],
+ ["Řecká gyros mísa",155,13,"hotovky",[["porce",400]]],
+ ["Bramboráky s houbovou omáčkou",190,6,"hotovky",[["porce",350]]],
+ ["Smažené žampiony",230,8,"hotovky",[["porce",200]]],
+ ["Nakládaný hermelín s chlebem",300,13,"hotovky",[["porce",200]]],
+ ["Utopenec s chlebem",240,10,"hotovky",[["porce",200]]],
+ ["Tatarák s topinkami",250,17,"hotovky",[["porce",250]]],
+ ["Topinka s česnekem",320,8,"hotovky",[["kus",60]]],
+ ["Bramborové lupínky domácí",400,5,"hotovky",[["porce",100]]],
+ ["Grilovaná zelenina s balkánem",120,5,"hotovky",[["porce",300]]],
+ ["Wrap se zeleninou a hummusem",200,7,"hotovky",[["kus",300]]],
+ ["Snídaňové menu vajíčka+slanina+toast",250,13,"hotovky",[["porce",350]]],
+ ["Anglická snídaně",220,12,"hotovky",[["porce",450]]],
+ ["Ovesná kaše z kavárny",130,5,"hotovky",[["porce",350]]],
+ ["Croissant sendvič",300,12,"hotovky",[["kus",180]]],
+ ["Panini se šunkou a sýrem",270,14,"hotovky",[["kus",220]]],
+ ["Zapékaný bagel s lososem",260,14,"hotovky",[["kus",200]]],
+ ["Studená mísa / obložený talíř",260,15,"hotovky",[["porce",250]]],
+ ["Sýrová mísa",340,22,"hotovky",[["porce",200]]],
+ ["Uzený pstruh s chlebem",200,18,"hotovky",[["porce",250]]],
+ ["Chléb slunečnicový",260,9,"pec",[["plátek",45]]],
+ ["Chléb špaldový",250,9,"pec",[["plátek",45]]],
+ ["Chléb s ořechy",280,9,"pec",[["plátek",45]]],
+ ["Rohlík máslový",320,8,"pec",[["kus",45]]],
+ ["Houska se sezamem",300,9,"pec",[["kus",50]]],
+ ["Bulka sýrová",310,11,"pec",[["kus",70]]],
+ ["Bageta s máslem",330,8,"pec",[["kus",130]]],
+ ["Vekové kolečko",280,9,"pec",[["kus",20]]],
+ ["Podplamenice",260,8,"pec",[["kus",100]]],
+ ["Lívanečky sladké",250,6,"pec",[["kus",35]]],
+ ["Vdolek",300,6,"pec",[["kus",60]]],
+ ["Buchtičky se šodó",250,6,"pec",[["porce",250]]],
+ ["Škvarkové placky",380,9,"pec",[["kus",60]]],
+ ["Slaný croissant se šunkou",350,12,"pec",[["kus",100]]],
+ ["Toast s vejcem a avokádem",220,8,"pec",[["porce",180]]],
+ ["Chléb s máslem a šunkou",250,11,"pec",[["kus",80]]],
+ ["Obložený rohlík",260,10,"pec",[["kus",100]]],
+ ["Sendvič se šunkou a sýrem",250,12,"pec",[["kus",180]]],
+ ["Sendvič s kuřecím a zeleninou",210,13,"pec",[["kus",200]]],
+ ["Sendvič tuňákový",220,12,"pec",[["kus",200]]],
+ ["Bramborová kaše se sýrem",130,4,"prilohy",[["porce",200]]],
+ ["Bramborová kaše z prášku",85,2,"prilohy",[["porce",200]]],
+ ["Brambory šťouchané s cibulkou",110,2.5,"prilohy",[["porce",200]]],
+ ["Brambory vařené s máslem",105,2,"prilohy",[["porce",200]]],
+ ["Brambory nové s koprem",95,2,"prilohy",[["porce",200]]],
+ ["Batátové hranolky",190,2,"prilohy",[["porce",150]]],
+ ["Rýže se zeleninou",125,3,"prilohy",[["porce",200]]],
+ ["Rýže smažená s vejcem",165,5,"prilohy",[["porce",250]]],
+ ["Těstoviny se sýrem",210,9,"prilohy",[["porce",250]]],
+ ["Těstovinový salát",175,6,"prilohy",[["porce",250]]],
+ ["Kuskusový salát",130,4,"prilohy",[["porce",250]]],
+ ["Quinoa salát",140,5,"prilohy",[["porce",250]]],
+ ["Bulgur se zeleninou",125,4,"prilohy",[["porce",250]]],
+ ["Ovesná kaše s proteinem",130,10,"prilohy",[["porce",300]]],
+ ["Overnight oats",120,7,"prilohy",[["kelímek",300]]],
+ ["Kaše rýžová s ovocem",105,3,"prilohy",[["porce",300]]],
+ ["Müsli s jogurtem",130,6,"prilohy",[["porce",250]]],
+ ["Granola s mlékem",150,6,"prilohy",[["porce",250]]],
+ ["Cereálie s mlékem",110,5,"prilohy",[["porce",250]]],
+ ["Chia pudink",130,5,"prilohy",[["kelímek",200]]],
+ ["Bramborové placičky se zelím",180,4,"prilohy",[["kus",80]]],
+ ["Zeleninové rizoto",130,4,"prilohy",[["porce",350]]],
+ ["Houbové rizoto",140,5,"prilohy",[["porce",350]]],
+ ["Kuřecí prsa s bylinkami v troubě",155,28,"maso",[["porce",150]]],
+ ["Kuřecí steak z pánve",170,27,"maso",[["porce",150]]],
+ ["Kuřecí gyros doma",180,24,"maso",[["porce",150]]],
+ ["Kuřecí špíz se zeleninou",145,20,"maso",[["kus",150]]],
+ ["Krůtí závitek",150,24,"maso",[["kus",130]]],
+ ["Vepřová panenka v troubě",145,26,"maso",[["porce",150]]],
+ ["Vepřové na kmíně",210,19,"maso",[["porce",180]]],
+ ["Vepřový guláš",180,16,"maso",[["porce",300]]],
+ ["Hovězí guláš",165,18,"maso",[["porce",300]]],
+ ["Hovězí steak medium",200,26,"maso",[["porce",200]]],
+ ["Hovězí burger patty",230,20,"maso",[["kus",120]]],
+ ["Mleté maso na boloňskou",190,15,"maso",[["porce",200]]],
+ ["Masové kuličky v omáčce",200,14,"maso",[["kus",30]]],
+ ["Kuřecí maso z rožně",200,24,"maso",[["porce",200]]],
+ ["Grilovaná krkovice",260,20,"maso",[["porce",180]]],
+ ["Marinované vepřové plátky",200,20,"maso",[["porce",150]]],
+ ["Skyr s ovocem",75,10,"mlecne",[["kelímek",150]]],
+ ["Skyr s granolou",130,9,"mlecne",[["porce",250]]],
+ ["Tvaroh s ovocem",90,11,"mlecne",[["porce",200]]],
+ ["Tvaroh s medem",120,11,"mlecne",[["porce",200]]],
+ ["Tvarohový krém",150,9,"mlecne",[["porce",150]]],
+ ["Cottage s rajčaty",85,10,"mlecne",[["porce",200]]],
+ ["Jogurt s ořechy a medem",140,5,"mlecne",[["porce",200]]],
+ ["Jogurt s müsli",120,5,"mlecne",[["porce",250]]],
+ ["Kefírové mléko ochucené",65,3,"mlecne",[["sklenice",250]]],
+ ["Mléko do kávy 10 %",115,3,"mlecne",[["dávka",15]]],
+ ["Smetanový dezert",210,3,"mlecne",[["kelímek",100]]],
+ ["Jogurtové mléko",60,3,"mlecne",[["lahev",400]]],
+ ["Mléčný koktejl čokoládový",90,3.5,"mlecne",[["sklenice",300]]],
+ ["Brokolice vařená",35,2.5,"zelenina",[["porce",200]]],
+ ["Květák vařený",25,2,"zelenina",[["porce",200]]],
+ ["Květák pečený",60,2.5,"zelenina",[["porce",200]]],
+ ["Zelený salát s dresinkem",60,1.5,"zelenina",[["porce",200]]],
+ ["Caprese salát",150,8,"zelenina",[["porce",200]]],
+ ["Salát s tuňákem",110,10,"zelenina",[["porce",300]]],
+ ["Salát s vejcem",120,8,"zelenina",[["porce",300]]],
+ ["Salát s balkánem",120,6,"zelenina",[["porce",300]]],
+ ["Hrášková kaše",90,5,"zelenina",[["porce",200]]],
+ ["Mrkvovo-hráškový mix",60,3,"zelenina",[["porce",200]]],
+ ["Grilovaná paprika",45,1.2,"zelenina",[["porce",150]]],
+ ["Pečená dýně",55,1.4,"zelenina",[["porce",200]]],
+ ["Zeleninový vývar",15,0.8,"zelenina",[["porce",350]]],
+ ["Krémová brokolicová polévka",75,3,"zelenina",[["porce",350]]],
+ ["Kukuřičná polévka",80,2,"zelenina",[["porce",350]]],
+ ["Nakládané okurky",20,0.6,"zelenina",[["kus",60]]],
+ ["Sterilované papriky",30,0.8,"zelenina",[["porce",100]]],
+ ["Pekingské zelí",16,1.2,"zelenina",[["hrst",60]]],
+ ["Polníček",21,2,"zelenina",[["hrst",30]]],
+ ["Klíčky (alfalfa, ředkev)",30,4,"zelenina",[["hrst",20]]],
+ ["Jablko se skořicí pečené",60,0.3,"ovoce",[["kus",180]]],
+ ["Banán se skyrem",75,6,"ovoce",[["porce",250]]],
+ ["Ovoce mix miska",55,0.8,"ovoce",[["porce",250]]],
+ ["Jahody se šlehačkou",90,1,"ovoce",[["porce",200]]],
+ ["Borůvkové smoothie",70,2,"ovoce",[["sklenice",300]]],
+ ["Banánové smoothie s proteinem",90,8,"ovoce",[["sklenice",350]]],
+ ["Zelené smoothie",45,1.5,"ovoce",[["sklenice",300]]],
+ ["Ovocná miska s jogurtem",80,4,"ovoce",[["porce",300]]],
+ ["Kompot jablečný",70,0.3,"ovoce",[["porce",150]]],
+ ["Kompot višňový",75,0.5,"ovoce",[["porce",150]]],
+ ["Proteinová palačinka",180,15,"sladke",[["kus",120]]],
+ ["Proteinová kaše",110,9,"sladke",[["porce",300]]],
+ ["Protein cookie",400,20,"sladke",[["kus",60]]],
+ ["Proteinová zmrzlina",100,8,"sladke",[["kelímek",120]]],
+ ["Kokosová kulička",450,6,"sladke",[["kus",20]]],
+ ["Datlová tyčinka",350,5,"sladke",[["kus",40]]],
+ ["Ořechová tyčinka",450,10,"sladke",[["kus",40]]],
+ ["Rýžová kaše s čokoládou",130,3,"sladke",[["kelímek",200]]],
+ ["Tvarohový koláč domácí",250,8,"sladke",[["kus",100]]],
+ ["Jablečný závin",280,4,"sladke",[["kus",100]]],
+ ["Makový závin",320,6,"sladke",[["kus",100]]],
+ ["Perník s marmeládou",350,5,"sladke",[["kus",60]]],
+ ["Vánoční cukroví",450,6,"sladke",[["kus",12]]],
+ ["Medovník",380,5,"sladke",[["kus",90]]],
+ ["Punčový řez",380,4,"sladke",[["kus",80]]],
+ ["Zmrzlinový pohár",220,4,"sladke",[["porce",250]]],
+ ["Ovocný pohár se šlehačkou",150,2,"sladke",[["porce",250]]],
+ ["Karamelová tyčinka",470,4,"sladke",[["kus",45]]],
+ ["Bonbony tvrdé",390,0,"sladke",[["kus",5]]],
+ ["Žvýkačky bez cukru",160,0,"sladke",[["kus",2]]],
+ ["Sušené ovoce mix",300,3,"sladke",[["hrst",30]]],
+ ["Studentská směs",450,12,"sladke",[["hrst",30]]],
+ ["Pivo 12° točené velké",43,0.5,"napoje",[["půllitr",500]]],
+ ["Pivo pšeničné",45,0.5,"napoje",[["půllitr",500]]],
+ ["Pivo IPA",60,0.6,"napoje",[["půllitr",500]]],
+ ["Šampaňské",80,0.1,"napoje",[["skleničku",120]]],
+ ["Víno růžové",72,0.1,"napoje",[["dvojka",200]]],
+ ["Svařené víno",110,0.1,"napoje",[["hrnek",250]]],
+ ["Grog",130,0,"napoje",[["hrnek",200]]],
+ ["Medovina",180,0.1,"napoje",[["skleničku",100]]],
+ ["Vaječný likér",270,3,"napoje",[["panák",40]]],
+ ["Tonic",35,0,"napoje",[["lahev",250]]],
+ ["Sprite / 7up",40,0,"napoje",[["plechovka",330]]],
+ ["Fanta",45,0,"napoje",[["plechovka",330]]],
+ ["Ovocná limonáda domácí",30,0,"napoje",[["sklenice",300]]],
+ ["Bylinkový čaj s medem",25,0,"napoje",[["hrnek",250]]],
+ ["Ledová káva",60,2,"napoje",[["sklenice",300]]],
+ ["Frappé",90,2,"napoje",[["sklenice",300]]],
+ ["Kokosová voda",20,0.7,"napoje",[["lahev",330]]],
+ ["Zeleninová šťáva",25,1,"napoje",[["sklenice",250]]],
+ ["Proteinová kaše instantní",380,30,"doplnky",[["porce",60]]],
+ ["Vaječný protein prášek",375,80,"doplnky",[["odměrka",30]]],
+ ["Beef protein prášek",370,80,"doplnky",[["odměrka",30]]],
+ ["Sacharidový nápoj",380,0,"doplnky",[["odměrka",50]]],
+ ["Předtréninkovka",15,0,"doplnky",[["odměrka",10]]],
+ ["Omega 3 kapsle",900,0,"doplnky",[["kapsle",1]]],
+ ["Multivitamin tableta",0,0,"doplnky",[["tableta",1]]],
+ ["Vitamin D3 kapsle",0,0,"doplnky",[["kapsle",1]]],
+ ["Hořčík tableta",0,0,"doplnky",[["tableta",1]]],
+ ["Elektrolyty nápoj",10,0,"doplnky",[["lahev",500]]],
+ ["Kuřecí řízek v housce",270,15,"hotovky",[["kus",250]]],
+ ["Smažený sýr v housce",300,13,"hotovky",[["kus",250]]],
+ ["Guláš bez knedlíku",130,14,"hotovky",[["porce",300]]],
+ ["Svíčková bez knedlíku",150,10,"hotovky",[["porce",300]]],
+ ["Kuře na paprice bez knedlíku",140,12,"hotovky",[["porce",300]]],
+ ["Vepřové výpečky se zelím",200,15,"hotovky",[["porce",350]]],
+ ["Pečená kachna se zelím a knedlíkem",230,16,"hotovky",[["porce",450]]],
+ ["Uzené s knedlíkem a zelím",210,16,"hotovky",[["porce",450]]],
+ ["Cordon bleu",280,20,"hotovky",[["kus",180]]],
+ ["Kuřecí kapsa se sýrem",250,20,"hotovky",[["kus",180]]],
+ ["Steak z lososa s bramborem",175,18,"hotovky",[["porce",350]]],
+ ["Ryba na másle s bramborem",160,17,"hotovky",[["porce",350]]],
+ ["Pstruh na másle",175,20,"hotovky",[["porce",250]]],
+ ["Kuřecí salát s dresinkem",150,13,"hotovky",[["porce",300]]],
+ ["Bowl s kuřetem a rýží",145,12,"hotovky",[["porce",400]]],
+ ["Bowl s hovězím",160,13,"hotovky",[["porce",400]]],
+ ["Vegetariánský bowl",130,6,"hotovky",[["porce",400]]],
+ ["Zapečená brokolice se sýrem",130,8,"hotovky",[["porce",300]]],
+ ["Špagety s pestem",210,8,"hotovky",[["porce",350]]],
+ ["Špagety aglio olio",200,7,"hotovky",[["porce",350]]],
+ ["Těstoviny se špenátem a kuřetem",175,12,"hotovky",[["porce",400]]],
+ ["Nudle s kuřetem a zeleninou wok",155,10,"hotovky",[["porce",400]]],
+ ["Rýže s kuřetem a curry omáčkou",160,11,"hotovky",[["porce",400]]],
+ ["Chilli con carne",145,11,"hotovky",[["porce",350]]],
+ ["Gulášová konzerva",140,10,"hotovky",[["konzerva",400]]],
+ ["Hotová polévka z pytlíku",30,1,"hotovky",[["porce",300]]],
+ ["Instantní ramen s masem",130,6,"hotovky",[["porce",400]]],
+ ["Zapečený toast",300,14,"hotovky",[["kus",120]]],
+ ["Vaječná omeleta se zeleninou",130,11,"hotovky",[["porce",250]]],
+ ["Snídaňový burrito",210,11,"hotovky",[["kus",250]]],
+ ["Croque monsieur",300,15,"hotovky",[["kus",200]]],
+ ["Pizza quattro formaggi",300,15,"hotovky",[["celá 32 cm",420]]],
+ ["Pizza se zeleninou",230,10,"hotovky",[["celá 32 cm",420]]],
+ ["Pizza havaj",250,12,"hotovky",[["celá 32 cm",430]]],
+ ["Calzone",280,14,"hotovky",[["kus",350]]],
+ ["Focaccia se sýrem",320,10,"hotovky",[["kus",150]]],
+ ["Bramborové knedlíky se zelím a uzeným",195,9,"hotovky",[["porce",400]]],
+ ["Halušky se zelím",190,6,"hotovky",[["porce",350]]],
+ ["Pirohy plněné",200,7,"hotovky",[["kus",40]]],
+ ["Zapečené lasagne se špenátem",165,9,"hotovky",[["porce",350]]],
+ ["Kuřecí nudličky s rýží",150,13,"hotovky",[["porce",400]]],
+ ["Grilovaný sýr se salátem",180,13,"hotovky",[["porce",250]]],
+ ["Vaječná sedlácká pánev",190,11,"hotovky",[["porce",350]]],
+ ["Šunka od kosti plátek",130,22,"uzeniny",[["plátek",25]]],
+ ["Krůtí prsa uzená",110,21,"uzeniny",[["plátek",20]]],
+ ["Kuřecí šunka light",85,20,"uzeniny",[["plátek",20]]],
+ ["Salám čajovka",300,12,"uzeniny",[["plátek",20]]],
+ ["Vysočina plátky",460,15,"uzeniny",[["plátek",15]]],
+ ["Anglická slanina grilovaná",500,18,"uzeniny",[["plátek",15]]],
+ ["Pršut",240,28,"uzeniny",[["plátek",12]]],
+ ["Salám light drůbeží",160,15,"uzeniny",[["plátek",20]]],
+ ["Masová konzerva vepřová",250,14,"uzeniny",[["konzerva",180]]],
+ ["Paštika drůbeží",270,12,"uzeniny",[["lžíce",20]]],
+ ["Paštika light",180,13,"uzeniny",[["lžíce",20]]],
+ ["Škvarková pomazánka",400,10,"uzeniny",[["lžíce",20]]],
+ ["Tuňák v konzervě s kukuřicí",120,18,"ryby",[["konzerva",160]]],
+ ["Tuňáková pomazánka",200,14,"ryby",[["lžíce",25]]],
+ ["Sardinková pomazánka",230,13,"ryby",[["lžíce",25]]],
+ ["Losos v konzervě",160,22,"ryby",[["konzerva",100]]],
+ ["Ančovičky",200,29,"ryby",[["kus",4]]],
+ ["Pangasius",90,15,"ryby",[["porce",180]]],
+ ["Hoki / mořská štika",85,18,"ryby",[["porce",180]]],
+ ["Krevety grilované",110,22,"ryby",[["porce",120]]],
+ ["Rybí polévka",70,6,"ryby",[["porce",350]]],
+ ["Losos pod pokličkou se zeleninou",150,18,"ryby",[["porce",300]]],
+ ["Mandle loupané",580,21,"orechy",[["hrst",30]]],
+ ["Mandle solené",600,20,"orechy",[["hrst",30]]],
+ ["Kešu solené",570,17,"orechy",[["hrst",30]]],
+ ["Arašídy v medu",550,20,"orechy",[["hrst",30]]],
+ ["Ořechové máslo čokoládové",550,15,"orechy",[["lžíce",18]]],
+ ["Semínková směs",570,24,"orechy",[["lžíce",10]]],
+ ["Kokosová mouka do kaše",400,20,"orechy",[["lžíce",10]]],
+ ["Vlašské ořechy do salátu",655,15,"orechy",[["lžíce",10]]],
+ ["Pistácie solené",570,20,"orechy",[["hrst",30]]],
+ ["Makadamové ořechy",720,8,"orechy",[["hrst",30]]],
+ ["Vejce smažené na oleji",200,12,"vejce",[["kus",60]]],
+ ["Vejce v majonéze",250,9,"vejce",[["půlka",40]]],
+ ["Míchaná vejce s cibulkou",180,12,"vejce",[["porce",150]]],
+ ["Míchaná vejce se šunkou",190,15,"vejce",[["porce",180]]],
+ ["Míchaná vejce se sýrem",220,15,"vejce",[["porce",180]]],
+ ["Frittata se zeleninou",150,11,"vejce",[["porce",200]]],
+ ["Omeleta s houbami",160,11,"vejce",[["porce",200]]],
+ ["Cizrnová pomazánka",220,8,"lusteniny",[["lžíce",25]]],
+ ["Hummus s paprikou",230,7,"lusteniny",[["lžíce",25]]],
+ ["Čočkový salát",130,8,"lusteniny",[["porce",250]]],
+ ["Fazolový salát",120,7,"lusteniny",[["porce",250]]],
+ ["Tofu na pánvi se zeleninou",130,11,"lusteniny",[["porce",250]]],
+ ["Sójové kostky v omáčce",130,15,"lusteniny",[["porce",250]]],
+ ["Veganský guláš",100,6,"lusteniny",[["porce",350]]],
+ ["Luštěninová polévka",90,6,"lusteniny",[["porce",350]]],
+ ["Tempeh grilovaný",210,19,"lusteniny",[["porce",130]]],
+ ["Arašídová omáčka",400,15,"lusteniny",[["lžíce",20]]],
+ ["Sýr strouhaný na těstoviny",350,26,"syry",[["lžíce",10]]],
+ ["Mozzarella na pizzu",280,20,"syry",[["porce",60]]],
+ ["Bazalkový sýr",300,18,"syry",[["porce",40]]],
+ ["Sýrové kuličky",320,20,"syry",[["kus",15]]],
+ ["Sýr Cheddar plátek",400,25,"syry",[["plátek",20]]],
+ ["Sýr do burgeru",320,18,"syry",[["plátek",18]]],
+ ["Sýr Emmental plátek",380,28,"syry",[["plátek",20]]],
+ ["Camembert pečený",320,18,"syry",[["kus",120]]],
+ ["Pivo nealko ochucené",30,0.3,"napoje",[["plechovka",500]]],
+ ["Nealko víno",25,0.1,"napoje",[["skleničku",150]]],
+ ["Whisky s kolou",90,0,"napoje",[["sklenice",300]]],
+ ["Vodka s džusem",85,0.2,"napoje",[["sklenice",300]]],
+ ["Mojito",110,0,"napoje",[["sklenice",250]]],
+ ["Piňa colada",180,0.5,"napoje",[["sklenice",250]]],
+ ["Kokosový nápoj slazený",45,0.3,"napoje",[["sklenice",250]]],
+ ["Sportovní gel",250,0,"napoje",[["sáček",40]]],
+ ["Proteinová tyčinka low sugar",340,35,"doplnky",[["kus",60]]],
+ ["Proteinové sušenky",400,25,"doplnky",[["balení",60]]],
+ ["Proteinová kaše hotová",100,10,"doplnky",[["kelímek",250]]],
+ ["Kolagenový nápoj",40,9,"doplnky",[["sklenice",250]]],
+ ["Zinek tableta",0,0,"doplnky",[["tableta",1]]],
+ ["Železo tableta",0,0,"doplnky",[["tableta",1]]]
+];
+const POT_KAT = [["pec","🍞 Pečivo"],["prilohy","🍚 Přílohy a obiloviny"],["maso","🍗 Maso"],["uzeniny","🥓 Uzeniny"],["ryby","🐟 Ryby"],["mlecne","🥛 Mléčné"],["syry","🧀 Sýry"],["vejce","🥚 Vejce"],["lusteniny","🫘 Luštěniny a rostlinné"],["zelenina","🥬 Zelenina"],["ovoce","🍎 Ovoce"],["orechy","🥜 Ořechy a semínka"],["tuky","🫒 Tuky a omáčky"],["sladke","🍫 Sladké a snacky"],["napoje","🥤 Nápoje"],["doplnky","💊 Doplňky"],["hotovky","🍽️ Hotová jídla"]];
+
+/* „7:00" je dřív než „10:30" — abeceda by to seřadila obráceně. */
+function casNaMinuty(t){
+ const m = String(t || "").match(/^(\d{1,2}):(\d{2})/);
+ return m ? (+m[1]) * 60 + (+m[2]) : 0;
+}
+function potJednotky(pz){
+ const u = (pz[4] || []).slice();
+ if (!u.some(x => x[1] === 1)) u.push(["g", 1]);
+ return u;
+}
+function potKcal(pz, gramy){ return Math.round(pz[1] * gramy / 100); }
+function potProt(pz, gramy){ return Math.round(pz[2] * gramy / 100 * 10) / 10; }
+/* Krok u +/- podle toho, jak velká je porce. Deset gramů po deseti, plátky po půlce. */
+function potKrok(gramyJednotky){ return gramyJednotky >= 40 ? 0.5 : (gramyJednotky >= 8 ? 1 : 10); }
+/* [1 kus, 2 kusy, 5 kusů, 1,5 kusu] — appka nemá mluvit jako cizinec. */
+const JED_TVARY = {
+ "plátek":   ["plátek","plátky","plátků","plátku"],
+ "krajíc":   ["krajíc","krajíce","krajíců","krajíce"],
+ "kus":      ["kus","kusy","kusů","kusu"],
+ "půlka":    ["půlka","půlky","půlek","půlky"],
+ "lžíce":    ["lžíce","lžíce","lžic","lžíce"],
+ "lžička":   ["lžička","lžičky","lžiček","lžičky"],
+ "hrst":     ["hrst","hrsti","hrstí","hrsti"],
+ "porce":    ["porce","porce","porcí","porce"],
+ "sklenice": ["sklenice","sklenice","sklenic","sklenice"],
+ "kelímek":  ["kelímek","kelímky","kelímků","kelímku"],
+ "balení":   ["balení","balení","balení","balení"],
+ "konzerva": ["konzerva","konzervy","konzerv","konzervy"],
+ "lahev":    ["lahev","lahve","lahví","lahve"],
+ "lahvička": ["lahvička","lahvičky","lahviček","lahvičky"],
+ "plechovka":["plechovka","plechovky","plechovek","plechovky"],
+ "půllitr":  ["půllitr","půllitry","půllitrů","půllitru"],
+ "panák":    ["panák","panáky","panáků","panáku"],
+ "šálek":    ["šálek","šálky","šálků","šálku"],
+ "hrnek":    ["hrnek","hrnky","hrnků","hrnku"],
+ "miska":    ["miska","misky","misek","misky"],
+ "kopeček":  ["kopeček","kopečky","kopečků","kopečku"],
+ "kostička": ["kostička","kostičky","kostiček","kostičky"],
+ "tabulka":  ["tabulka","tabulky","tabulek","tabulky"],
+ "kolečko":  ["kolečko","kolečka","koleček","kolečka"],
+ "stroužek": ["stroužek","stroužky","stroužků","stroužku"],
+ "stonek":   ["stonek","stonky","stonků","stonku"],
+ "tyčinka":  ["tyčinka","tyčinky","tyčinek","tyčinky"],
+ "odměrka":  ["odměrka","odměrky","odměrek","odměrky"],
+ "tableta":  ["tableta","tablety","tablet","tablety"],
+ "kapsle":   ["kapsle","kapsle","kapslí","kapsle"],
+ "sáček":    ["sáček","sáčky","sáčků","sáčku"],
+ "kapsička": ["kapsička","kapsičky","kapsiček","kapsičky"],
+ "dávka":    ["dávka","dávky","dávek","dávky"],
+ "kulička":  ["kulička","kuličky","kuliček","kuličky"],
+ "bílek":    ["bílek","bílky","bílků","bílku"],
+ "žloutek":  ["žloutek","žloutky","žloutků","žloutku"],
+ "trojúhelník":["trojúhelník","trojúhelníky","trojúhelníků","trojúhelníku"],
+ "skleničku":["sklenička","skleničky","skleniček","skleničky"],
+ "malé":     ["malé","malá","malých","malého"]
+};
+function jedTvar(mn, jed){
+ const t = JED_TVARY[jed];
+ if (!t) return jed;                                   // neznámé necháme být
+ if (mn % 1 !== 0) return t[3];                        // 1,5 plátku
+ if (mn === 1) return t[0];
+ if (mn >= 2 && mn <= 4) return t[1];
+ return t[2];
+}
+function potMnozstviText(mn, jed){
+ const c = String(Math.round(mn * 100) / 100).replace(".", ",");
+ return c + " " + jedTvar(mn, jed);
+}
+/* Hledá bez ohledu na diakritiku — „syr" najde „sýr". */
+function bezDia(t){
+ return String(t).toLowerCase()
+  .replace(/[áàâä]/g,"a").replace(/[éěèêë]/g,"e").replace(/[íìîï]/g,"i")
+  .replace(/[óòôö]/g,"o").replace(/[úůùûü]/g,"u").replace(/[ýỳŷÿ]/g,"y")
+  .replace(/č/g,"c").replace(/ď/g,"d").replace(/ň/g,"n").replace(/ř/g,"r")
+  .replace(/š/g,"s").replace(/ť/g,"t").replace(/ž/g,"z");
+}
+
+/* ================= VOLNĚJŠÍ JÍDELNÍČEK =================
+   Plán je pořád plán, ale život ne. Někdy si člověk dá jen jogurt,
+   někdy oběd vynechá a někdy sní něco úplně mimo seznam.
+   Tyhle tři věci k tomu slouží — a nic z toho nesahá tomu druhému
+   do jeho dne, protože zápisy i vynechání jsou osobní.               */
+
+/* Jeden seznam všeho, co appka zná — snídaně, svačiny, obědy,
+   všech 105 večeří i katalog „venku". Ať jde hledat na jednom místě. */
+function vsechnaJidla(who){
+ const out = [], videl = {};
+ const pridej = (name, kcal, prot, g) => {
+  const k = String(name).toLowerCase().trim();
+  if (!name || videl[k]) return;
+  videl[k] = 1;
+  out.push({ name: name, kcal: Math.round(kcal) || 0, prot: Math.round(prot) || 0, g: g });
+ };
+ J_SNIDANE.forEach(o => pridej(o.name, o.kcal, o.prot, o.g === "venku" ? "venku" : "snidane"));
+ J_SVACINA.forEach(o => pridej(o.name, o.kcal, o.prot, o.g === "venku" ? "venku" : "svacina"));
+ J_OBED.forEach(o    => pridej(o.name, o.kcal, o.prot, o.g === "venku" ? "venku" : "obed"));
+ DINNERS.forEach(r => {
+  const d = (who === "v") ? r.v : r.p;
+  if (d) pridej(r.name, d.kcal, d.prot, r.out ? "venku" : "vecere");
+ });
+ OUT_KATALOG.forEach(gr => gr[1].forEach(x => pridej(x[0], x[1], x[2], "venku")));
+ FILLERS.forEach(f => pridej(f.n, f.k, f.p, "svacina"));
+ return out;
+}
+const JG_LABEL = { snidane:"🌅 snídaně", svacina:"🥪 svačina", obed:"🍲 oběd",
+                   vecere:"🍽️ večeře", venku:"🌯 venku" };
+
+/* ---- vlastní zápisy: cokoli, co člověk snědl mimo plán ---- */
+function zapisyDne(who, iso){
+ return (state.zapis || []).filter(z => z.who === who && z.d === iso)
+   .sort((a,b)=> String(a.cas||"").localeCompare(String(b.cas||"")));
+}
+function zapisAdd(who, iso, name, kcal, prot, cas, slozeni){
+ const z = { id: "z" + Date.now().toString(36) + Math.floor(Math.random() * 1000),
+             d: iso, who: who, name: String(name).slice(0, 90),
+             kcal: Math.max(0, Math.round(kcal) || 0),
+             prot: Math.max(0, Math.round(prot) || 0),
+             cas: cas || novyCas(),
+             slozeni: slozeni || null };
+ state.zapis = (state.zapis || []).concat([z]);
+ store.set("zapis", state.zapis);
+ state.checks[iso + "|" + who + "|z-" + z.id] = true;    // co zapíšeš, to jsi snědl
+ store.set("checks", state.checks);
+ return z;
+}
+function zapisDel(id){
+ state.zapis = (state.zapis || []).filter(z => z.id !== id);
+ store.set("zapis", state.zapis);
+}
+/* čas pro nový zápis: teď, zaokrouhleno na půlhodiny */
+function novyCas(){
+ const d = new Date();
+ const m = d.getMinutes() < 15 ? 0 : (d.getMinutes() < 45 ? 30 : 60);
+ const h = (d.getHours() + (m === 60 ? 1 : 0)) % 24;
+ return dvoj(h) + ":" + dvoj(m === 60 ? 0 : m);
+}
+
+/* ---- skládačka: jídlo poskládané z dílů ----
+   „Chleba 2 plátky + eidam 40 g + šunka" — appka sečte sama.        */
+function kosSoucet(){
+ const k = (state.jidS && state.jidS.kos) || [];
+ return { kcal: Math.round(k.reduce((a,x)=>a+x.kcal, 0)),
+          prot: Math.round(k.reduce((a,x)=>a+x.prot, 0)),
+          n: k.length };
+}
+function kosNazev(){
+ const k = (state.jidS && state.jidS.kos) || [];
+ if (!k.length) return "";
+ return k.map(x => x.mn === 1 && x.jed !== "g"
+   ? x.n : x.n + " " + potMnozstviText(x.mn, x.jed)).join(" + ");
+}
+function kosUloz(){
+ const st = state.jidS;
+ if (!st || !st.kos.length) return null;
+ const c = kosSoucet();
+ const jm = (String(st.nazev || "").trim() || kosNazev()).slice(0, 90);
+ const z = zapisAdd(st.who, st.iso, jm, c.kcal, c.prot, null,
+   st.kos.map(x => ({ n: x.n, mn: x.mn, jed: x.jed, g: x.g, kcal: x.kcal, prot: Math.round(x.prot) })));
+ return z;
+}
+
+/* ---- vynechání: tohle jídlo dneska prostě nebylo ---- */
+function vynechKlic(who, iso, slot){ return iso + "|" + who + "|" + slot; }
+function jeVynechano(who, iso, slot){ return !!(state.vynech || {})[vynechKlic(who, iso, slot)]; }
+function vynechTgl(who, iso, slot){
+ const k = vynechKlic(who, iso, slot);
+ state.vynech = state.vynech || {};
+ if (state.vynech[k]) delete state.vynech[k]; else {
+  state.vynech[k] = true;
+  delete state.checks[k];                       // vynechané se nedá mít snědené
+  store.set("checks", state.checks);
+ }
+ store.set("vynech", state.vynech);
+}
+
 const JIDLA_SLOTY = [
  { key:"sn",  slot:"s0", cas:"7:00",  n:"Snídaně",           list:()=>J_SNIDANE },
  { key:"sv1", slot:"s1", cas:"10:30", n:"Dopolední svačina", list:()=>J_SVACINA },
@@ -3862,7 +5317,8 @@ const JIDLA_SLOTY = [
  { key:"sv2", slot:"s3", cas:"16:30", n:"Odpolední svačina", list:()=>J_SVACINA }
 ];
 
-function planForIso(who, iso){
+/* Naplánovaná jídla — bez ohledu na to, co si kdo vynechal. */
+function planZakladni(who, iso){
  const pk = pickIso(iso);
  const din = dinIso(iso);
  const d = who === "p" ? din.p : din.v;
@@ -3877,6 +5333,16 @@ function planForIso(who, iso){
  });
  out.push({ slot:"s4", time: posunCas("19:30"), sekce:"Večeře",
             name: din.name + " — " + d.por, kcal: d.kcal, prot: d.prot, mult: 1 });
+ return out;
+}
+/* Skutečný den: plán bez vynechaných + co si člověk zapsal sám. */
+function planForIso(who, iso){
+ const out = planZakladni(who, iso).filter(m => !jeVynechano(who, iso, m.slot));
+ zapisyDne(who, iso).forEach(z => {
+  out.push({ slot: "z-" + z.id, time: z.cas, sekce: "Vlastní zápis",
+             name: z.name, kcal: z.kcal, prot: z.prot, mult: 1, zapis: z.id });
+ });
+ out.sort((a,b)=> casNaMinuty(a.time) - casNaMinuty(b.time));
  return out;
 }
 function planFor(who, dayIdx){ return planForIso(who, dateOfWeekday(dayIdx)); }
@@ -3931,6 +5397,29 @@ function sugHtml(needK, needP){
   + '</ul><div class="dim">Dohromady '+fmt(sk)+' kcal a '+sp+' g bílkovin — chybělo '+fmt(needK)+' kcal a '+needP+' g.</div></div>';
 }
 
+/* Dva sloupce vedle sebe byly na mobilu k nepoužití — jídla se nevešla
+   a na úpravy nezbylo místo. Teď je vidět jeden člověk přes celou šířku
+   a ten druhý zůstává v jednom řádku nad tím, ať se pořád vidíte.       */
+function dnesWho(){
+ if (solo()) return ja();
+ const z = store.get("dnesWho", null);
+ return (z === "p" || z === "v") ? z : (store.get("meId", null) || "p");
+}
+function dnesWhoSet(w){ store.set("dnesWho", w); }
+/* Jednořádkový přehled toho druhého — s ťuknutím se na něj přepneš. */
+function protejsekRadek(who, iso){
+ const tgt = target(who);
+ let dk = 0, dp = 0;
+ planForIso(who, iso).forEach(m => { if (state.checks[iso+"|"+who+"|"+m.slot]){ dk += m.kcal; dp += m.prot; } });
+ const pk = Math.min(100, Math.round(dk / Math.max(1, tgt.kcal) * 100));
+ const pp = Math.min(100, Math.round(dp / Math.max(1, tgt.prot) * 100));
+ const hotovo = pk >= 100 && pp >= 100;
+ return '<button class="protej" data-dnwho="'+who+'" type="button">'
+  +'<span class="pj-n">'+esc(tgt.name)+(hotovo ? ' <b class="ok">✓ splněno</b>' : '')+'</span>'
+  +'<span class="pj-c">'+fmt(dk)+' / '+fmt(tgt.kcal)+' kcal · '+dp+' / '+tgt.prot+' g</span>'
+  +'<span class="pj-b"><i class="k" style="width:'+pk+'%"></i><i class="p" style="width:'+pp+'%"></i></span>'
+  +'<span class="pj-a">›</span></button>';
+}
 function personCard(who, iso){
  const meals = planForIso(who, iso);
  const tgt = target(who);
@@ -3949,12 +5438,33 @@ function personCard(who, iso){
       +'<span class="arr">›</span></button>'
     : "";
   const por = porceText(m.mult || 1);
-  return '<div class="meal'+(on?" checked":"")+'">'
+  const zap = m.zapis ? (state.zapis || []).find(z => z.id === m.zapis) : null;
+  return '<div class="meal'+(on?" checked":"")+(m.zapis?" vlastni":"")+'">'
    +'<input type="checkbox" data-check="'+id+'"'+(on?" checked":"")+' aria-label="Snědeno">'
    +'<div class="body"><div class="time">'+m.time+(m.sekce?' <span class="sekce">'+esc(m.sekce)+'</span>':'')+'</div>'
-   +'<div class="name">'+esc(m.name)+(por?' <span class="porce">'+esc(por)+'</span>':'')+'</div>'+sel+'</div>'
-   +'<div class="nums">'+fmt(m.kcal)+' kcal · '+m.prot+' g</div></div>';
+   +'<div class="name">'+esc(m.name)+(por?' <span class="porce">'+esc(por)+'</span>':'')+'</div>'
+   + (zap && zap.slozeni && zap.slozeni.length > 1
+      ? '<div class="zsloz">'+zap.slozeni.map(x=>esc(x.n)+' <i>'+esc(potMnozstviText(x.mn, x.jed))+'</i>').join(" · ")+'</div>'
+      : '')
+   + sel
+   +'</div>'
+   +'<div class="nums">'+fmt(m.kcal)+' kcal · '+m.prot+' g'
+   +'<button class="mealx" data-'+(m.zapis ? 'zdel="'+esc(m.zapis) : 'vynech="'+who+'|'+iso+'|'+m.slot)
+   +'" type="button" title="'+(m.zapis ? "Smazat zápis" : "Dneska tohle nebylo")+'">✕</button>'
+   +'</div></div>';
  }).join("");
+
+ /* co je vynechané, ať jde vrátit — ne aby to zmizelo beze stopy */
+ const vyn = planZakladni(who, iso).filter(m => jeVynechano(who, iso, m.slot));
+ const vynRows = vyn.length
+  ? '<div class="vynbox">'+vyn.map(m =>
+     '<span class="vynchip">'+esc(m.name.split(" — ")[0])
+     +'<button data-vynech="'+who+'|'+iso+'|'+m.slot+'" type="button" title="Vrátit zpátky">↩︎</button></span>').join("")
+    +'<div class="hint" style="margin:4px 0 0">'
+    + pocet(vyn.length, "jídlo", "jídla", "jídel")+' dneska vynecháno — ťukni na šipku a vrátí se.</div></div>'
+  : "";
+ const pridej = '<button class="act small pridejJ" data-jopen="'+who+'|'+iso+'" type="button">'
+  +'➕ Přidat, co jsem snědl'+rod(who,"","a")+'</button>';
 
  const pctK = Math.min(100, Math.round(doneK/tgt.kcal*100));
  const pctP = Math.min(100, Math.round(doneP/tgt.prot*100));
@@ -3973,6 +5483,8 @@ function personCard(who, iso){
         + (state.sugOpen === who+"|"+iso ? sugHtml(restK, restP) : '') + '</div>'
       : '')
   + rows
+  + vynRows
+  + pridej
   + spanekRow(who, iso)
   +'<div style="margin-top:10px;padding-top:9px;border-top:1px solid var(--baseline)">'
   +'<div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">Suplementy — každý den</div>'
@@ -4020,9 +5532,15 @@ function renderDnes(){
   +(duo() ? "Večeře — vaří se jednou" : "Večeře")+'</div>'
   +'<div style="font-size:14.5px;font-weight:600">'+esc(din.name)+'</div>'
   +'<div style="font-size:12.5px;color:var(--text-secondary)">Vaří: '+kdoSel+'</div></div></div>'
-  +(duo() ? '<div class="grid2">'+personCard("p",iso)+personCard("v",iso)+'</div>'
-          : personCard(ja(), iso))
-  + (nast("hlasky", true) ? (()=>{ const w0 = solo() ? ja() : (store.get("meId", null) || "p");
+  + (duo()
+     ? (()=>{ const w = dnesWho(), druhy = w === "p" ? "v" : "p";
+        return '<div class="seg-toggle" style="margin-bottom:12px">'
+         +'<button data-dnwho="p" class="'+(w==="p"?"on":"")+'">'+esc(jmeno("p"))+'</button>'
+         +'<button data-dnwho="v" class="'+(w==="v"?"on":"")+'">'+esc(jmeno("v"))+'</button></div>'
+         + protejsekRadek(druhy, iso)
+         + personCard(w, iso); })()
+     : personCard(ja(), iso))
+  + (nast("hlasky", true) ? (()=>{ const w0 = dnesWho();
       const r0 = sezDnesRada(w0), f0 = sezById(sezAkt(w0));
       return r0 ? '<div class="note" style="border-color:'+f0.barva+'"><b>'+f0.ic+' '
         +esc(f0.n)+':</b> '+esc(r0)+'</div>' : ''; })() : "")
@@ -6695,6 +8213,17 @@ function startSession(who, rid, bud){
  renderSession();
 }
 function sessKdo(){ return (state.sess && state.sess.akt === "bud") ? "bud" : "ty"; }
+/* Nejtěžší série, jakou kdy člověk u toho cviku zapsal — bez dneška. */
+function nejtezsiSerie(who, exId){
+ const all = logAll();
+ const k = all[who + "|" + exId];
+ if (!k) return 0;
+ const dnes = isoDnes();
+ let nej = 0;
+ k.forEach(x => { if (x.d === dnes) return;
+   x.s.forEach(p0 => { if ((p0[0] || 0) > nej) nej = p0[0]; }); });
+ return nej;
+}
 function sessSets(i, kdo){
  const x = state.sess.ex[i];
  return (kdo || sessKdo()) === "bud" ? x.bsets : x.sets;
@@ -6815,18 +8344,49 @@ function renderSession(){
      ? serieText(rz, min.s[j][0], min.s[j][1])
      : (dp ? '<span class="dopor '+dp.smer+'">'+(SMER_IC[dp.smer]||"🎯")+" "+fmt(dp.kg)+' kg</span>' : "—");
    const ph = REZIM_POPIS[rz] || REZIM_POPIS.kg;
+   /* 🏆 hned u série, ne až na konci tréninku v hlášce */
+   const rekord = (rz === "kg" && kdo !== "bud")
+     ? (()=>{ const nej = nejtezsiSerie(who, x.id);
+              const ted = parseFloat(String(p.kg).replace(",", ".")) || 0;
+              return (nej > 0 && ted > nej) ? nej : 0; })()
+     : 0;
+   /* type=text + inputmode: iOS pustí i čárku a ťuknutí označí celý obsah,
+      takže se nová váha prostě přepíše. S type=number to nešlo. */
    const kgPole = rz === "kg"
-     ? '<input type="number" step="0.5" min="0" max="500" inputmode="decimal" placeholder="kg" '
-       +'value="'+(p.kg!==""&&p.kg!==null?p.kg:"")+'" data-sk="'+i+'|'+j+'">'
+     ? '<input type="text" inputmode="decimal" enterkeyhint="done" placeholder="kg" maxlength="6" '
+       +'autocomplete="off" autocorrect="off" spellcheck="false" '
+       +'value="'+esc(p.kg!==""&&p.kg!==null?String(p.kg).replace(".",","):"")+'" data-sk="'+i+'|'+j+'">'
      : '<span class="nokg">'+(rz==="reps"?"vlastní váha":(rz==="kardio"?"tempo":"výdrž"))+'</span>';
+   const aktivni = !p.done && sessSets(i, kdo).findIndex(q => !q.done) === j;
    return '<div class="setrow'+(p.done?" done":"")+(rz!=="kg"?" bezkg":"")+'">'
     +'<span class="n">'+(j+1)+'</span>'
     +'<span class="prev">'+mp+'</span>'
     + kgPole
-    +'<input type="number" step="1" min="0" max="600" inputmode="numeric" placeholder="'+ph.hlava[1]+'" '
-    +'value="'+(p.reps!==""&&p.reps!==null?p.reps:"")+'" data-sr="'+i+'|'+j+'">'
+    +'<input type="text" inputmode="numeric" enterkeyhint="done" placeholder="'+ph.hlava[1]+'" maxlength="4" '
+    +'autocomplete="off" autocorrect="off" spellcheck="false" '
+    +'value="'+esc(p.reps!==""&&p.reps!==null?String(p.reps):"")+'" data-sr="'+i+'|'+j+'">'
     +'<button class="okbtn" data-sdone="'+i+'|'+j+'" type="button" aria-label="Hotovo">✓</button>'
-    +'</div>';
+    +'</div>'
+    + (rekord ? '<div class="serpr">🏆 <b>Osobák!</b> Nejvíc jsi tu měl'+rod(who,"","a")
+        +' '+fmt(rekord)+' kg.</div>' : '')
+    /* Krokovadlo jen u série, na které se zrovka pracuje — jinde by jen překáželo. */
+    + (aktivni
+       ? '<div class="setkrok">'
+         + (rz === "kg"
+            ? '<span class="sk-g"><button data-skrok="k|'+i+'|'+j+'|-5" type="button">−5</button>'
+              +'<button data-skrok="k|'+i+'|'+j+'|-2.5" type="button">−2,5</button>'
+              +'<b>kg</b>'
+              +'<button data-skrok="k|'+i+'|'+j+'|2.5" type="button">+2,5</button>'
+              +'<button data-skrok="k|'+i+'|'+j+'|5" type="button">+5</button></span>'
+            : '')
+         +'<span class="sk-g"><button data-skrok="r|'+i+'|'+j+'|-1" type="button">−1</button>'
+         +'<b>'+esc(ph.hlava[1])+'</b>'
+         +'<button data-skrok="r|'+i+'|'+j+'|1" type="button">+1</button></span>'
+         + (p.kg !== "" && p.kg !== null || p.reps !== "" && p.reps !== null
+            ? '<button class="sk-x" data-svyc="'+i+'|'+j+'" type="button" title="Vymazat řádek">✕ smazat</button>'
+            : '')
+         +'</div>'
+       : '');
   }).join("");
   const duoMini = duo ? (()=>{
     const a = x.sets.filter(q=>q.done).reduce((s1,q)=>s1+(+q.kg||0)*(+q.reps||0),0);
@@ -6988,6 +8548,7 @@ function finishSession(){
  if (state.timer){ state.timer = null; if (timerId){ clearInterval(timerId); timerId = null; }
    const b = document.getElementById("timerBar"); if (b) b.hidden = true; }
  kontrolaOdznaku(); celebrate(osobaky.length ? "🏆" : (duo ? "🤜" : "💪"));
+ zvuk(osobaky.length ? "fanfara" : "hotovo"); vibruj([80,60,180]);
  renderAll(); showTab("trenink"); syncDot();
  if (window.sync && sync.on) sync.pushStatus();
 }
@@ -7014,6 +8575,60 @@ function parseMin(str){
   const m = String(str).match(/(\d+):(\d+)/);
   return m ? (+m[1])*60 + (+m[2]) : 120;
 }
+/* ================= ZVUKY =================
+   Žádné soubory — tóny se skládají rovnou v prohlížeči, takže to funguje
+   i offline a appka kvůli tomu nezabere ani kilobajt navíc.
+   iOS pustí zvuk až po prvním ťuknutí do stránky, proto to odemykání.   */
+let _ac = null, _acOdemcen = false;
+function audioCtx(){
+ if (_ac) return _ac;
+ const C = window.AudioContext || window.webkitAudioContext;
+ if (!C) return null;
+ try { _ac = new C(); } catch(e){ return null; }
+ return _ac;
+}
+function odemkniZvuk(){
+ if (_acOdemcen) return;
+ const c = audioCtx();
+ if (!c) return;
+ _acOdemcen = true;
+ if (c.state === "suspended"){ try { c.resume(); } catch(e){} }
+}
+function _ton(c, f, kdy, delka, hlas, tvar){
+ const o = c.createOscillator(), g = c.createGain();
+ o.type = tvar || "sine";
+ o.frequency.setValueAtTime(f, kdy);
+ g.gain.setValueAtTime(0.0001, kdy);
+ g.gain.exponentialRampToValueAtTime(hlas, kdy + 0.012);   // rychlý náběh
+ g.gain.exponentialRampToValueAtTime(0.0001, kdy + delka); // a měkký doběh, ať to necvaká
+ o.connect(g); g.connect(c.destination);
+ o.start(kdy); o.stop(kdy + delka + 0.03);
+}
+/* [frekvence Hz, za kolik s, jak dlouho, hlasitost] */
+const ZVUKY = {
+ klik:    [[880, 0, 0.05, 0.16]],
+ konec:   [[659, 0, 0.13, 0.26], [880, 0.15, 0.13, 0.26], [1175, 0.31, 0.34, 0.30]],
+ fanfara: [[523, 0, 0.10, 0.26], [659, 0.09, 0.10, 0.28], [784, 0.18, 0.10, 0.30],
+           [1047, 0.28, 0.42, 0.32], [1568, 0.30, 0.40, 0.16]],
+ hotovo:  [[784, 0, 0.13, 0.26], [1047, 0.14, 0.34, 0.30]],
+ fuj:     [[220, 0, 0.16, 0.22], [175, 0.16, 0.26, 0.22]]
+};
+function zvuk(jm){
+ if (!nast("zvuky", true)) return false;
+ const c = audioCtx();
+ if (!c) return false;
+ if (c.state === "suspended"){ try { c.resume(); } catch(e){ return false; } }
+ const t = c.currentTime + 0.02;
+ (ZVUKY[jm] || ZVUKY.klik).forEach(x => { try { _ton(c, x[0], t + x[1], x[2], x[3]); } catch(e){} });
+ return true;
+}
+function vibruj(vzor){
+ if (!nast("vibrace", true)) return;
+ try { if (navigator.vibrate) navigator.vibrate(vzor); } catch(e){}
+}
+document.addEventListener("pointerdown", odemkniZvuk, { once: true });
+document.addEventListener("touchstart", odemkniZvuk, { once: true });
+
 function startTimer(sec, label){
   clearTimeout(window._timerHide);
   state.timer = { end: Date.now() + sec*1000, label: label };
@@ -7034,7 +8649,7 @@ function tickTimer(){
    +'<button class="ghost" id="timerStop" type="button">'+(left ? "Přeskočit" : "OK")+'</button>';
   if (left <= 0){
     if (timerId){ clearInterval(timerId); timerId = null;
-      if (navigator.vibrate) { try { navigator.vibrate([200,120,200]); } catch(e){} } }
+      zvuk("konec"); vibruj([200,120,200]); }
     bar.classList.add("done");
     clearTimeout(window._timerHide);
   window._timerHide = setTimeout(()=>{
@@ -8709,6 +10324,8 @@ const SDIL = {
  mrV:     { c:"mrv",    t:"pole",  id:x=>x.d,                                    st:"mrV"    },
  spar:    { c:"spar",   t:"pole",  id:x=>x.d+"|"+(x.who||"")+"|"+(x.bud||"")+"|"+(x.rid||""), st:"spar" },
  checks:  { c:"checks", t:"mapa",  st:"checks", dnu:200, dat:id=>id.slice(0,10) },
+ zapis:   { c:"zapis",  t:"pole",  id:x=>x.id, st:"zapis", dnu:200, dat:x=>x.d },
+ vynech:  { c:"vynech", t:"mapa",  st:"vynech", dnu:200, dat:id=>id.slice(0,10) },
  water:   { c:"water",  t:"mapa",  st:"water",   dnu:200, dat:id=>id.slice(0,10) },
  spanek:  { c:"spanek", t:"mapa",  dnu:200, dat:id=>id.slice(0,10) },
  parti:   { c:"parti",  t:"pole",  id:x=>String(x) },
@@ -9110,6 +10727,35 @@ function ringCard(iso){
    +'</div></div>';
 }
 
+/* Krátká oslava přes obrazovku — ať to člověk v posilovně nepřehlédne. */
+const PR_HLASKY = [
+ "Tohle jsi nikdy nezvedl{a}. Teď jo.",
+ "Osobák. Zapsáno, nedá se to vzít zpět.",
+ "O {r} kg líp než kdy dřív. To není náhoda, to je práce.",
+ "Nový strop. Zítra bude starý.",
+ "Tohle číslo tam předtím nebylo. Teď tam je.",
+ "Rekord padl. Zbytek série neposer.",
+ "Železo prohrálo. Zase."
+];
+function hlaskaPR(nazev, kg, stary, reps){
+ const el = document.getElementById("prToast");
+ if (!el) return;
+ const i = Math.floor(Math.random() * PR_HLASKY.length);
+ const w = state.sess ? state.sess.who : "p";
+ const txt = PR_HLASKY[i].replace("{a}", rod(w, "", "a"))
+   .replace("{r}", String(Math.round((kg - stary) * 10) / 10).replace(".", ","));
+ el.innerHTML = '<div class="prt-in"><div class="prt-ic">🏆</div>'
+  +'<div class="prt-t"><b>Osobák — '+esc(nazev)+'</b>'
+  +'<span>'+fmt(kg)+' kg × '+reps+' <i>· předtím '+fmt(stary)+' kg</i></span>'
+  +'<em>'+esc(txt)+'</em></div></div>';
+ el.hidden = false;
+ el.classList.remove("pryc");
+ clearTimeout(window._prToast);
+ window._prToast = setTimeout(()=>{
+  el.classList.add("pryc");
+  setTimeout(()=>{ el.hidden = true; el.classList.remove("pryc"); }, 400);
+ }, 3600);
+}
 function celebrate(ic){
   if (!nast("konfety", true)) return;
   if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -9741,6 +11387,18 @@ function renderNastaveniTab(){
      +'</div>')
   + nRow("Oslavy a konfety", nTgl("konfety", true, "Zapnuté 🎉", "Vypnuté"), "Když splníš bílkoviny nebo odemkneš odznak")
   +'</div>'
+  +'<div class="card"><h3>🔔 Zvuky</h3>'
+  + nRow("Zvuky v tréninku", nTgl("zvuky", true, "Zapnuté 🔊", "Ticho"),
+      "Konec pauzy, osobák a uložený trénink")
+  + nRow("Vibrace", nTgl("vibrace", true, "Zapnuté 📳", "Vypnuté"), "Android; iPhone vibrace v prohlížeči neumí")
+  + nRow("Vyzkoušet", '<div class="wrow" style="margin:0">'
+      +'<button class="ghost" data-zvuk="konec" type="button">Konec pauzy</button>'
+      +'<button class="ghost" data-zvuk="fanfara" type="button">🏆 Osobák</button>'
+      +'<button class="ghost" data-zvuk="hotovo" type="button">Hotovo</button></div>')
+  +'<div class="hint"><b>Na iPhonu pozor na boční přepínač</b> — když je telefon na tichý režim, '
+  +'prohlížeč zvuk nepustí. Vibrace zase iOS webovkám vůbec nedovolí, to není chyba appky. '
+  +'Zvuk se poprvé rozjede až po prvním ťuknutí do obrazovky, tak to má prohlížeč nastavené.</div>'
+  +'</div>'
 
   /* --- hlasky --- */
   +'<div class="card"><h3>💬 Hlášky a zprávy</h3>'
@@ -9784,7 +11442,7 @@ function renderNastaveniTab(){
   /* --- o appce --- */
   +'<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">44</td></tr>'
+  +'<tr><td>Verze</td><td class="num">45</td></tr>'
   +'<tr><td>Tréninků k výběru</td><td class="num">'+(ROUTINES.p.length+ROUTINES.v.length)+'</td></tr>'
   +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
@@ -9902,12 +11560,34 @@ function keepFocus(id){
  el.focus();
  try { el.setSelectionRange(v.length, v.length); } catch(err){}
 }
+/* Ťuknutí do políčka s váhou označí celý obsah — psaním se rovnou přepíše.
+   Tohle byl ten největší otrav: mazat po znacích s činkou v ruce. */
+document.addEventListener("focusin", e=>{
+ const t = e.target;
+ if (!t || !t.dataset) return;
+ if (t.dataset.sk === undefined && t.dataset.sr === undefined) return;
+ setTimeout(()=>{ try { t.select(); } catch(err){} }, 0);
+});
+
 document.addEventListener("input", e=>{
  if (state.sess && e.target.dataset && (e.target.dataset.sk !== undefined || e.target.dataset.sr !== undefined)){
   // hodnota jde do aktivni osoby
   const key = e.target.dataset.sk !== undefined ? e.target.dataset.sk : e.target.dataset.sr;
   const p = key.split("|"), set = sessSets(+p[0])[+p[1]];
-  if (e.target.dataset.sk !== undefined) set.kg = e.target.value; else set.reps = e.target.value;
+  if (e.target.dataset.sk !== undefined){
+   /* pustíme jen čísla, čárku a tečku — a čárku uvnitř bereme jako desetinnou */
+   const cist = String(e.target.value).replace(/[^0-9.,]/g, "").replace(",", ".");
+   if (cist !== String(e.target.value).replace(",", ".")){
+    const poz = e.target.selectionStart;
+    e.target.value = cist.replace(".", ",");
+    try { e.target.setSelectionRange(poz - 1, poz - 1); } catch(err){}
+   }
+   set.kg = cist;
+  } else {
+   const cist = String(e.target.value).replace(/[^0-9]/g, "");
+   if (cist !== e.target.value) e.target.value = cist;
+   set.reps = cist;
+  }
   saveSess();
   return;
  }
@@ -9929,6 +11609,15 @@ document.addEventListener("input", e=>{
    if (state.onb !== null && state.onb !== undefined){ renderOnb(); keepFocus2(e.target); return; }
    renderDnes(); renderNext(); renderProgres();
   }, 700);
+  return;
+ }
+ if (e.target.id === "foodQ" && state.jidS){
+  state.jidS.q = e.target.value; state.jidS.otev = null; state.jidS.qFocus = true;
+  renderJidlo(); return;
+ }
+ if (e.target.id === "fdNazev" && state.jidS){ state.jidS.nazev = e.target.value; return; }
+ if (state.jidS && ["fdVn","fdVk","fdVp"].indexOf(e.target.id) >= 0){
+  state.jidS[e.target.id === "fdVn" ? "vn" : (e.target.id === "fdVk" ? "vk" : "vp")] = e.target.value;
   return;
  }
  if (e.target.id === "pickQ" && state.pick0){
@@ -10037,6 +11726,11 @@ document.addEventListener("change", e=>{
 });
 
 document.addEventListener("click", e=>{
+ const pkj = e.target.closest("[data-pkjidlo]");
+ if (pkj){
+  const q = pkj.dataset.pkjidlo.split("|");
+  zavriPick(); otevriJidlo(q[0], q[1]); return;
+ }
  const pko = e.target.closest("[data-pkopen]");
  if (pko){
   const q = pko.dataset.pkopen.split("|");
@@ -10516,7 +12210,7 @@ document.addEventListener("click", e=>{
   if (!state.resetPtl){ state.resetPtl = true; renderNastaveniTab(); setTimeout(()=>{ state.resetPtl = false; }, 6000); return; }
   state.resetPtl = false;
   ["prot_p","prot_v","water_p","water_v","casy","mintr_p","mintr_v","rozvrh_p","rozvrh_v",
-   "tren_p","tren_v","hlasky","zpravyAuto","konfety","stouch","zkus_p","zkus_v",
+   "tren_p","tren_v","hlasky","zpravyAuto","konfety","stouch","zvuky","vibrace","zkus_p","zkus_v",
    "rekSort","rekPocet","ukaz1rm","statObd"].forEach(k => store.set("n_"+k, null));
   store.set("schval", true);
   store.set("kcal_p", null); store.set("kcal_v", null);
@@ -10542,6 +12236,117 @@ document.addEventListener("click", e=>{
  if (e.target.id === "planFill"){ doplnPlan(); renderPlan(); renderDnes(); renderNext(); celebrate("📅"); return; }
  if (e.target.id === "planClear"){ vycistitPlan(); state.planDen = null; renderPlan(); renderDnes(); renderNext(); return; }
 
+ const zvt = e.target.closest("[data-zvuk]");
+ if (zvt){
+  odemkniZvuk();
+  const slo = zvuk(zvt.dataset.zvuk);
+  vibruj(zvt.dataset.zvuk === "fanfara" ? [70,50,70,50,220] : [200,120,200]);
+  if (!slo){
+   const h = document.createElement("span");
+   h.className = "hint"; h.style.margin = "0 0 0 6px";
+   h.textContent = nast("zvuky", true) ? "Prohlížeč zvuk nepustil — zkus to znovu."
+                                       : "Zvuky máš vypnuté.";
+   zvt.parentNode.appendChild(h);
+   setTimeout(()=>{ try { h.remove(); } catch(e){} }, 2600);
+  }
+  return;
+ }
+ const dnw = e.target.closest("[data-dnwho]");
+ if (dnw){ dnesWhoSet(dnw.dataset.dnwho); renderDnes(); window.scrollTo(0,0); return; }
+ const jop = e.target.closest("[data-jopen]");
+ if (jop){ const q = jop.dataset.jopen.split("|"); otevriJidlo(q[0], q[1]); return; }
+ if (e.target.id === "foodClose"){ zavriJidlo(); return; }
+ const fdr = e.target.closest("[data-fdrez]");
+ if (fdr && state.jidS){
+  state.jidS.rezim = fdr.dataset.fdrez; state.jidS.otev = null; state.jidS.qFocus = false;
+  renderJidlo(); return;
+ }
+ const fdk = e.target.closest("[data-fdkat]");
+ if (fdk && state.jidS){
+  state.jidS.kat = fdk.dataset.fdkat; state.jidS.otev = null; state.jidS.qFocus = false;
+  renderJidlo(); return;
+ }
+ const fdo = e.target.closest("[data-fdopen]");
+ if (fdo && state.jidS){
+  const i = +fdo.dataset.fdopen;
+  state.jidS.otev = (i < 0 || state.jidS.otev === i) ? null : i;
+  state.jidS.jed = 0; state.jidS.mn = 1; state.jidS.qFocus = false;
+  renderJidlo(); return;
+ }
+ const fdj = e.target.closest("[data-fdjed]");
+ if (fdj && state.jidS){
+  state.jidS.jed = +fdj.dataset.fdjed;
+  const pz = POTRAVINY[state.jidS.otev];
+  const u = pz ? potJednotky(pz)[state.jidS.jed] : null;
+  state.jidS.mn = u && u[1] === 1 ? 100 : 1;      // v gramech se začíná od sta
+  renderJidlo(); return;
+ }
+ const fdm = e.target.closest("[data-fdmn]");
+ if (fdm && state.jidS){
+  const krok = +fdm.dataset.fdmn;
+  const m = Math.round((state.jidS.mn + krok) * 100) / 100;
+  state.jidS.mn = Math.max(krok > 0 ? m : Math.abs(krok), Math.min(2000, m));
+  renderJidlo(); return;
+ }
+ const fda = e.target.closest("[data-fdadd]");
+ if (fda && state.jidS){
+  const st = state.jidS, pz = POTRAVINY[+fda.dataset.fdadd];
+  if (pz){
+   const jd = potJednotky(pz), ji = Math.min(st.jed, jd.length - 1);
+   const g = Math.round(jd[ji][1] * st.mn * 10) / 10;
+   st.kos.push({ n: pz[0], mn: st.mn, jed: jd[ji][0], g: g,
+                 kcal: potKcal(pz, g), prot: potProt(pz, g) });
+   st.otev = null; st.mn = 1; st.jed = 0;
+  }
+  renderJidlo(); return;
+ }
+ const fdi = e.target.closest("[data-fdjidlo]");
+ if (fdi && state.jidS){
+  const st = state.jidS, o = vsechnaJidla(st.who)[+fdi.dataset.fdjidlo];
+  if (o) st.kos.push({ n: o.name, mn: 1, jed: "porce", g: 0, kcal: o.kcal, prot: o.prot });
+  renderJidlo(); return;
+ }
+ const fdd = e.target.closest("[data-fddel]");
+ if (fdd && state.jidS){
+  state.jidS.kos.splice(+fdd.dataset.fddel, 1); renderJidlo(); return;
+ }
+ if (e.target.id === "fdVadd" && state.jidS){
+  const g = i => (document.getElementById(i) || {}).value || "";
+  const n = String(g("fdVn")).trim(), k = parseInt(g("fdVk"), 10) || 0, pr = parseInt(g("fdVp"), 10) || 0;
+  const msg = document.getElementById("fdVmsg");
+  if (!n || !k){
+   if (msg){ msg.textContent = "Chybí název nebo kalorie."; msg.style.color = "var(--s2)"; }
+   return;
+  }
+  state.jidS.kos.push({ n: n, mn: 1, jed: "porce", g: 0, kcal: k, prot: pr });
+  state.jidS.vn = ""; state.jidS.vk = ""; state.jidS.vp = "";
+  renderJidlo(); return;
+ }
+ if (e.target.id === "fdSave" && state.jidS){
+  const el = document.getElementById("fdNazev");
+  if (el) state.jidS.nazev = el.value;
+  const st = state.jidS, z = kosUloz();
+  zavriJidlo();
+  if (z){
+   renderAll(); syncDot();
+   if (window.sync && sync.on) sync.pushStatus();
+   celebrate("🍽️");
+  }
+  return;
+ }
+ const vyn = e.target.closest("[data-vynech]");
+ if (vyn){
+  const q = vyn.dataset.vynech.split("|");
+  vynechTgl(q[0], q[1], q[2]);
+  renderAll(); syncDot();
+  return;
+ }
+ const zdl = e.target.closest("[data-zdel]");
+ if (zdl){
+  zapisDel(zdl.dataset.zdel);
+  renderAll(); syncDot();
+  return;
+ }
  const sza = e.target.closest("[data-sezano]");
  if (sza){
   const [w, id] = sza.dataset.sezano.split("|");
@@ -10658,6 +12463,31 @@ document.addEventListener("click", e=>{
   startSession(state.trWho, st0.dataset.start, state.budName || null);
   state.budName = null; return;
  }
+ const skr = e.target.closest("[data-skrok]");
+ if (skr && state.sess){
+  const q = skr.dataset.skrok.split("|");
+  const i = +q[1], j = +q[2], krok = parseFloat(q[3]);
+  const set = sessSets(i)[j];
+  if (q[0] === "k"){
+   const ted = parseFloat(String(set.kg).replace(",", ".")) || 0;
+   const nova = Math.max(0, Math.min(500, Math.round((ted + krok) * 100) / 100));
+   set.kg = nova ? String(nova) : "";
+  } else {
+   const ted = parseInt(set.reps, 10) || 0;
+   const nova = Math.max(0, Math.min(600, ted + krok));
+   set.reps = nova ? String(nova) : "";
+  }
+  saveSess(); renderSession();
+  return;
+ }
+ const svy = e.target.closest("[data-svyc]");
+ if (svy && state.sess){
+  const q = svy.dataset.svyc.split("|");
+  const set = sessSets(+q[0])[+q[1]];
+  set.kg = ""; set.reps = ""; set.done = false;
+  saveSess(); renderSession();
+  return;
+ }
  const sd = e.target.closest("[data-sdone]");
  if (sd){
   const p = sd.dataset.sdone.split("|"), i = +p[0], j = +p[1];
@@ -10666,10 +12496,26 @@ document.addEventListener("click", e=>{
   const rEl  = document.querySelector('[data-sr="'+i+'|'+j+'"]');
   if (!rEl) return;
   if (!set.done){
-   const reps = parseInt(rEl.value, 10);
-   if (!reps){ rEl.focus(); return; }
+   const reps = parseInt(String(rEl.value).replace(/[^0-9]/g, ""), 10);
+   if (!reps){ rEl.focus(); rEl.select && rEl.select(); return; }
    set.kg = kgEl ? (parseFloat(String(kgEl.value).replace(",", ".")) || 0) : 0;
    set.reps = reps; set.done = true;
+   /* Osobák se neslaví až na konci tréninku — slaví se hned, jak padne. */
+   const s1 = state.sess, ex1 = s1.ex[i];
+   if (sessKdo() !== "bud" && set.kg > 0){
+    s1.prTop = s1.prTop || {};
+    const latka = Math.max(nejtezsiSerie(s1.who, ex1.id), s1.prTop[ex1.id] || 0);
+    if (latka > 0 && set.kg > latka){
+     s1.prTop[ex1.id] = set.kg;
+     const nazev = (EX[ex1.id] || { n: ex1.id }).n;
+     zvuk("fanfara"); vibruj([70,50,70,50,220]); celebrate("🏆");
+     hlaskaPR(nazev, set.kg, latka, set.reps);
+     pushMsg("prlive-" + s1.who + "-" + ex1.id + "-" + isoDnes() + "-" + set.kg, "🏆",
+       "Osobák — " + nazev,
+       jmeno(s1.who) + " " + rod(s1.who, "dal", "dala") + " <b>" + fmt(set.kg) + " kg × " + set.reps
+       + "</b>. Předtím nejvíc " + fmt(latka) + " kg. Tohle je ten důkaz, že to funguje.");
+    }
+   }
    saveSess();
    if (window.sync && sync.on) sync.pushWidget();
    if (spoluJaJsem()) spoluMojeSety();
@@ -10827,8 +12673,8 @@ document.addEventListener("click", e=>{
   return;
  }
  if (e.target.id === "expBtn"){
-  const keys = ["week","pick","checks","shop","queue","fb","exsel","wtP","wtV","mrP","mrV","lastCheckin",
-                "kcal_p","kcal_v","sez_p","sez_v","sezZpet_p","sezZpet_v","sezVidel_p","sezVidel_v","theme","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist","plan","jidlo","shopHist","shopCasto","nakupDni","navrhy","schval","spizOdecist",
+  const keys = ["week","pick","checks","zapis","vynech","shop","queue","fb","exsel","wtP","wtV","mrP","mrV","lastCheckin",
+                "kcal_p","kcal_v","sez_p","sez_v","sezZpet_p","sezZpet_v","sezVidel_p","sezVidel_v","theme","zapis","vynech","tlog","pantry","cyklus","favs","msgs","fotoP","fotoV","meId","famId","water","myRecipes","shopX","rem","hist","plan","jidlo","shopHist","shopCasto","nakupDni","navrhy","schval","spizOdecist",
                 "n_prot_p","n_prot_v","n_water_p","n_water_v","n_casy","n_mintr_p","n_mintr_v",
                 "n_rozvrh_p","n_rozvrh_v","n_tren_p","n_tren_v","n_hlasky","n_zpravyAuto","n_konfety","n_stouch",
                 "favJ","parti","tlogB","spar","n_zkus_p","n_zkus_v","favR","profil_p","profil_v","ts1","cooked","shuffleN","odznaky",
