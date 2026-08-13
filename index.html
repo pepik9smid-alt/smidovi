@@ -120,6 +120,30 @@
   .setrow.done .okbtn{background:var(--s3);border-color:var(--s3);color:#fff}
   .setrow.done input{opacity:.55}
   .setrow input:focus{outline:2px solid var(--s1);outline-offset:-1px;background:var(--surface-2)}
+  .ngrp{font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);
+    padding:16px 6px 6px;font-weight:600}
+  .nlist{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;
+    overflow:hidden;margin-bottom:2px}
+  .nsrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+    background:none;border:0;border-bottom:1px solid var(--baseline);
+    padding:11px 13px;font:inherit;color:inherit;cursor:pointer}
+  .nsrow:last-child{border-bottom:0}
+  .nsrow:active{background:var(--surface-1)}
+  .nsrow .nsic{flex:0 0 auto;width:29px;height:29px;border-radius:7px;display:flex;
+    align-items:center;justify-content:center;font-size:15px;line-height:1}
+  .nsrow .nst{flex:1;min-width:0}
+  .nsrow .nst b{display:block;font-size:14.5px;font-weight:500;line-height:1.3}
+  .nsrow .nst span{display:block;font-size:12px;color:var(--muted);line-height:1.35;margin-top:1px}
+  .nsrow .nsbad{flex:0 0 auto;background:var(--s2);color:#fff;border-radius:99px;
+    min-width:19px;height:19px;display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:700}
+  .nsrow .nsarr{flex:0 0 auto;color:var(--muted);font-size:19px;line-height:1}
+  .nhead{position:sticky;top:0;z-index:8;background:var(--bg);padding-top:2px;margin:-2px -2px 0}
+  .nzpet{background:none;border:0;color:var(--s1);font:inherit;font-size:15px;
+    padding:6px 0;cursor:pointer}
+  .nzpet2{width:100%;margin-top:6px}
+  .zvgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+  .zvgrid button{width:100%;font-size:12.5px;padding:9px 6px}
   .protej{display:grid;grid-template-columns:1fr 16px;grid-template-rows:auto auto auto;
     gap:2px 10px;width:100%;text-align:left;
     background:var(--surface-1);border:1px solid var(--border);border-radius:12px;
@@ -2833,6 +2857,8 @@ const state = {
  venkuId: null,
  venkuMin: 0,
  jidS: null,
+ nastSek: null,
+ nastQ: "",
  recEdit: null,
  soloTik: null,
  spar: store.get("spar", []),
@@ -8207,6 +8233,7 @@ function startSession(who, rid, bud){
   })
  };
  state.sessMin = false;
+ zvuk("start");
  store.set("session", state.sess);
  if (window.sync && sync.on) sync.pushWidget();
  if (spoluBezi() && spoluDruhyJe()) { state.sess.spolu = true; saveSess(); spoluMojeSety(); }
@@ -8607,14 +8634,31 @@ function _ton(c, f, kdy, delka, hlas, tvar){
 /* [frekvence Hz, za kolik s, jak dlouho, hlasitost] */
 const ZVUKY = {
  klik:    [[880, 0, 0.05, 0.16]],
+ serie:   [[1046, 0, 0.06, 0.14], [1568, 0.05, 0.07, 0.11]],
+ tik:     [[1320, 0, 0.045, 0.13]],
+ start:   [[523, 0, 0.10, 0.22], [784, 0.10, 0.20, 0.24]],
  konec:   [[659, 0, 0.13, 0.26], [880, 0.15, 0.13, 0.26], [1175, 0.31, 0.34, 0.30]],
  fanfara: [[523, 0, 0.10, 0.26], [659, 0.09, 0.10, 0.28], [784, 0.18, 0.10, 0.30],
            [1047, 0.28, 0.42, 0.32], [1568, 0.30, 0.40, 0.16]],
  hotovo:  [[784, 0, 0.13, 0.26], [1047, 0.14, 0.34, 0.30]],
+ odznak:  [[784, 0, 0.09, 0.24], [988, 0.08, 0.09, 0.26], [1319, 0.16, 0.30, 0.28]],
+ jidlo:   [[698, 0, 0.07, 0.16], [1047, 0.07, 0.12, 0.17]],
+ voda:    [[1175, 0, 0.05, 0.13], [1568, 0.04, 0.09, 0.12]],
+ cil:     [[659, 0, 0.10, 0.24], [784, 0.09, 0.10, 0.26], [1047, 0.18, 0.10, 0.28],
+           [1319, 0.27, 0.36, 0.30]],
  fuj:     [[220, 0, 0.16, 0.22], [175, 0.16, 0.26, 0.22]]
 };
+/* Co je „důležité" — tohle hraje i v tiššího režimu. Zbytek je koření. */
+const ZVUK_DULEZ = ["konec", "fanfara", "hotovo", "odznak", "cil"];
+function zvukUroven(){
+ const u = nast("zvukUr", null);
+ if (u === "vse" || u === "dulez" || u === "nic") return u;
+ return nast("zvuky", true) ? "vse" : "nic";       // staré nastavení pořád platí
+}
 function zvuk(jm){
- if (!nast("zvuky", true)) return false;
+ const u = zvukUroven();
+ if (u === "nic") return false;
+ if (u === "dulez" && ZVUK_DULEZ.indexOf(jm) < 0) return false;
  const c = audioCtx();
  if (!c) return false;
  if (c.state === "suspended"){ try { c.resume(); } catch(e){ return false; } }
@@ -8641,6 +8685,8 @@ function tickTimer(){
   if (!bar) return;
   if (!state.timer){ bar.hidden = true; return; }
   const left = Math.max(0, Math.round((state.timer.end - Date.now())/1000));
+  /* poslední tři vteřiny odtikají, ať se člověk stihne postavit k čince */
+  if (left > 0 && left <= 3 && state.timer.tik !== left){ state.timer.tik = left; zvuk("tik"); }
   bar.hidden = false;
   bar.innerHTML = '<span class="tlab">'+(left ? "Pauza" : "Jdeme!")+'</span>'
    +(left ? '<button class="adj" data-tadj="-15" type="button">−15</button>' : '')
@@ -9664,6 +9710,7 @@ function kontrolaOdznaku(){
      jmeno(q[0]) + " si právě " + rod(q[0], "odemkl", "odemkla") + " odznak „" + o.n + "\". " + konec);
   }
  });
+ if (ted.length > drive.length) zvuk("odznak");
  store.set("odznaky", ted);
 }
 
@@ -10756,6 +10803,13 @@ function hlaskaPR(nazev, kg, stary, reps){
   setTimeout(()=>{ el.hidden = true; el.classList.remove("pryc"); }, 400);
  }, 3600);
 }
+/* Zaškrtnuté jídlo cinkne, splněný den zahraje. */
+function zvukJidla(iso, who){
+ const tgt = target(who);
+ let dk = 0, dp = 0;
+ planForIso(who, iso).forEach(m => { if (state.checks[iso+"|"+who+"|"+m.slot]){ dk += m.kcal; dp += m.prot; } });
+ if (dk >= tgt.kcal && dp >= tgt.prot) zvuk("cil"); else zvuk("jidlo");
+}
 function celebrate(ic){
   if (!nast("konfety", true)) return;
   if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -11305,52 +11359,59 @@ function pocetVeci(){
           cvik: Object.keys(EX).length, odz: ODZNAKY.length };
 }
 
-function renderNastaveniTab(){
- const el = document.getElementById("tab-nastaveni");
- if (!el) return;
- const me = store.get("meId", null);
- const tema = store.get("theme", "auto") || "auto";
- const pc = pocetVeci();
+/* ================= NASTAVENÍ =================
+   Šroubků je tolik, že jeden nekonečný sloupec přestal dávat smysl.
+   Je to proto rozdělené jako Nastavení v iPhonu: rozcestník se skupinami,
+   podstránky a nahoře hledání, ať se dá skočit rovnou tam, kam potřebuješ. */
 
- el.innerHTML =
-  '<div class="card nintro"><h3>⚙️ Nastavení</h3>'
-  +'<p class="who">Všechny šroubky appky na jednom místě. Nic tu nejde rozbít napořád — '
-  +'úplně dole je tlačítko, které vrátí vše do výroby.</p></div>'
-
-  + (solo() ? "" : pairCard())
-  + pozvankaCard()
-
-  +'<h2>'+(solo() ? "Profil" : "Profily")+'</h2>'
-  + (solo() ? profilCard(ja()) + parakCard() : profilCard("p") + profilCard("v") + soloCard())
-
-  /* --- cíle a čísla --- */
-  +'<div class="card"><h3>🎯 Cíle a čísla</h3>'
+const NAST_OBSAH = {
+ propojeni: ()=>{
+  return (solo() ? "" : pairCard())
+  + pozvankaCard();
+ },
+ profily: ()=>{
+  return (solo() ? profilCard(ja()) + parakCard() : profilCard("p") + profilCard("v") + soloCard());
+ },
+ schval: ()=>{
+  return '<div class="card"><h3>⚖️ Schvalování změn</h3>'
+  +'<p class="who">Když jeden z vás změní <b>večeři</b> nebo <b>kdo vaří</b>, druhý to musí odsouhlasit — '
+  +'teprve pak se to propíše oběma. Ten, kdo návrh podal, ho může kdykoli <b>prosadit silou</b> '
+  +'(⚡ Prosadit i tak) — ale druhému o tom přijde zpráva, takže to není zadarmo. 🏛️</p>'
+  +'<div class="wrow"><button class="'+(store.get("schval",true)?"act":"ghost")+' small" id="schvalTgl" type="button">'
+  + (store.get("schval",true) ? "Zapnuto — vypnout" : "Vypnuto — zapnout")+'</button>'
+  +'<span class="dim" style="font-size:12.5px">'
+  + (store.get("schval",true) ? "Férově: každá změna přes souhlas." : "Změny se propisují rovnou, bez ptaní.")+'</span></div>'
+  +'<div class="hint">Funguje to jen když jsou telefony propojené. Snídaně, svačiny a obědy schválení nepotřebují — '
+  +'to je věc každého zvlášť.</div></div>';
+ },
+ cile: ()=>{
+  return '<div class="card"><h3>🎯 Cíle a čísla</h3>'
   +'<p class="who">Denní kalorie a bílkoviny. Kalorie se dají měnit i v Průběhu tlačítkem podle tempa váhy — '
   +'tohle je ruční ovládání pro případ, že víš líp. 😏</p>'
   + nRow(jmeno("p")+" — kalorie", '<span class="nnum"><input type="number" data-nkcal="p" value="'+target("p").kcal+'" min="1200" max="6000" step="50" inputmode="numeric"><i>kcal</i></span>', "výchozí 3 150")
   + nRow(jmeno("p")+" — bílkoviny", nCislo("prot_p", BASE_T.p.prot, 60, 350, 5, "g"), "výchozí 200 g")
   + (duo() ? nRow(jmeno("v")+" — kalorie", '<span class="nnum"><input type="number" data-nkcal="v" value="'+target("v").kcal+'" min="1000" max="4000" step="50" inputmode="numeric"><i>kcal</i></span>', "výchozí 1 900")
   + nRow(jmeno("v")+" — bílkoviny", nCislo("prot_v", BASE_T.v.prot, 50, 250, 5, "g"), "výchozí 125 g") : "")
-  +'<div class="hint">Čísla se propíšou všude — do kruhů v Dnes, do součtů, do grafů i do odznaků.</div></div>'
-
-  /* --- pitný režim --- */
-  +'<div class="card"><h3>💧 Pitný režim</h3>'
+  +'<div class="hint">Čísla se propíšou všude — do kruhů v Dnes, do součtů, do grafů i do odznaků.</div></div>';
+ },
+ telo: ()=>{
+  return '<div class="card"><h3>💧 Pitný režim</h3>'
   +'<p class="who">Kolik sklenic se má za den zaškrtnout. Jedna sklenice = 250 ml.</p>'
   + nRow(jmeno("p")+" — spánek", nSel("spanek_p", 8, [[7,"7 h"],[7.5,"7,5 h"],[8,"8 h"],[8.5,"8,5 h"],[9,"9 h"]]),
       "Kolik chceš naspat. Hlídá to graf v Progresu → Tělo")
   + (duo() ? nRow(jmeno("v")+" — spánek", nSel("spanek_v", 8, [[7,"7 h"],[7.5,"7,5 h"],[8,"8 h"],[8.5,"8,5 h"],[9,"9 h"]])) : "")
   + nRow(jmeno("p"), nSel("water_p", WATER_T.p, [[2000,"2 l (8 sklenic)"],[2500,"2,5 l (10)"],[3000,"3 l (12)"],[3500,"3,5 l (14)"],[4000,"4 l (16)"]]))
   + (duo() ? nRow(jmeno("v"), nSel("water_v", WATER_T.v, [[1500,"1,5 l (6 sklenic)"],[2000,"2 l (8)"],[2200,"2,2 l (9)"],[2500,"2,5 l (10)"],[3000,"3 l (12)"]])) : "")
-  +'</div>'
-
-  /* --- casy jidel --- */
-  +'<div class="card"><h3>🕐 Časy jídel</h3>'
+  +'</div>';
+ },
+ casy: ()=>{
+  return '<div class="card"><h3>🕐 Časy jídel</h3>'
   +'<p class="who">Vstáváte jindy? Posuň celý denní rozpis najednou. Ovlivní to i „co je teď na řadě" nahoře.</p>'
   + nRow("Posun celého dne", nSel("casy", 0, [[-120,"o 2 hodiny dřív"],[-90,"o 1,5 h dřív"],[-60,"o hodinu dřív"],[-30,"o půl hodiny dřív"],[0,"beze změny (7:00 první jídlo)"],[30,"o půl hodiny později"],[60,"o hodinu později"],[90,"o 1,5 h později"],[120,"o 2 hodiny později"]]))
-  +'<div class="hint">Aktuálně první jídlo v <b>'+posunCas("7:00")+'</b>, večeře v <b>'+posunCas("19:30")+'</b>.</div></div>'
-
-  /* --- treninkove dny --- */
-  +'<div class="card"><h3>🏋️ Tréninkové dny a časy</h3>'
+  +'<div class="hint">Aktuálně první jídlo v <b>'+posunCas("7:00")+'</b>, večeře v <b>'+posunCas("19:30")+'</b>.</div></div>';
+ },
+ trdny: ()=>{
+  return '<div class="card"><h3>🏋️ Tréninkové dny a časy</h3>'
   +'<p class="who">Podle tohohle se plní <b>Plán</b> tlačítkem „Doplnit", počítá se minimum a chodí připomínky do kalendáře.</p>'
   +'<div class="nblok"><div class="nh">💪 '+esc(jmeno("p"))+'</div>'
   + dnyPicker("p") + casTreninku("p")
@@ -11365,66 +11426,65 @@ function renderNastaveniTab(){
   +'<div class="hint">Ťukni na den, ať ho přidáš nebo ubereš. Čas se dá přepsat u každého dne zvlášť.</div>'
   +'<div class="note"><b>Doporučená váha</b> se u cviků, které jsi ještě nikdy nezapsal, spočítá z tvojí '
   +'poslední váhy, pohlaví a téhle zkušenosti. Je to odhad pro první sérii — jakmile něco zapíšeš, '
-  +'appka přejde na tvoje skutečná čísla a odhad zmizí.</div></div>'
-
-  /* --- schvalovani --- */
-  +'<div class="card"><h3>⚖️ Schvalování změn</h3>'
-  +'<p class="who">Když jeden z vás změní <b>večeři</b> nebo <b>kdo vaří</b>, druhý to musí odsouhlasit — '
-  +'teprve pak se to propíše oběma. Ten, kdo návrh podal, ho může kdykoli <b>prosadit silou</b> '
-  +'(⚡ Prosadit i tak) — ale druhému o tom přijde zpráva, takže to není zadarmo. 🏛️</p>'
-  +'<div class="wrow"><button class="'+(store.get("schval",true)?"act":"ghost")+' small" id="schvalTgl" type="button">'
-  + (store.get("schval",true) ? "Zapnuto — vypnout" : "Vypnuto — zapnout")+'</button>'
-  +'<span class="dim" style="font-size:12.5px">'
-  + (store.get("schval",true) ? "Férově: každá změna přes souhlas." : "Změny se propisují rovnou, bez ptaní.")+'</span></div>'
-  +'<div class="hint">Funguje to jen když jsou telefony propojené. Snídaně, svačiny a obědy schválení nepotřebují — '
-  +'to je věc každého zvlášť.</div></div>'
-
-  /* --- vzhled --- */
-  +'<div class="card"><h3>🎨 Vzhled</h3>'
-  + nRow("Motiv", '<div class="dnyp">'
-     + [["auto","Podle telefonu"],["light","Světlý"],["dark","Tmavý"]].map(t=>
-        '<button class="'+(tema===t[0]?"on":"")+'" data-ntema="'+t[0]+'" type="button">'+t[1]+'</button>').join("")
-     +'</div>')
-  + nRow("Oslavy a konfety", nTgl("konfety", true, "Zapnuté 🎉", "Vypnuté"), "Když splníš bílkoviny nebo odemkneš odznak")
-  +'</div>'
-  +'<div class="card"><h3>🔔 Zvuky</h3>'
-  + nRow("Zvuky v tréninku", nTgl("zvuky", true, "Zapnuté 🔊", "Ticho"),
-      "Konec pauzy, osobák a uložený trénink")
-  + nRow("Vibrace", nTgl("vibrace", true, "Zapnuté 📳", "Vypnuté"), "Android; iPhone vibrace v prohlížeči neumí")
-  + nRow("Vyzkoušet", '<div class="wrow" style="margin:0">'
-      +'<button class="ghost" data-zvuk="konec" type="button">Konec pauzy</button>'
-      +'<button class="ghost" data-zvuk="fanfara" type="button">🏆 Osobák</button>'
-      +'<button class="ghost" data-zvuk="hotovo" type="button">Hotovo</button></div>')
-  +'<div class="hint"><b>Na iPhonu pozor na boční přepínač</b> — když je telefon na tichý režim, '
-  +'prohlížeč zvuk nepustí. Vibrace zase iOS webovkám vůbec nedovolí, to není chyba appky. '
-  +'Zvuk se poprvé rozjede až po prvním ťuknutí do obrazovky, tak to má prohlížeč nastavené.</div>'
-  +'</div>'
-
-  /* --- hlasky --- */
-  +'<div class="card"><h3>💬 Hlášky a zprávy</h3>'
-  + nRow("Denní hláška v Dnes", nTgl("hlasky", true, "Chci je 😀", "Radši klid"), "Ta drzá věta dole pod jídlem")
-  + nRow("Nabízet sezónní režim", nTgl("sezAuto", true, "Ano 🗓️", "Nechci"),
-      "Na začátku období (objem, sekačka, forma) se zeptá, jestli přepnout")
-  + nRow("Automatické zprávy", nTgl("zpravyAuto", true, "Zapnuté 🔔", "Vypnuté"), "Splněný cíl, série, tempo váhy, neděle…")
-  + nRow("Šťouchance", nTgl("stouch", true, "Povolené 💌", "Zakázané"), "Tlačítka, kterými se navzájem otravujete")
-  +'<div class="hint">Když hlášky vypneš, appka bude vážná jako výpis z banky. Nedoporučuju. 🫣</div></div>'
-
-  /* --- nakup --- */
-  +'<div class="card"><h3>🛒 Nákup</h3>'
+  +'appka přejde na tvoje skutečná čísla a odhad zmizí.</div></div>';
+ },
+ nakup: ()=>{
+  return '<div class="card"><h3>🛒 Nákup</h3>'
   + nRow("Na kolik dní počítat", '<div class="dnyp">'
      + [3,5,7,10,14].map(d=>'<button class="'+((state.nakupDni||7)===d?"on":"")+'" data-nkdni="'+d+'" type="button">'+d+'</button>').join("")
      +'</div>', "Kolik dní dopředu se sečtou suroviny")
   + nRow("Odečítat spíž", '<button class="'+(state.spizOdecist?"act":"ghost")+' small" data-nkspiz="1" type="button">'
      +(state.spizOdecist?"Zapnuto 🏠":"Vypnuto")+'</button>', "Co máš doma, se z nákupu odečte")
-  +'</div>'
-
-  + widgetCard()
-  + healthCard()
-
-  + remCard()
-
-  /* --- data --- */
-  +'<div class="card"><h3>💾 Data a přenos</h3>'
+  +'</div>';
+ },
+ vzhled: ()=>{
+ const tema = store.get("theme", "auto") || "auto";
+  return '<div class="card"><h3>🎨 Vzhled</h3>'
+  + nRow("Motiv", '<div class="dnyp">'
+     + [["auto","Podle telefonu"],["light","Světlý"],["dark","Tmavý"]].map(t=>
+        '<button class="'+(tema===t[0]?"on":"")+'" data-ntema="'+t[0]+'" type="button">'+t[1]+'</button>').join("")
+     +'</div>')
+  + nRow("Oslavy a konfety", nTgl("konfety", true, "Zapnuté 🎉", "Vypnuté"), "Když splníš bílkoviny nebo odemkneš odznak")
+  +'</div>';
+ },
+ zvuky: ()=>{
+  return '<div class="card"><h3>🔊 Jak to má hrát</h3>'
+  +'<p class="who">Appka umí cinkat. Nejsou to nahrávky, tóny se skládají rovnou v telefonu — '
+  +'takže to funguje i bez signálu.</p>'
+  + nRow("Kdy má hrát", nSel("zvukUr", zvukUroven(),
+      [["vse","Všechno"],["dulez","Jen to důležité"],["nic","Ticho"]]),
+      "Důležité = konec pauzy, osobák, splněný den, odznak, uložený trénink")
+  + nRow("Vibrace", nTgl("vibrace", true, "Zapnuté 📳", "Vypnuté"),
+      "Android; iPhone vibrace v prohlížeči neumí")
+  +'<div class="nblok"><div class="nh">🎧 Vyzkoušet</div><div class="zvgrid">'
+  + [["start","▶︎ Start tréninku"],["serie","✓ Zapsaná série"],["tik","⏱ Poslední vteřiny"],
+     ["konec","🔔 Konec pauzy"],["fanfara","🏆 Osobák"],["odznak","🏅 Nový odznak"],
+     ["jidlo","🍽️ Odškrtnuté jídlo"],["voda","💧 Sklenice vody"],["cil","🎯 Splněný den"],
+     ["hotovo","💪 Uložený trénink"]].map(z =>
+      '<button class="ghost" data-zvuk="'+z[0]+'" type="button">'+z[1]+'</button>').join("")
+  +'</div></div>'
+  +'<div class="hint"><b>Na iPhonu pozor na boční přepínač</b> — když je telefon na tichý režim, '
+  +'prohlížeč zvuk nepustí. Vibrace zase iOS webovkám vůbec nedovolí, to není chyba appky. '
+  +'Zvuk se poprvé rozjede až po prvním ťuknutí do obrazovky, tak to má prohlížeč nastavené.</div></div>';
+ },
+ hlasky: ()=>{
+  return '<div class="card"><h3>💬 Hlášky a zprávy</h3>'
+  + nRow("Denní hláška v Dnes", nTgl("hlasky", true, "Chci je 😀", "Radši klid"), "Ta drzá věta dole pod jídlem")
+  + nRow("Nabízet sezónní režim", nTgl("sezAuto", true, "Ano 🗓️", "Nechci"),
+      "Na začátku období (objem, sekačka, forma) se zeptá, jestli přepnout")
+  + nRow("Automatické zprávy", nTgl("zpravyAuto", true, "Zapnuté 🔔", "Vypnuté"), "Splněný cíl, série, tempo váhy, neděle…")
+  + nRow("Šťouchance", nTgl("stouch", true, "Povolené 💌", "Zakázané"), "Tlačítka, kterými se navzájem otravujete")
+  +'<div class="hint">Když hlášky vypneš, appka bude vážná jako výpis z banky. Nedoporučuju. 🫣</div></div>';
+ },
+ pripominky: ()=>{
+  return remCard();
+ },
+ telefon: ()=>{
+  return widgetCard()
+  + healthCard();
+ },
+ data: ()=>{
+  return '<div class="card"><h3>💾 Data a přenos</h3>'
   +'<p class="who">Když jsou telefony propojené, deník cviků, tréninky, vážení, míry, voda i odškrtnutá '
   +'jídla se drží stejné u obou — každá změna doletí k druhému během vteřiny. '
   +'<b>Fotky a nastavení tohohle telefonu</b> se neposílají nikam. '
@@ -11437,12 +11497,14 @@ function renderNastaveniTab(){
   +'<div class="hint" id="dataMsg"></div>'
   +'<div class="wrow" style="margin-top:14px"><button class="ghost" id="onbBtn" type="button">👋 Spustit průvodce</button>'
   +'<button class="ghost" id="resetNast" type="button">'+(state.resetPtl?"Fakt to vrátit?":"↩️ Vrátit nastavení do výroby")+'</button></div>'
-  +'<div class="hint">Vrácení do výroby přenastaví jen tuhle stránku — jídlo, deník ani váhy se nesmažou.</div></div>'
-
-  /* --- o appce --- */
-  +'<div class="card"><h3>ℹ️ O appce</h3>'
+  +'<div class="hint">Vrácení do výroby přenastaví jen tuhle stránku — jídlo, deník ani váhy se nesmažou.</div></div>';
+ },
+ oappce: ()=>{
+ const pc = pocetVeci();
+ const me = store.get("meId", null);
+  return '<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">45</td></tr>'
+  +'<tr><td>Verze</td><td class="num">46</td></tr>'
   +'<tr><td>Tréninků k výběru</td><td class="num">'+(ROUTINES.p.length+ROUTINES.v.length)+'</td></tr>'
   +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
@@ -11455,6 +11517,93 @@ function renderNastaveniTab(){
   +'</tbody></table>'
   +'<div class="hint">PEVE FIT — žádné reklamy, žádné účty, '
   +'data nikam neodcházejí kromě vašeho vlastního rodinného kódu.</div></div>';
+ }
+};
+const NAST_SEK = [
+ { id:"propojeni", ic:"🔗", b:"var(--s1)", n:"Propojení telefonů", p:"Rodinný kód a pozvánka", kl:"kod propojeni rodina parak pozvanka sdileni telefon" },
+ { id:"profily", ic:"👤", b:"var(--s3)", n:"Profily", p:"Jméno, váha, výška, věk, cíl", kl:"profil jmeno vaha vyska vek pohlavi cil aktivita sada solo" },
+ { id:"schval", ic:"⚖️", b:"var(--s4)", n:"Schvalování změn", p:"Kdo smí měnit večeři", kl:"schvalovani souhlas vecere navrh" },
+ { id:"cile", ic:"🎯", b:"var(--s2)", n:"Cíle a čísla", p:"Denní kalorie a bílkoviny", kl:"kalorie bilkoviny cil kcal protein cisla" },
+ { id:"telo", ic:"💧", b:"var(--s1)", n:"Pitný režim a spánek", p:"Kolik pít a kolik spát", kl:"voda piti sklenice spanek hodiny" },
+ { id:"casy", ic:"🕐", b:"var(--s4)", n:"Časy jídel", p:"Posun celého dne", kl:"cas jidlo snidane vecere posun rozpis" },
+ { id:"trdny", ic:"🏋️", b:"var(--s3)", n:"Tréninkové dny", p:"Dny, časy, minimum, zkušenost", kl:"trenink dny cas minimum zkusenost rozvrh plan" },
+ { id:"nakup", ic:"🛒", b:"var(--s2)", n:"Nákup", p:"Na kolik dní a spíž", kl:"nakup dni spiz obchod seznam" },
+ { id:"vzhled", ic:"🎨", b:"var(--s3)", n:"Vzhled", p:"Motiv a konfety", kl:"vzhled motiv tmavy svetly barva konfety oslavy" },
+ { id:"zvuky", ic:"🔔", b:"var(--s2)", n:"Zvuky a vibrace", p:"Konec pauzy, osobák, cinkání", kl:"zvuk zvuky vibrace pipani fanfara ticho hlasitost" },
+ { id:"hlasky", ic:"💬", b:"var(--s4)", n:"Hlášky a zprávy", p:"Drzé věty a upozornění", kl:"hlasky zpravy stouchance vtipy oznameni" },
+ { id:"pripominky", ic:"⏰", b:"var(--s1)", n:"Připomínky", p:"Kalendář a upozornění", kl:"pripominky kalendar ics notifikace upozorneni" },
+ { id:"telefon", ic:"📱", b:"var(--s3)", n:"Widget a hodinky", p:"Plocha, Apple Health, Zkratky", kl:"widget plocha hodinky watch health zkratky ios scriptable" },
+ { id:"data", ic:"💾", b:"var(--s4)", n:"Data a přenos", p:"Záloha, průvodce, reset", kl:"data zaloha export import reset pruvodce prenos" },
+ { id:"oappce", ic:"ℹ️", b:"var(--s1)", n:"O appce", p:"Verze a čísla", kl:"verze o appce info pocty" }
+];
+const NAST_SKUPINY = [
+ ["Vy dva", ["propojeni","profily","schval"]],
+ ["Cíle a den", ["cile","telo","casy","trdny","nakup"]],
+ ["Appka", ["vzhled","zvuky","hlasky","pripominky","telefon"]],
+ ["Data", ["data","oappce"]]
+];
+
+/* Sekce, které v sólo režimu nedávají smysl. */
+function nastSekce(){
+ return NAST_SEK.filter(x => solo() ? (x.id !== "schval") : true);
+}
+/* Červená tečka u řádku, který si zaslouží pozornost. */
+function nastPozor(id){
+ if (id === "propojeni") return (!solo() && !store.get("famId", null)) ? "!" : "";
+ if (id === "profily")   return (!profilVyplneny(solo() ? ja() : "p")) ? "!" : "";
+ return "";
+}
+function nastRadek(x){
+ const b = nastPozor(x.id);
+ return '<button class="nsrow" data-nsek="'+x.id+'" type="button">'
+  +'<span class="nsic" style="background:'+x.b+'">'+x.ic+'</span>'
+  +'<span class="nst"><b>'+esc(x.n)+'</b><span>'+esc(x.p)+'</span></span>'
+  + (b ? '<span class="nsbad">'+b+'</span>' : '')
+  +'<span class="nsarr">›</span></button>';
+}
+function renderNastaveniTab(){
+ const el = document.getElementById("tab-nastaveni");
+ if (!el) return;
+ const sek = state.nastSek;
+
+ /* ---- podstránka ---- */
+ if (sek && NAST_OBSAH[sek]){
+  const x = NAST_SEK.find(y => y.id === sek) || { n: "Nastavení", ic: "⚙️" };
+  el.innerHTML =
+   '<div class="nhead"><button class="nzpet" data-nzpet="1" type="button">‹ Nastavení</button>'
+   +'<h2 style="margin:6px 0 12px">'+x.ic+' '+esc(x.n)+'</h2></div>'
+   + NAST_OBSAH[sek]()
+   +'<button class="ghost nzpet2" data-nzpet="1" type="button">‹ Zpátky na Nastavení</button>';
+  return;
+ }
+
+ /* ---- rozcestník ---- */
+ const q = bezDia(String(state.nastQ || "").trim());
+ let telo;
+ if (q){
+  const nal = nastSekce().filter(x =>
+    bezDia(x.n + " " + x.p + " " + x.kl).indexOf(q) >= 0);
+  telo = '<div class="nlist">'
+   + (nal.length ? nal.map(nastRadek).join("")
+      : '<div class="pk-none" style="padding:18px 15px">Nic takového tu není. '
+        +'Zkus kratší slovo — třeba „zvuk", „vaha" nebo „kalorie".</div>')
+   +'</div>';
+ } else {
+  const dostupne = nastSekce().map(x => x.id);
+  telo = NAST_SKUPINY.map(g => {
+    const rad = g[1].filter(id => dostupne.indexOf(id) >= 0)
+      .map(id => nastRadek(NAST_SEK.find(y => y.id === id)));
+    if (!rad.length) return "";
+    return '<div class="ngrp">'+esc(g[0])+'</div><div class="nlist">'+rad.join("")+'</div>';
+   }).join("");
+ }
+
+ el.innerHTML =
+  '<input type="search" class="search" id="nastQ" placeholder="🔍 Hledej v nastavení — zvuk, váha, kalorie…" '
+  +'value="'+esc(state.nastQ||"")+'" autocomplete="off">'
+  + telo
+  +'<div class="hint" style="padding:0 4px">Nic tu nejde rozbít napořád — '
+  +'v <b>Data a přenos</b> je tlačítko, které vrátí nastavení do výroby.</div>';
 }
 
 function cileKarta(who){
@@ -11611,6 +11760,9 @@ document.addEventListener("input", e=>{
   }, 700);
   return;
  }
+ if (e.target.id === "nastQ"){
+  state.nastQ = e.target.value; renderNastaveniTab(); keepFocus("nastQ"); return;
+ }
  if (e.target.id === "foodQ" && state.jidS){
   state.jidS.q = e.target.value; state.jidS.otev = null; state.jidS.qFocus = true;
   renderJidlo(); return;
@@ -11641,6 +11793,10 @@ document.addEventListener("change", e=>{
    const jeOsoba = part[1] === "p" || part[1] === "v";
    const pred = jeOsoba ? dayTotals(part[1], part[0]) : null;
    state.checks[t.dataset.check] = t.checked; store.set("checks", state.checks);
+   if (t.checked){
+    const q = String(t.dataset.check).split("|");
+    if (q.length === 3 && q[2].indexOf("sup-") !== 0) zvukJidla(q[0], q[1]); else zvuk("klik");
+   }
    if (jeOsoba){
      const po = dayTotals(part[1], part[0]), cil = target(part[1]);
      if (t.checked && pred.p < cil.prot && po.p >= cil.prot) celebrate("🥳");
@@ -11767,7 +11923,9 @@ document.addEventListener("click", e=>{
  if (gt){
   if (state.notif) zavriNotif(); showTab(gt.dataset.goto); return; }
  const gb = e.target.closest("nav.tabs button");
- if (gb){ const g = gb.dataset.grp; showTab(lastSub[g] || GROUPS[g].tabs[0][0]); return; }
+ if (gb){ const g = gb.dataset.grp;
+  if (g === "nastaveni") state.nastSek = null;      // z lišty vždycky na rozcestník
+  showTab(lastSub[g] || GROUPS[g].tabs[0][0]); return; }
  const sb = e.target.closest("#subnav button");
  if (sb){ showTab(sb.dataset.tab); return; }
  const pz = e.target.closest("[data-pozv]");
@@ -11925,6 +12083,7 @@ document.addEventListener("click", e=>{
  if (rf){ state.recFilter = rf.dataset.rfilter; renderRecepty(); return; }
 
  const wa = e.target.closest("[data-water]");
+ if (wa && +wa.dataset.water.split("|")[2] > 0) zvuk("voda");
  if (wa){
   const p = wa.dataset.water.split("|");
   const now = waterGet(p[0], p[1]);
@@ -12236,6 +12395,14 @@ document.addEventListener("click", e=>{
  if (e.target.id === "planFill"){ doplnPlan(); renderPlan(); renderDnes(); renderNext(); celebrate("📅"); return; }
  if (e.target.id === "planClear"){ vycistitPlan(); state.planDen = null; renderPlan(); renderDnes(); renderNext(); return; }
 
+ const nsk = e.target.closest("[data-nsek]");
+ if (nsk){
+  state.nastSek = nsk.dataset.nsek; state.nastQ = "";
+  renderNastaveniTab(); window.scrollTo(0,0); return;
+ }
+ if (e.target.closest("[data-nzpet]")){
+  state.nastSek = null; renderNastaveniTab(); window.scrollTo(0,0); return;
+ }
  const zvt = e.target.closest("[data-zvuk]");
  if (zvt){
   odemkniZvuk();
@@ -12500,6 +12667,7 @@ document.addEventListener("click", e=>{
    if (!reps){ rEl.focus(); rEl.select && rEl.select(); return; }
    set.kg = kgEl ? (parseFloat(String(kgEl.value).replace(",", ".")) || 0) : 0;
    set.reps = reps; set.done = true;
+   zvuk("serie");
    /* Osobák se neslaví až na konci tréninku — slaví se hned, jak padne. */
    const s1 = state.sess, ex1 = s1.ex[i];
    if (sessKdo() !== "bud" && set.kg > 0){
