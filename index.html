@@ -120,6 +120,30 @@
   .setrow.done .okbtn{background:var(--s3);border-color:var(--s3);color:#fff}
   .setrow.done input{opacity:.55}
   .setrow input:focus{outline:2px solid var(--s1);outline-offset:-1px;background:var(--surface-2)}
+  details.card.sbal{padding:0}
+  details.card.sbal>summary{display:flex;align-items:center;gap:10px;padding:13px 15px;
+    cursor:pointer;list-style:none}
+  details.card.sbal>summary::-webkit-details-marker{display:none}
+  details.card.sbal .sb-t{flex:1;min-width:0}
+  details.card.sbal .sb-t b{display:block;font-size:15px;font-weight:600;line-height:1.3}
+  details.card.sbal .sb-t span{display:block;font-size:12.5px;color:var(--muted);
+    line-height:1.35;margin-top:2px}
+  details.card.sbal .sb-a{flex:0 0 auto;color:var(--muted);font-size:20px;line-height:1;
+    transition:transform .18s ease}
+  details.card.sbal[open] .sb-a{transform:rotate(90deg)}
+  details.card.sbal[open]>summary{padding-bottom:2px}
+  details.card.sbal .sb-in{padding:0 15px 14px}
+  details.card.sbal .sb-in>.rhead h3{font-size:16px}
+  details.rutina{padding:0}
+  details.rutina>summary{display:flex;align-items:center;gap:10px;padding:13px 15px;
+    cursor:pointer;list-style:none}
+  details.rutina>summary::-webkit-details-marker{display:none}
+  details.rutina .rut-t{flex:1;min-width:0}
+  details.rutina .rut-a{flex:0 0 auto;color:var(--muted);font-size:20px;line-height:1;
+    transition:transform .18s ease}
+  details.rutina[open] .rut-a{transform:rotate(90deg)}
+  details.rutina .rut-in{padding:0 15px 14px}
+  details.rutina .rhead h3{line-height:1.3}
   .ngrp{font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);
     padding:16px 6px 6px;font-weight:600}
   .nlist{background:var(--surface-2);border:1px solid var(--border);border-radius:14px;
@@ -2856,6 +2880,9 @@ const state = {
  jinyKod: false,
  venkuId: null,
  venkuMin: 0,
+ trOpen: [],
+ sbal: {},
+ recLimit: 24,
  jidS: null,
  nastSek: null,
  nastQ: "",
@@ -6146,7 +6173,11 @@ function renderRecepty(){
    return '<button class="chip'+(f===t[0]?" on":"")+'" data-rfilter="'+t[0]+'">'+t[1]+' <span>'+cnt+'</span></button>';
  }).join("")+'</div>';
 
- const din = list.map(r=>
+ /* Sto pět receptů naráz dělalo šestnáct obrazovek. Ukazujeme po dávkách. */
+ const limit = Math.max(24, state.recLimit || 24);
+ const skryto = Math.max(0, list.length - limit);
+ const vidno = list.slice(0, limit);
+ const din = vidno.map(r=>
   '<details class="rec"><summary><span class="t">'+esc(r.name)+'<br><span class="tg">'+esc(TAGLABEL[tagOf(r)]||"")+'</span></span>'
   +'<span style="display:flex;align-items:center;gap:8px;white-space:nowrap">'
   +'<span class="k">V '+r.v.kcal+' · P '+r.p.kcal+(recTime(r)?'<br><span class="rtime">⏱ '+recTime(r)+'</span>':'')+'</span>'
@@ -6178,6 +6209,8 @@ function renderRecepty(){
   '<h2>Večeře — '+(q ? list.length+" nalezeno z "+DINNERS.length : DINNERS.length+" receptů do rotace")+'</h2>'
   + hledej + chips + rezimBox + spiz + davka + novyReceptForm()
   + (list.length ? din : '<div class="card"><p class="who" style="margin:0">Nic takového tu není. Zkus jiné slovo — třeba jen „kur" nebo „vejc".</p></div>')
+  + (skryto ? '<button class="act small" id="recVic" type="button" style="width:100%;margin:2px 0 10px">'
+      +'Ukázat dalších '+Math.min(skryto, 24)+' <span class="dim" style="font-weight:400">z '+skryto+'</span></button>' : '')
   + (f === "out" || f === "all" ? outKatalog() : "")
   +'<h2>Snídaně, shake &amp; meal prep</h2>'+extra
   +'<div class="note"><b>Anglické názvy u cviků</b> jsou schválně — v Hevy se cviky hledají anglicky, takže podle nich najdeš rutinu. '
@@ -8746,7 +8779,12 @@ function sparingCard(who){
   ? '<div class="sparbil">'+bil.slice(0,4).map(b=>
       '<span><b>'+esc(b.bud)+'</b> '+b.v+'–'+b.p+(b.r?'–'+b.r:'')+'</span>').join("")+'</div>'
   : '';
- return '<div class="card sparcard"><div class="rhead"><h3>🤜 Trénink s kámošem</h3>'
+ const kolik = sparHist().filter(x => x.who === who).length;
+ return '<details class="card sparcard sbal"'+sbalAtr("sparing", false)+'><summary>'
+  +'<span class="sb-t"><b>🤜 Trénink s kámošem</b><span>'
+  +(kolik ? pocet(kolik,"sparing","sparingy","sparingů")+" zapsáno" : "když jdeš do posilky s někým")
+  +'</span></span><span class="sb-a">›</span></summary>'
+  +'<div class="sb-in"><div class="rhead" style="margin-top:0"><h3>🤜 Trénink s kámošem</h3>'
   +'<span class="rmeta">'+(bil.length ? pocet(bil.reduce((a,b)=>a+b.v+b.p+b.r,0),"společný","společné","společných") : 'nový režim')+'</span></div>'
   +'<p class="who">Jdeš do posilky s někým? Napiš jeho jméno, spusť trénink a zapisuj série <b>za oba</b> — '
   +'přepínačem nahoře. Appka počítá objem každému zvlášť a na konci vyhlásí vítěze. '
@@ -8763,7 +8801,7 @@ function sparingCard(who){
   +'<button class="act small" id="budStart" type="button">▶︎ Spustit ve dvou</button></div>'
   + shrn
   +'<div class="hint">Kámošovy série se ukládají zvlášť — do tvého deníku ani rekordů se nepletou. '
-  +'Až přijde příště, appka mu rovnou nabídne, co zvedal minule.</div></div>';
+  +'Až přijde příště, appka mu rovnou nabídne, co zvedal minule.</div></div></details>';
 }
 
 /* ---- bilance sparingu ---- */
@@ -9002,19 +9040,26 @@ function cislaCard(who){
   +'Ber ho jako ukazatel trendu, ne jako číslo, se kterým máš jít na tyč.</div></div></div>';
 }
 
+/* Rozepsaných pětadvacet tréninků dělalo ze záložky třicet obrazovek scrollování.
+   Teď je vidět jen hlavička a Spustit — cviky se rozbalí, až když o ně stojíš. */
 function routineCard(r){
  const serie = r.ex.reduce((a,e)=> a + plannedSets(e[1]), 0);
  const je = favR().indexOf(r.id) >= 0;
  const kolikrat = (state.hist || []).filter(h => h.rid === r.id).length;
- return '<div class="card'+(je?" oblib":"")+'"><div class="rhead"><h3>'
+ const otevreno = (state.trOpen || []).indexOf(r.id) >= 0;
+ return '<details class="card rutina'+(je?" oblib":"")+'" data-rut="'+r.id+'"'+(otevreno?" open":"")+'>'
+  +'<summary><div class="rut-t"><div class="rhead" style="margin:0"><h3 style="font-size:15.5px">'
   +'<button class="star" data-favr="'+r.id+'" title="Oblíbený trénink" type="button">'+(je?"★":"☆")+'</button> '
-  +esc(r.title)+'</h3>'
+  +esc(r.title)+'</h3></div>'
   +'<span class="rmeta">'+r.ex.length+' cviků · '+serie+' sérií · ~'+r.min+' min'
   +(kolikrat?' · <b>'+kolikrat+'×</b> odtrénováno':'')+'</span></div>'
+  +'<span class="rut-a">›</span></summary>'
+  +'<div class="rut-in">'
   +'<p class="who" style="margin-bottom:10px"><span class="tpill">'+TYP_LABEL[r.typ]+'</span> '+esc(r.tip)+'</p>'
   +'<button class="act" data-start="'+r.id+'" type="button" style="width:100%;margin-bottom:10px">▶︎ Spustit trénink</button>'
   + rozehratiHtml(r, false)
-  + r.ex.map((e,i)=>exRow(r.id,e,i)).join("") + '</div>';
+  + r.ex.map((e,i)=>exRow(r.id,e,i)).join("")
+  +'</div></details>';
 }
 const TR_TIME = [["all","Vše"],[20,"⏱ do 20 min"],[30,"⏱ do 30 min"],[45,"⏱ do 45 min"],[60,"⏱ do 60 min"],[999,"⏱ mám čas"]];
 const TR_TYP  = [["all","Vše"],["fav","⭐ Oblíbené"],["sila","🏋️ Síla"],["kardio","🏃 Kardio"],["doma","🏠 Doma"],["mobilita","🧘 Mobilita"]];
@@ -9109,8 +9154,12 @@ function venkuCard(who){
  const kcal = vyb ? venkuKcal(who, vyb.id, min) : 0;
  const celkem = venkuCelkem(who);
 
- return '<div class="card"'+(rada && rada.ven ? ' style="border-color:var(--s2)"' : '')+'>'
-  +'<div class="rhead"><h3>🌤️ Nemusí to být fitko</h3>'
+ const ven = !!(rada && rada.ven);
+ return '<details class="card sbal"'+(ven ? ' style="border-color:var(--s2)"' : '')+sbalAtr("venku", ven)+'>'
+  +'<summary><span class="sb-t"><b>🌤️ Nemusí to být fitko</b><span>'
+  + (rada ? esc(rada.txt.slice(0, 52)) : (celkem ? pocet(celkem,"výlet","výlety","výletů")+' zapsáno' : 'brusle, kolo, voda — pohyb je pohyb'))
+  +'</span></span><span class="sb-a">›</span></summary><div class="sb-in">'
+  +'<div class="rhead" style="margin-top:0"><h3>🌤️ Nemusí to být fitko</h3>'
   +'<span class="rmeta">'+(celkem ? pocet(celkem,"výlet","výlety","výletů")+' zapsáno' : 'pohyb je pohyb')+'</span></div>'
   + (rada
      ? '<div class="note"'+(rada.ven ? ' style="border-color:var(--s2)"' : '')+'>'
@@ -9134,7 +9183,7 @@ function venkuCard(who){
        +'<button class="act small" data-venkuzapis="'+vyb.id+'" type="button">Zapsat jako trénink</button>'
        +'<button class="ghost" data-venku="" type="button">Zrušit výběr</button></div></div>'
      : '<div class="hint">Ťukni na to, co jste dělali — appka dopočítá kalorie podle tvojí váhy a času.</div>')
-  +'</div>';
+  +'</div></details>';
 }
 
 function renderTrenink(){
@@ -9193,10 +9242,13 @@ function renderTrenink(){
    +'</div>';
  }
  const nejdelsi = rutiny(who).reduce((a,r)=> Math.max(a, r.min || 0), 0);
- const casovaNota = '<div class="note"><b>Nejdelší trénink tady má '+nejdelsi+' minut</b> — a je to schválně. '
+ const casovaNota = '<details class="card sbal"'+sbalAtr("cas", false)+'><summary><span class="sb-t">'
+  +'<b>⏱ Proč tu není nic přes hodinu</b><span>Nejdelší trénink má '+nejdelsi+' minut</span></span>'
+  +'<span class="sb-a">›</span></summary><div class="sb-in">'
+  +'<div class="note" style="margin-top:0"><b>Nejdelší trénink tady má '+nejdelsi+' minut</b> — a je to schválně. '
   + 'Přes hodinu a půl už tělo nepřidává sílu, jen únavu, a hlavně: na dvouhodinový trénink se člověk '
   + 'prostě nevykašle jen jednou, ale pořád. Radši '+nejdelsi+' minut třikrát týdně než dvě hodiny jednou za čas. '
-  + 'Když se to během tréninku začne protahovat, appka ti to řekne.</div>';
+  + 'Když se to během tréninku začne protahovat, appka ti to řekne.</div></div></details>';
  const vyber = trList(who);
  const list = vyber.length
   ? '<h2>'+vyber.length+' '+(vyber.length===1?"trénink":(vyber.length<5?"tréninky":"tréninků"))+' pro tenhle výběr</h2>'
@@ -9213,10 +9265,14 @@ function renderTrenink(){
   ? '<div class="note"><b>Dvojitá progrese:</b> stejná váha, přidávej opakování. Horní hranice ve všech sériích → +2,5 kg (horní tělo) / +5 kg (dolní) a znovu. U každého cviku jde vybrat varianta — když je nářadí obsazené nebo něco nesedí. Deload každý 7. týden: poloviční série.</div>'
   : '<div class="note"><b>Neboj se činek:</b> silový trénink u ženy = pevné tvary, ne „chlapské svaly" — na ty nejsou hormony, nestane se to omylem. U každého cviku jde vybrat varianta. Váhy zapisuj do Hevy: síla nahoru = postava se mění, i když váha stojí.</div>';
  document.getElementById("tab-trenink").innerHTML = tgl + spoluPozvankaKarta() + bezi + peerTreninkBox() + head + trReco(who) + venkuCard(who) + sparingCard(who) + hledejEx + nalez + filtry + casovaNota + strecTip + list + tip
-  + '<div class="note"><b>Deník máš přímo tady.</b> Rozklikni cvik, zapiš kg a opakování — appka si pamatuje, '
+  +'<details class="card sbal"'+sbalAtr("info", false)+'><summary><span class="sb-t"><b>ℹ️ Jak to tady funguje</b>'
+  +'<span>Deník, progrese, rekordy — v kostce</span></span><span class="sb-a">›</span></summary>'
+  +'<div class="sb-in">'
+  +'<div class="note" style="margin-top:0"><b>Deník máš přímo tady.</b> Rozklikni cvik, zapiš kg a opakování — appka si pamatuje, '
   + 'co jsi zvedal(a) minule, a sama řekne, kdy přidat. Tlačítko s časem spustí odpočinek mezi sériemi.</div>'
   + '<div class="note" style="border-color:var(--s1)"><b>Rekordy, objem a statistiky</b> mají vlastní záložku '
-  + '<b>Moje čísla</b> nahoře — ať se sem nemusíš prokousávat přes celý seznam tréninků.</div>';
+  + '<b>Moje čísla</b> nahoře — ať se sem nemusíš prokousávat přes celý seznam tréninků.</div>'
+  +'</div></details>';
  renderCisla();
 }
 
@@ -11504,7 +11560,7 @@ const NAST_OBSAH = {
  const me = store.get("meId", null);
   return '<div class="card"><h3>ℹ️ O appce</h3>'
   +'<table><tbody>'
-  +'<tr><td>Verze</td><td class="num">46</td></tr>'
+  +'<tr><td>Verze</td><td class="num">47</td></tr>'
   +'<tr><td>Tréninků k výběru</td><td class="num">'+(ROUTINES.p.length+ROUTINES.v.length)+'</td></tr>'
   +'<tr><td>Snídaní / svačin / obědů</td><td class="num">'+J_SNIDANE.length+' / '+J_SVACINA.length+' / '+J_OBED.length+'</td></tr>'
   +'<tr><td>Sparingů s parťáky</td><td class="num">'+sparHist().length+'</td></tr>'
@@ -11544,6 +11600,15 @@ const NAST_SKUPINY = [
 ];
 
 /* Sekce, které v sólo režimu nedávají smysl. */
+/* Sbalené karty si pamatují, jestli je máš otevřené — jinak by je
+   každé překreslení zase zavřelo (a to zrovna, když v nich něco ťukáš). */
+function sbalOtevreno(id, vychozi){
+ const v = (state.sbal || {})[id];
+ return v === undefined ? !!vychozi : !!v;
+}
+function sbalAtr(id, vychozi){
+ return ' data-sbal="'+id+'"' + (sbalOtevreno(id, vychozi) ? ' open' : '');
+}
 function nastSekce(){
  return NAST_SEK.filter(x => solo() ? (x.id !== "schval") : true);
 }
@@ -11776,7 +11841,7 @@ document.addEventListener("input", e=>{
   state.pick0.q = e.target.value; state.pick0.qFocus = true; renderPick(); return;
  }
  if (e.target.id === "budName"){ state.budName = e.target.value; return; }
- if (e.target.id === "recQ"){ state.recQ = e.target.value; renderRecepty(); keepFocus("recQ"); }
+ if (e.target.id === "recQ"){ state.recQ = e.target.value; state.recLimit = 24; renderRecepty(); keepFocus("recQ"); }
  else if (e.target.id === "exQ"){ state.exQ = e.target.value; renderTrenink(); keepFocus("exQ"); }
 });
 
@@ -12079,8 +12144,15 @@ document.addEventListener("click", e=>{
  }
  if (e.target.id === "pantryClr"){ state.pantry = []; store.set("pantry", []); renderRecepty(); return; }
 
+ if (e.target.id === "recVic"){
+  state.recLimit = (state.recLimit || 24) + 24;
+  renderRecepty();
+  const b0 = document.getElementById("recVic");
+  if (b0) b0.scrollIntoView({ block: "center" });
+  return;
+ }
  const rf = e.target.closest("[data-rfilter]");
- if (rf){ state.recFilter = rf.dataset.rfilter; renderRecepty(); return; }
+ if (rf){ state.recFilter = rf.dataset.rfilter; state.recLimit = 24; renderRecepty(); return; }
 
  const wa = e.target.closest("[data-water]");
  if (wa && +wa.dataset.water.split("|")[2] > 0) zvuk("voda");
@@ -12395,6 +12467,24 @@ document.addEventListener("click", e=>{
  if (e.target.id === "planFill"){ doplnPlan(); renderPlan(); renderDnes(); renderNext(); celebrate("📅"); return; }
  if (e.target.id === "planClear"){ vycistitPlan(); state.planDen = null; renderPlan(); renderDnes(); renderNext(); return; }
 
+ const sb0 = e.target.closest("details.sbal[data-sbal]");
+ if (sb0){
+  const sm = e.target.closest("summary");
+  if (sm && sm.parentElement === sb0){
+   const id = sb0.dataset.sbal;
+   state.sbal = state.sbal || {};
+   state.sbal[id] = !sb0.open;          // click ještě neproběhl, .open je stav před ním
+  }
+ }
+ const rut = e.target.closest("details.rutina");
+ const sm0 = e.target.closest("summary");
+ /* Musí to být hlavička téhle karty — ne summary cviku uvnitř ní.
+    A hvězdička v hlavičce je tlačítko, ne rozbalovátko. */
+ if (rut && sm0 && sm0.parentElement === rut && !e.target.closest("[data-favr]")){
+  const id = rut.dataset.rut, a = (state.trOpen || []).slice(), i = a.indexOf(id);
+  if (i >= 0) a.splice(i, 1); else a.push(id);
+  state.trOpen = a;                      // ať to překreslení nesbalí zpátky
+ }
  const nsk = e.target.closest("[data-nsek]");
  if (nsk){
   state.nastSek = nsk.dataset.nsek; state.nastQ = "";
@@ -12596,6 +12686,7 @@ document.addEventListener("click", e=>{
  const so = e.target.closest("[data-statobd]");
  if (so){ nastSet("statObd", +so.dataset.statobd); renderCisla(); return; }
  const fr = e.target.closest("[data-favr]");
+ if (fr && fr.closest("summary")) e.preventDefault();
  if (fr){
   const nova = favRTgl(fr.dataset.favr);
   if (nova) celebrate("⭐");
